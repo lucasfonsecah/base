@@ -1,4 +1,4 @@
-<title>Minha Pauta</title>
+<title>Work</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,600&family=Public+Sans:wght@400;500;600&display=swap">
@@ -209,24 +209,48 @@ body{
   font-weight:500;
 }
 
-/* ---------- aviso de exemplos ---------- */
-.aviso{
-  display:flex;
-  flex-wrap:wrap;
-  align-items:center;
-  gap:6px 12px;
+/* ---------- avisos ---------- */
+.faixa-aviso{
   margin-top:14px;
-  padding:9px 12px;
+  padding:10px 14px;
   border-left:2px solid var(--andamento);
   background:var(--andamento-fundo);
   color:var(--andamento);
-  font-size:13px;
+  font-size:13.5px;
   border-radius:0 6px 6px 0;
 }
-.aviso button{
-  border:0;background:transparent;color:inherit;font:inherit;
-  font-weight:600;text-decoration:underline;cursor:pointer;padding:0;
+.faixa-aviso.resgate{border-left-color:var(--acento);background:var(--acento-fundo);color:var(--acento-tinta)}
+.faixa-aviso .titulo-aviso{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:10.5px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  display:block;
+  margin-bottom:6px;
+  opacity:.85;
 }
+.faixa-aviso ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.faixa-aviso li{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.faixa-aviso .quando{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11.5px;
+  font-weight:500;
+  min-width:52px;
+}
+.faixa-aviso .restante{
+  margin-left:auto;
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11px;
+  letter-spacing:.04em;
+  white-space:nowrap;
+}
+.acoes-aviso{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-top:8px}
+.acoes-aviso button{
+  border:0;background:transparent;color:inherit;font:inherit;
+  font-size:13px;font-weight:600;text-decoration:underline;cursor:pointer;padding:0;
+}
+.acoes-aviso button.discreto{font-weight:400;text-decoration:none;opacity:.75}
+.acoes-aviso button.discreto:hover{text-decoration:underline;opacity:1}
 
 /* ---------- seções / dias ---------- */
 .secao{margin-top:24px}
@@ -326,12 +350,12 @@ body{
 }
 .meta:empty{display:none}
 .meta .prazo.vencido,.meta .hora.vencido{color:var(--atraso)}
-.meta .prazo.agora,.meta .hora.agora{color:var(--acento-tinta)}
 .meta .hora{font-weight:500;color:var(--tinta-suave)}
 .selo{padding:1px 7px;border-radius:999px;background:var(--recuo);color:var(--tinta-suave)}
 .item.aberto .selo{background:var(--superficie)}
 .selo.andamento{background:var(--andamento-fundo);color:var(--andamento)}
-.selo.exemplo{background:transparent;border:1px dashed var(--linha-forte);color:var(--tinta-fraca)}
+.selo.perto{background:var(--andamento-fundo);color:var(--andamento);font-weight:500}
+.selo.iminente{background:var(--andamento);color:var(--papel);font-weight:500}
 
 /* ---------- rascunho aberto ---------- */
 .edicao{padding:6px 0 10px}
@@ -433,6 +457,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   background-color:var(--atraso);
   background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.5) 0 2px,transparent 2px 5px);
 }
+.amostra.neutra{background:var(--linha-forte)}
 
 .dia-hist{
   margin-top:18px;
@@ -527,13 +552,20 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   flex-wrap:wrap;
   gap:4px 14px;
   justify-content:space-between;
+  align-items:baseline;
 }
+.rodape button{
+  border:0;background:transparent;
+  font:inherit;color:var(--tinta-suave);
+  text-decoration:underline;cursor:pointer;padding:0;
+}
+.rodape button:hover{color:var(--tinta)}
 
 @media (max-width:520px){
   .topo h1{font-size:28px}
   .chip.perigo{margin-left:0}
   .cabeca-dia .qtd{margin-left:0}
-  .registro .veredito{margin-left:0;width:100%}
+  .registro .veredito,.faixa-aviso .restante{margin-left:0}
   .periodo{gap:12px 20px}
 }
 @media (prefers-reduced-motion: reduce){
@@ -544,7 +576,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 <div class="folha">
   <header class="topo">
     <div>
-      <h1>Minha Pauta</h1>
+      <h1>Work</h1>
       <p class="resumo" id="resumo">Carregando suas atividades…</p>
     </div>
     <div class="data-hoje" id="dataHoje"></div>
@@ -563,10 +595,8 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   </form>
 
   <div class="filtros" id="filtros" hidden></div>
-  <div class="aviso" id="avisoExemplos" hidden>
-    <span>As atividades marcadas como <b>exemplo</b> vieram prontas só para mostrar como a pauta funciona.</span>
-    <button type="button" id="limparExemplos">Remover exemplos</button>
-  </div>
+  <div id="faixaResgate"></div>
+  <div id="faixaAlertas"></div>
 
   <main id="listas"></main>
 
@@ -585,7 +615,11 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   var COLECAO = "atividades";
   var CHAVE_DADOS = "minha-pauta:atividades:v1";
   var CHAVE_PREF  = "minha-pauta:preferencias:v1";
+  var CHAVE_AVISADOS = "minha-pauta:avisados:v1";
   var DIAS_VISIVEIS = 10;
+  var JANELA_ALERTA = 120;   // minutos: a partir daqui a atividade entra em "daqui a pouco"
+  var JANELA_IMINENTE = 15;  // minutos: a partir daqui ela é iminente
+  var AVISO_ANTECEDENCIA = 15;
 
   var estado = {
     tarefas: new Map(),
@@ -597,11 +631,15 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     verTudo: false,
     modo: "carregando",
     pronto: false,
-    assinatura: ""
+    assinatura: "",
+    espelhoLiberado: true,  // trava enquanto houver dados locais ainda não resolvidos
+    resgate: null,          // atividades presas neste navegador, fora da conta
+    avisosNavegador: "indisponivel"
   };
 
   var db = null;
   var temporizadores = new Map();
+  var jaAvisados = new Set();
 
   /* ---------------- utilidades ---------------- */
 
@@ -628,7 +666,6 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
   }
 
-  // "2026-09-18T14:30:00Z" -> o dia local em que isso aconteceu
   function diaDoCarimbo(carimbo){
     var d = new Date(carimbo);
     return isNaN(d.getTime()) ? "" : isoDe(d);
@@ -690,57 +727,62 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       hora: typeof d.hora === "string" && /^\d{2}:\d{2}$/.test(d.hora) ? d.hora : "",
       categoria: typeof d.categoria === "string" ? d.categoria.trim() : "",
       status: status,
-      exemplo: d.exemplo === true,
       criadaEm: typeof d.criadaEm === "string" ? d.criadaEm : new Date().toISOString(),
       iniciadaEm: typeof d.iniciadaEm === "string" ? d.iniciadaEm : "",
-      concluidaEm: typeof d.concluidaEm === "string" ? d.concluidaEm : "",
-      noPrazo: d.noPrazo === true || d.noPrazo === false ? d.noPrazo : null
+      concluidaEm: typeof d.concluidaEm === "string" ? d.concluidaEm : ""
     };
   }
 
   function corpo(t){
     return {
       titulo: t.titulo, notas: t.notas, prazo: t.prazo, hora: t.hora, categoria: t.categoria,
-      status: t.status, exemplo: t.exemplo, criadaEm: t.criadaEm, iniciadaEm: t.iniciadaEm,
-      concluidaEm: t.concluidaEm, noPrazo: t.noPrazo
+      status: t.status, criadaEm: t.criadaEm, iniciadaEm: t.iniciadaEm, concluidaEm: t.concluidaEm
     };
   }
 
-  // Uma atividade passou do ponto quando o dia já foi, ou quando é hoje e a hora marcada passou.
+  /* ---------------- prazo ---------------- */
+
+  // O prazo se cumpre no DIA. A hora marca quando a coisa acontece, não um
+  // instante fatal: uma reunião das 9h fechada ao meio-dia saiu no prazo.
   function estaAtrasada(t, hoje){
-    if (t.status === "concluida" || !t.prazo) return false;
-    if (t.prazo < hoje) return true;
-    return t.prazo === hoje && !!t.hora && t.hora < horaDe(new Date());
+    return t.status !== "concluida" && !!t.prazo && t.prazo < hoje;
   }
 
-  // Comparado no momento em que foi concluída; null quando não havia prazo para cumprir.
-  function julgarEntrega(t, quando){
-    if (!t.prazo) return null;
-    var limite = dataDeIso(t.prazo);
-    if (t.hora) {
-      var p = t.hora.split(":");
-      limite.setHours(Number(p[0]), Number(p[1]), 0, 0);
-    } else {
-      limite.setHours(23, 59, 59, 999);
-    }
-    return quando.getTime() <= limite.getTime();
+  // Sinal de dentro do dia: a hora marcada já passou, mas o prazo ainda é hoje.
+  function passouDaHora(t, hoje){
+    return t.status !== "concluida" && t.prazo === hoje && !!t.hora && t.hora < horaDe(new Date());
+  }
+
+  // Calculado na hora a partir do prazo e da conclusão, nunca congelado:
+  // corrigir o prazo de algo já concluído corrige também o veredito.
+  function veredito(t){
+    if (t.status !== "concluida" || !t.prazo || !t.concluidaEm) return null;
+    var fim = diaDoCarimbo(t.concluidaEm);
+    if (!fim) return null;
+    return fim <= t.prazo;
   }
 
   function atrasoTexto(t){
-    if (!t.prazo || !t.concluidaEm) return "";
-    var limite = dataDeIso(t.prazo);
-    if (t.hora) {
-      var p = t.hora.split(":");
-      limite.setHours(Number(p[0]), Number(p[1]), 0, 0);
-    } else {
-      limite.setHours(23, 59, 59, 999);
-    }
-    var minutos = Math.round((new Date(t.concluidaEm).getTime() - limite.getTime()) / 60000);
-    if (minutos <= 0) return "";
-    if (minutos < 60) return minutos + " min depois";
-    var horas = Math.round(minutos / 60);
-    if (horas < 24) return plural(horas, "hora depois", "horas depois");
-    return plural(Math.round(horas / 24), "dia depois", "dias depois");
+    var fim = diaDoCarimbo(t.concluidaEm);
+    if (!fim || !t.prazo || fim <= t.prazo) return "";
+    var dias = Math.round((dataDeIso(fim) - dataDeIso(t.prazo)) / 86400000);
+    return plural(dias, "dia depois", "dias depois");
+  }
+
+  // Minutos até a hora marcada de hoje; null quando não se aplica.
+  function minutosAte(t, hoje){
+    if (t.status === "concluida" || t.prazo !== hoje || !t.hora) return null;
+    var p = t.hora.split(":");
+    var alvo = new Date();
+    alvo.setHours(Number(p[0]), Number(p[1]), 0, 0);
+    return Math.round((alvo.getTime() - Date.now()) / 60000);
+  }
+
+  function emQuanto(min){
+    if (min <= 0) return "agora";
+    if (min < 60) return "em " + min + " min";
+    var h = Math.floor(min / 60), m = min % 60;
+    return "em " + h + "h" + (m ? doisDigitos(m) : "");
   }
 
   /* ---------------- preferências (só deste navegador) ---------------- */
@@ -748,10 +790,16 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   function lerPreferencias(){
     try {
       var cru = window.localStorage.getItem(CHAVE_PREF);
-      if (!cru) return;
-      var p = JSON.parse(cru);
-      if (typeof p.filtro === "string") estado.filtro = p.filtro;
-      if (p.vista === "historico" || p.vista === "agenda") estado.vista = p.vista;
+      if (cru) {
+        var p = JSON.parse(cru);
+        if (typeof p.filtro === "string") estado.filtro = p.filtro;
+        if (p.vista === "historico" || p.vista === "agenda") estado.vista = p.vista;
+      }
+      var avisados = window.localStorage.getItem(CHAVE_AVISADOS);
+      if (avisados) {
+        var a = JSON.parse(avisados);
+        if (a && a.dia === isoHoje() && Array.isArray(a.ids)) a.ids.forEach(function(i){ jaAvisados.add(i); });
+      }
     } catch (e) { /* navegação privada ou armazenamento bloqueado */ }
   }
 
@@ -763,21 +811,27 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     } catch (e) { /* segue sem lembrar */ }
   }
 
+  function gravarAvisados(){
+    try {
+      window.localStorage.setItem(CHAVE_AVISADOS, JSON.stringify({
+        dia: isoHoje(), ids: Array.from(jaAvisados)
+      }));
+    } catch (e) { /* segue sem lembrar */ }
+  }
+
   /* ---------------- armazenamento ---------------- */
 
   function lerLocal(){
     try {
       var cru = window.localStorage.getItem(CHAVE_DADOS);
-      if (!cru) return;
+      if (!cru) return [];
       var lista = JSON.parse(cru);
-      if (!Array.isArray(lista)) return;
-      lista.forEach(function(item){
-        if (item && item.id) estado.tarefas.set(item.id, normalizar(item.id, item));
-      });
-    } catch (e) { /* começa vazio */ }
+      return Array.isArray(lista) ? lista.filter(function(i){ return i && i.id; }) : [];
+    } catch (e) { return []; }
   }
 
   function gravarLocal(){
+    if (!estado.espelhoLiberado) return;
     try {
       var lista = [];
       estado.tarefas.forEach(function(t){ lista.push(Object.assign({ id: t.id }, corpo(t))); });
@@ -787,10 +841,69 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
   function usarModoLocal(){
     db = null;
-    if (estado.tarefas.size === 0) lerLocal();
+    if (estado.tarefas.size === 0) {
+      lerLocal().forEach(function(item){ estado.tarefas.set(item.id, normalizar(item.id, item)); });
+    }
     estado.modo = "local";
+    estado.espelhoLiberado = true;
     estado.pronto = true;
     desenhar();
+  }
+
+  // Dados gravados numa sessão sem nuvem ficam presos no navegador. Antes de
+  // sobrescrever o espelho local, confere se há algo aqui que a conta não tem.
+  function conferirResgate(mapa){
+    if (estado.resgate) return;
+    var presos = lerLocal().filter(function(item){ return !mapa.has(item.id); });
+    if (presos.length) {
+      estado.resgate = presos;
+      estado.espelhoLiberado = false;
+    } else {
+      estado.espelhoLiberado = true;
+      gravarLocal();
+    }
+  }
+
+  function importarPresos(){
+    var presos = estado.resgate || [];
+    estado.resgate = null;
+    presos.forEach(function(item){
+      var t = normalizar(item.id, item);
+      estado.tarefas.set(t.id, t);
+      gravar(t);
+    });
+    estado.espelhoLiberado = true;
+    gravarLocal();
+    desenhar();
+  }
+
+  function descartarPresos(){
+    estado.resgate = null;
+    estado.espelhoLiberado = true;
+    gravarLocal();
+    desenhar();
+  }
+
+  function assinarColecao(){
+    db.collection(COLECAO).onSnapshot(function(snap){
+      var mapa = new Map();
+      snap.docs.forEach(function(doc){
+        var dados = doc.data();
+        if (dados) mapa.set(doc.id, normalizar(doc.id, dados));
+      });
+      // Uma edição ainda não confirmada continua valendo sobre o que o servidor devolveu.
+      estado.pendentes.forEach(function(id){
+        var local = estado.tarefas.get(id);
+        if (local) mapa.set(id, local); else mapa.delete(id);
+      });
+      estado.tarefas = mapa;
+      estado.pronto = true;
+      conferirResgate(mapa);
+      gravarLocal();
+      desenhar();
+    }, function(){
+      usarModoLocal();
+    });
   }
 
   function conectar(){
@@ -804,29 +917,28 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       if (!ns) { usarModoLocal(); return; }
       db = ns;
       estado.modo = "nuvem";
-      db.collection(COLECAO).onSnapshot(function(snap){
-        var mapa = new Map();
-        snap.docs.forEach(function(doc){
-          var dados = doc.data();
-          if (dados) mapa.set(doc.id, normalizar(doc.id, dados));
-        });
-        // Uma edição ainda não confirmada continua valendo sobre o que o servidor devolveu.
-        estado.pendentes.forEach(function(id){
-          var local = estado.tarefas.get(id);
-          if (local) mapa.set(id, local); else mapa.delete(id);
-        });
-        estado.tarefas = mapa;
-        estado.pronto = true;
-        desenhar();
-      }, function(){
-        usarModoLocal();
-      });
+      estado.espelhoLiberado = false;
+      assinarColecao();
     }, function(){ usarModoLocal(); });
+  }
+
+  function tentarNuvemDeNovo(){
+    var alvo = document.getElementById("modoArmazenamento");
+    if (alvo) alvo.textContent = "Pedindo acesso…";
+    var p = null;
+    try { p = window.claude && window.claude.use ? window.claude.use("permissions") : null; }
+    catch (e) { p = null; }
+    if (!p || typeof p.then !== "function") { desenhar(); return; }
+    p.then(function(ns){
+      if (!ns) { desenhar(); return; }
+      return ns.request(["db"]).then(function(){ conectar(); });
+    }).catch(function(){ desenhar(); });
   }
 
   function gravar(t){
     estado.tarefas.set(t.id, t);
-    if (!db) { gravarLocal(); return; }
+    gravarLocal();
+    if (!db) return;
     estado.pendentes.add(t.id);
     db.collection(COLECAO).doc(t.id).set(corpo(t)).then(function(){
       estado.pendentes.delete(t.id);
@@ -839,7 +951,8 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   function remover(id){
     estado.tarefas.delete(id);
     if (estado.aberto === id) estado.aberto = null;
-    if (!db) { gravarLocal(); return; }
+    gravarLocal();
+    if (!db) return;
     estado.pendentes.add(id);
     db.collection(COLECAO).doc(id).delete().then(function(){
       estado.pendentes.delete(id);
@@ -852,7 +965,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   function relatar(erro){
     var codigo = erro && erro.code;
     var texto = "Não consegui salvar essa mudança. Tente de novo.";
-    if (codigo === "quota_exceeded") texto = "A pauta atingiu o limite de atividades guardadas. Apague algumas concluídas para abrir espaço.";
+    if (codigo === "quota_exceeded") texto = "A agenda atingiu o limite de atividades guardadas. Apague algumas concluídas para abrir espaço.";
     else if (codigo === "resource_exhausted") texto = "Muitas mudanças de uma vez. Espere um instante e repita.";
     else if (codigo === "revoked" || codigo === "not_granted") texto = "Perdi o acesso ao armazenamento desta página. Recarregue para continuar.";
     var alvo = document.getElementById("modoArmazenamento");
@@ -865,6 +978,47 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       temporizadores.delete(id);
       fn();
     }, 700));
+  }
+
+  /* ---------------- avisos do navegador ---------------- */
+
+  function estadoAvisos(){
+    if (typeof window.Notification === "undefined") return "indisponivel";
+    try { return window.Notification.permission; } catch (e) { return "indisponivel"; }
+  }
+
+  function pedirAvisos(){
+    if (typeof window.Notification === "undefined") return;
+    try {
+      var r = window.Notification.requestPermission();
+      if (r && typeof r.then === "function") {
+        r.then(function(){ estado.avisosNavegador = estadoAvisos(); desenhar(); },
+               function(){ estado.avisosNavegador = "denied"; desenhar(); });
+      } else {
+        estado.avisosNavegador = estadoAvisos();
+        desenhar();
+      }
+    } catch (e) {
+      estado.avisosNavegador = "indisponivel";
+      desenhar();
+    }
+  }
+
+  function dispararAvisos(hoje){
+    if (estado.avisosNavegador !== "granted") return;
+    estado.tarefas.forEach(function(t){
+      var min = minutosAte(t, hoje);
+      if (min === null || min > AVISO_ANTECEDENCIA || min < -1) return;
+      if (jaAvisados.has(t.id)) return;
+      jaAvisados.add(t.id);
+      try {
+        new window.Notification(t.titulo || "Atividade sem título", {
+          body: t.hora + " · " + emQuanto(min),
+          tag: "work-" + t.id
+        });
+      } catch (e) { /* o navegador pode recusar sem aviso */ }
+    });
+    gravarAvisados();
   }
 
   /* ---------------- foco e altura ---------------- */
@@ -898,12 +1052,16 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   function metaHtml(t, hoje, comData){
     var partes = [];
     if (t.status === "andamento") partes.push('<span class="selo andamento">em andamento</span>');
-    var atrasada = estaAtrasada(t, hoje);
-    var tom = atrasada ? " vencido" : (t.status !== "concluida" && t.prazo === hoje ? " agora" : "");
-    if (t.prazo && comData) partes.push('<span class="prazo' + tom + '">' + esc(rotuloPrazo(t.prazo)) + "</span>");
-    if (t.hora) partes.push('<span class="hora' + tom + '">' + esc(t.hora) + "</span>");
+
+    var min = minutosAte(t, hoje);
+    if (min !== null && min >= 0 && min <= JANELA_ALERTA) {
+      partes.push('<span class="selo ' + (min <= JANELA_IMINENTE ? "iminente" : "perto") + '">' + esc(emQuanto(min)) + "</span>");
+    }
+
+    var vencido = estaAtrasada(t, hoje) || passouDaHora(t, hoje);
+    if (t.prazo && comData) partes.push('<span class="prazo' + (estaAtrasada(t, hoje) ? " vencido" : "") + '">' + esc(rotuloPrazo(t.prazo)) + "</span>");
+    if (t.hora) partes.push('<span class="hora' + (vencido ? " vencido" : "") + '">' + esc(t.hora) + "</span>");
     if (t.categoria) partes.push('<span class="selo">' + esc(t.categoria) + "</span>");
-    if (t.exemplo) partes.push('<span class="selo exemplo">exemplo</span>');
     return partes.join("");
   }
 
@@ -999,7 +1157,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
     if (atrasadas.length) {
       html += '<section class="secao urgente">' +
-        cabecaHtml("Passou do ponto", "", String(atrasadas.length)) +
+        cabecaHtml("Passou do prazo", "", String(atrasadas.length)) +
         '<div class="painel">' +
           atrasadas.map(function(t){ return itemHtml(t, hoje, true); }).join("") +
         "</div></section>";
@@ -1034,6 +1192,61 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     return html;
   }
 
+  /* ---------------- alertas de proximidade ---------------- */
+
+  function desenharAlertas(visiveis, hoje){
+    var alvo = document.getElementById("faixaAlertas");
+    if (estado.vista !== "agenda") { alvo.innerHTML = ""; return; }
+
+    var proximas = [];
+    visiveis.forEach(function(t){
+      var min = minutosAte(t, hoje);
+      if (min !== null && min >= 0 && min <= JANELA_ALERTA) proximas.push({ t: t, min: min });
+    });
+    proximas.sort(function(a, b){ return a.min - b.min; });
+
+    var podePedir = estado.avisosNavegador === "default";
+    if (!proximas.length && !podePedir) { alvo.innerHTML = ""; return; }
+
+    var html = '<div class="faixa-aviso">';
+    if (proximas.length) {
+      html += '<span class="titulo-aviso">Daqui a pouco</span><ul>';
+      proximas.slice(0, 4).forEach(function(p){
+        html += "<li>" +
+          '<span class="quando">' + esc(p.t.hora) + "</span>" +
+          "<span>" + (p.t.titulo ? esc(p.t.titulo) : "<em>sem título</em>") + "</span>" +
+          '<span class="restante">' + esc(emQuanto(p.min)) + "</span></li>";
+      });
+      html += "</ul>";
+    } else {
+      html += '<span class="titulo-aviso">Avisos</span>' +
+        "<span>Nada nas próximas duas horas.</span>";
+    }
+
+    if (podePedir) {
+      html += '<div class="acoes-aviso"><button type="button" data-aviso="pedir">Avisar no navegador</button>' +
+        '<button type="button" class="discreto" data-aviso="dispensar">agora não</button></div>';
+    } else if (estado.avisosNavegador === "denied") {
+      html += '<div class="acoes-aviso"><span style="font-size:12.5px;opacity:.8">O navegador bloqueou avisos nesta página — os alertas ficam só aqui.</span></div>';
+    }
+
+    alvo.innerHTML = html + "</div>";
+  }
+
+  function desenharResgate(){
+    var alvo = document.getElementById("faixaResgate");
+    if (!estado.resgate || !estado.resgate.length) { alvo.innerHTML = ""; return; }
+    alvo.innerHTML = '<div class="faixa-aviso resgate">' +
+      '<span class="titulo-aviso">Atividades fora da conta</span>' +
+      "<span>" + plural(estado.resgate.length, "atividade foi salva", "atividades foram salvas") +
+      " só neste navegador, numa sessão em que a nuvem não estava disponível. " +
+      "Trazer para a sua conta faz " + (estado.resgate.length === 1 ? "ela aparecer" : "elas aparecerem") + " nos outros dispositivos.</span>" +
+      '<div class="acoes-aviso">' +
+        '<button type="button" data-resgate="importar">Trazer para a conta</button>' +
+        '<button type="button" class="discreto" data-resgate="descartar">manter só aqui</button>' +
+      "</div></div>";
+  }
+
   /* ---------------- histórico ---------------- */
 
   function agregar(visiveis){
@@ -1048,63 +1261,14 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       d = diaDoCarimbo(t.iniciadaEm); if (d) dia(d).iniciadas++;
       d = diaDoCarimbo(t.concluidaEm);
       if (d && t.status === "concluida") {
-        var r = dia(d);
+        var r = dia(d), v = veredito(t);
         r.feitas.push(t);
-        if (t.noPrazo === true) r.dentro++;
-        else if (t.noPrazo === false) r.fora++;
+        if (v === true) r.dentro++;
+        else if (v === false) r.fora++;
         else r.semPrazo++;
       }
     });
     return Array.from(mapa.values()).sort(function(a, b){ return a.dia > b.dia ? -1 : 1; });
-  }
-
-  function desenharHistorico(visiveis, hoje){
-    var registros = agregar(visiveis);
-    if (!registros.length) {
-      return '<div class="vazio"><p class="serif">O histórico começa agora.</p>' +
-        "<p>Conforme você criar, começar e concluir atividades, cada dia vira uma linha aqui.</p></div>";
-    }
-
-    // Resumo dos últimos 7 dias, incluindo hoje.
-    var corte = somarDias(hoje, -6);
-    var soma = { criadas:0, iniciadas:0, feitas:0, dentro:0, fora:0 };
-    registros.forEach(function(r){
-      if (r.dia < corte || r.dia > hoje) return;
-      soma.criadas += r.criadas;
-      soma.iniciadas += r.iniciadas;
-      soma.feitas += r.feitas.length;
-      soma.dentro += r.dentro;
-      soma.fora += r.fora;
-    });
-
-    var html = '<section class="secao">' +
-      cabecaHtml("Últimos 7 dias", dataCurta(corte) + " – " + dataCurta(hoje), "") +
-      '<div class="periodo">' +
-        celulaHtml(soma.criadas, "criadas", "") +
-        celulaHtml(soma.iniciadas, "iniciadas", "") +
-        celulaHtml(soma.feitas, "concluídas", "") +
-        celulaHtml(soma.dentro, "no prazo", "boa") +
-        celulaHtml(soma.fora, "fora do prazo", "ruim") +
-      "</div>" +
-      '<div class="legenda">' +
-        '<span><i class="amostra dentro"></i>entregue no prazo</span>' +
-        '<span><i class="amostra fora"></i>entregue fora do prazo</span>' +
-      "</div></section>";
-
-    // A escala das barras é comum a todos os dias mostrados, para poderem ser comparados.
-    var mostrados = estado.verTudo ? registros : registros.slice(0, DIAS_VISIVEIS);
-    var teto = 1;
-    mostrados.forEach(function(r){ if (r.feitas.length > teto) teto = r.feitas.length; });
-
-    html += '<section class="secao">';
-    mostrados.forEach(function(r){ html += diaHistoricoHtml(r, teto); });
-    html += "</section>";
-
-    if (registros.length > DIAS_VISIVEIS) {
-      html += '<button type="button" class="mais" data-acao="verTudo">' +
-        (estado.verTudo ? "Mostrar menos" : "Ver todos os " + registros.length + " dias") + "</button>";
-    }
-    return html;
   }
 
   function celulaHtml(n, rotulo, tom){
@@ -1133,15 +1297,14 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
       html += '<ul class="registro">';
       r.feitas.slice().sort(function(a, b){ return a.concluidaEm < b.concluidaEm ? -1 : 1; }).forEach(function(t){
-        var tom = t.noPrazo === true ? "dentro" : (t.noPrazo === false ? "fora" : "neutra");
-        var marca = t.noPrazo === true ? "✓" : (t.noPrazo === false ? "!" : "·");
-        var veredito = t.noPrazo === true
-          ? "no prazo"
-          : (t.noPrazo === false ? (atrasoTexto(t) || "fora do prazo") : "sem prazo");
+        var v = veredito(t);
+        var tom = v === true ? "dentro" : (v === false ? "fora" : "neutra");
+        var marca = v === true ? "✓" : (v === false ? "!" : "·");
+        var texto = v === true ? "no prazo" : (v === false ? (atrasoTexto(t) || "fora do prazo") : "sem prazo");
         html += "<li>" +
           '<span class="marca ' + tom + '" aria-hidden="true">' + marca + "</span>" +
           "<span>" + (t.titulo ? esc(t.titulo) : "<em>sem título</em>") + "</span>" +
-          '<span class="veredito ' + tom + '">' + esc(veredito) + "</span></li>";
+          '<span class="veredito ' + tom + '">' + esc(texto) + "</span></li>";
       });
       html += "</ul>";
     }
@@ -1149,12 +1312,68 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     return html + "</article>";
   }
 
+  function desenharHistorico(visiveis, hoje){
+    var registros = agregar(visiveis);
+    if (!registros.length) {
+      return '<div class="vazio"><p class="serif">O histórico começa agora.</p>' +
+        "<p>Conforme você criar, começar e concluir atividades, cada dia vira uma linha aqui.</p></div>";
+    }
+
+    var corte = somarDias(hoje, -6);
+    var soma = { criadas:0, iniciadas:0, feitas:0, dentro:0, fora:0 };
+    registros.forEach(function(r){
+      if (r.dia < corte || r.dia > hoje) return;
+      soma.criadas += r.criadas;
+      soma.iniciadas += r.iniciadas;
+      soma.feitas += r.feitas.length;
+      soma.dentro += r.dentro;
+      soma.fora += r.fora;
+    });
+
+    var html = '<section class="secao">' +
+      cabecaHtml("Últimos 7 dias", dataCurta(corte) + " – " + dataCurta(hoje), "") +
+      '<div class="periodo">' +
+        celulaHtml(soma.criadas, "criadas", "") +
+        celulaHtml(soma.iniciadas, "iniciadas", "") +
+        celulaHtml(soma.feitas, "concluídas", "") +
+        celulaHtml(soma.dentro, "no prazo", "boa") +
+        celulaHtml(soma.fora, "fora do prazo", "ruim") +
+      "</div>" +
+      '<div class="legenda">' +
+        '<span><i class="amostra dentro"></i>entregue no prazo</span>' +
+        '<span><i class="amostra fora"></i>entregue fora do prazo</span>' +
+        '<span><i class="amostra neutra"></i>sem prazo definido</span>' +
+      "</div></section>";
+
+    // A escala das barras é comum a todos os dias mostrados, para poderem ser comparados.
+    var mostrados = estado.verTudo ? registros : registros.slice(0, DIAS_VISIVEIS);
+    var teto = 1;
+    mostrados.forEach(function(r){ if (r.feitas.length > teto) teto = r.feitas.length; });
+
+    html += '<section class="secao">';
+    mostrados.forEach(function(r){ html += diaHistoricoHtml(r, teto); });
+    html += "</section>";
+
+    if (registros.length > DIAS_VISIVEIS) {
+      html += '<button type="button" class="mais" data-acao="verTudo">' +
+        (estado.verTudo ? "Mostrar menos" : "Ver todos os " + registros.length + " dias") + "</button>";
+    }
+    return html;
+  }
+
   /* ---------------- desenho ---------------- */
 
+  // Muda quando vira o dia, quando algo passa do prazo ou quando uma contagem
+  // regressiva visível avança — só então vale redesenhar sozinho.
   function assinaturaTempo(){
-    var hoje = isoHoje(), ids = [];
-    estado.tarefas.forEach(function(t){ if (estaAtrasada(t, hoje)) ids.push(t.id); });
-    return hoje + "|" + ids.sort().join(",");
+    var hoje = isoHoje(), partes = [];
+    estado.tarefas.forEach(function(t){
+      if (estaAtrasada(t, hoje)) partes.push("a:" + t.id);
+      if (passouDaHora(t, hoje)) partes.push("h:" + t.id);
+      var min = minutosAte(t, hoje);
+      if (min !== null && min >= 0 && min <= JANELA_ALERTA) partes.push("p:" + t.id + ":" + min);
+    });
+    return hoje + "|" + partes.sort().join(",");
   }
 
   function desenhar(){
@@ -1177,7 +1396,6 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
     var naAgenda = estado.vista === "agenda";
 
-    // Abas
     Array.prototype.forEach.call(document.querySelectorAll("#abas button"), function(b){
       b.setAttribute("aria-selected", String(b.getAttribute("data-vista") === estado.vista));
     });
@@ -1198,7 +1416,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       resumo = "Nada em aberto.";
     } else {
       var trechos = ["<b>" + plural(abertas, "atividade aberta", "atividades abertas") + "</b>"];
-      if (atrasadas) trechos.push('<span class="vermelho">' + plural(atrasadas, "passou do ponto", "passaram do ponto") + "</span>");
+      if (atrasadas) trechos.push('<span class="vermelho">' + plural(atrasadas, "passou do prazo", "passaram do prazo") + "</span>");
       if (deHoje) trechos.push(deHoje + " para hoje");
       resumo = trechos.join(" · ");
     }
@@ -1221,17 +1439,18 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     document.getElementById("listaCategorias").innerHTML =
       categorias.map(function(c){ return '<option value="' + esc(c) + '"></option>'; }).join("");
 
-    document.getElementById("avisoExemplos").hidden = !naAgenda || !todas.some(function(t){ return t.exemplo; });
+    desenharResgate();
+    desenharAlertas(visiveis, hoje);
 
     // Corpo
     var html;
     if (!estado.pronto) {
-      html = '<div class="vazio"><p class="serif">Abrindo sua pauta…</p></div>';
+      html = '<div class="vazio"><p class="serif">Abrindo sua agenda…</p></div>';
     } else if (naAgenda) {
       html = desenharAgenda(visiveis, hoje);
       if (!html) {
         html = '<div class="vazio"><p class="serif">' +
-          (todas.length ? "Nenhuma atividade nesta categoria." : "A pauta está limpa.") + "</p><p>" +
+          (todas.length ? "Nenhuma atividade nesta categoria." : "A agenda está limpa.") + "</p><p>" +
           (todas.length ? "Troque o filtro acima para ver o resto." : "Escreva a primeira atividade no campo acima e aperte Enter.") +
           "</p></div>";
       }
@@ -1244,13 +1463,19 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
     // Rodapé
     var modo = document.getElementById("modoArmazenamento");
-    if (estado.modo === "nuvem") modo.textContent = "Salvo na sua conta · sincroniza entre dispositivos";
-    else if (estado.modo === "local") modo.textContent = "Salvo apenas neste navegador";
-    else modo.textContent = "Preparando…";
+    if (estado.modo === "nuvem") {
+      modo.textContent = "Salvo na sua conta · sincroniza entre dispositivos";
+    } else if (estado.modo === "local") {
+      modo.innerHTML = "Salvo apenas neste navegador · " +
+        '<button type="button" id="tentarNuvem">tentar salvar na conta</button>';
+    } else {
+      modo.textContent = "Preparando…";
+    }
     document.getElementById("totalGeral").textContent =
       todas.length ? plural(todas.length, "atividade no total", "atividades no total") : "";
 
     estado.assinatura = assinaturaTempo();
+    dispararAvisos(hoje);
     restaurarFoco(foco);
   }
 
@@ -1274,16 +1499,6 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     estado.aberto = null;
     estado.mostrarNota = false;
     desenhar();
-  }
-
-  function concluir(t){
-    var agora = new Date();
-    t.status = "concluida";
-    t.concluidaEm = agora.toISOString();
-    t.noPrazo = julgarEntrega(t, agora);
-    // Concluir sem nunca ter começado ainda conta como trabalho feito naquele dia.
-    if (!t.iniciadaEm) t.iniciadaEm = t.concluidaEm;
-    if (estado.aberto === t.id) { estado.aberto = null; estado.mostrarNota = false; }
   }
 
   function adicionar(){
@@ -1338,17 +1553,30 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   campoPrazoNovo.addEventListener("input", sincronizarHoraNova);
   sincronizarHoraNova();
 
-  document.getElementById("limparExemplos").addEventListener("click", function(){
-    Array.from(estado.tarefas.values()).forEach(function(t){ if (t.exemplo) remover(t.id); });
-    desenhar();
-  });
-
   document.getElementById("filtros").addEventListener("click", function(e){
     var b = e.target.closest("button[data-filtro]");
     if (!b) return;
     estado.filtro = b.getAttribute("data-filtro");
     gravarPreferencias();
     desenhar();
+  });
+
+  document.getElementById("faixaResgate").addEventListener("click", function(e){
+    var b = e.target.closest("button[data-resgate]");
+    if (!b) return;
+    if (b.getAttribute("data-resgate") === "importar") importarPresos();
+    else descartarPresos();
+  });
+
+  document.getElementById("faixaAlertas").addEventListener("click", function(e){
+    var b = e.target.closest("button[data-aviso]");
+    if (!b) return;
+    if (b.getAttribute("data-aviso") === "pedir") pedirAvisos();
+    else { estado.avisosNavegador = "dispensado"; desenhar(); }
+  });
+
+  document.querySelector(".rodape").addEventListener("click", function(e){
+    if (e.target.id === "tentarNuvem") tentarNuvemDeNovo();
   });
 
   document.getElementById("listas").addEventListener("click", function(e){
@@ -1376,8 +1604,16 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       if (acao === "excluir") { remover(t.id); desenhar(); return; }
 
       if (acao === "alternar") {
-        if (t.status === "concluida") { t.status = "aberta"; t.concluidaEm = ""; t.noPrazo = null; }
-        else concluir(t);
+        if (t.status === "concluida") {
+          t.status = "aberta";
+          t.concluidaEm = "";
+        } else {
+          t.status = "concluida";
+          t.concluidaEm = new Date().toISOString();
+          // Concluir sem nunca ter começado ainda conta como trabalho do dia.
+          if (!t.iniciadaEm) t.iniciadaEm = t.concluidaEm;
+          if (estado.aberto === t.id) { estado.aberto = null; estado.mostrarNota = false; }
+        }
       } else if (acao === "andamento") {
         if (t.status === "andamento") {
           t.status = "aberta";
@@ -1435,17 +1671,17 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     fechar();
   });
 
-  // A virada de um horário marcado muda o que está atrasado; redesenha só quando isso acontece.
   window.setInterval(function(){
     if (estado.aberto) return;
     if (assinaturaTempo() !== estado.assinatura) desenhar();
-  }, 30000);
+  }, 20000);
 
   /* ---------------- partida ---------------- */
 
   document.getElementById("dataHoje").textContent =
     new Intl.DateTimeFormat("pt-BR", { weekday:"long", day:"numeric", month:"long" }).format(new Date());
 
+  estado.avisosNavegador = estadoAvisos();
   lerPreferencias();
   desenhar();
   conectar();
