@@ -170,6 +170,14 @@ body{
   padding:6px 8px;
 }
 .adicionar input[type="time"]{flex:0 1 104px}
+.adicionar input:invalid{border-color:var(--atraso)}
+.recado{
+  flex:1 0 100%;
+  margin:0;
+  padding:4px 6px 0;
+  font-size:12.5px;
+  color:var(--atraso);
+}
 .botao-principal{
   flex:0 0 auto;
   border:0;
@@ -355,6 +363,7 @@ body{
 .item.aberto .selo{background:var(--superficie)}
 .selo.andamento{background:var(--andamento-fundo);color:var(--andamento)}
 .selo.perto{background:var(--andamento-fundo);color:var(--andamento);font-weight:500}
+.selo.faltando{background:transparent;border:1px dashed var(--atraso);color:var(--atraso)}
 .selo.iminente{background:var(--andamento);color:var(--papel);font-weight:500}
 
 /* ---------- rascunho aberto ---------- */
@@ -587,11 +596,12 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     <button type="button" role="tab" data-vista="historico" aria-selected="false">Histórico</button>
   </nav>
 
-  <form class="adicionar" id="formAdd" autocomplete="off">
+  <form class="adicionar" id="formAdd" autocomplete="off" novalidate>
     <input type="text" id="campoNova" placeholder="O que precisa ser feito?" aria-label="Nova atividade" maxlength="300">
-    <input type="date" id="campoPrazo" aria-label="Dia da nova atividade">
+    <input type="date" id="campoPrazo" aria-label="Prazo da nova atividade" required>
     <input type="time" id="campoHora" aria-label="Horário da nova atividade" hidden>
     <button type="submit" class="botao-principal">Adicionar</button>
+    <p class="recado" id="recado" hidden></p>
   </form>
 
   <div class="filtros" id="filtros" hidden></div>
@@ -1051,6 +1061,8 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
   function metaHtml(t, hoje, comData){
     var partes = [];
+    // Sem prazo não há como julgar a entrega: a atividade fica pedindo um.
+    if (t.status !== "concluida" && !t.prazo) partes.push('<span class="selo faltando">falta o prazo</span>');
     if (t.status === "andamento") partes.push('<span class="selo andamento">em andamento</span>');
 
     var min = minutosAte(t, hoje);
@@ -1185,7 +1197,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
         return a.criadaEm < b.criadaEm ? -1 : 1;
       });
       html += '<section class="secao">' +
-        cabecaHtml("Sem data", "quando der", String(semData.length)) +
+        cabecaHtml("Sem prazo", "precisam de um prazo", String(semData.length)) +
         '<div class="painel">' + semData.map(function(t){ return itemHtml(t, hoje, false); }).join("") + "</div></section>";
     }
 
@@ -1503,9 +1515,20 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
   function adicionar(){
     var campo = document.getElementById("campoNova");
+    var campoData = document.getElementById("campoPrazo");
+    var recado = document.getElementById("recado");
     var titulo = campo.value.trim();
-    if (!titulo) { campo.focus(); return; }
-    var prazo = document.getElementById("campoPrazo").value || "";
+    if (!titulo) { recado.hidden = true; campo.focus(); return; }
+
+    var prazo = campoData.value || "";
+    if (!prazo) {
+      recado.textContent = "Toda atividade precisa de um prazo — é ele que diz depois se a entrega saiu no tempo.";
+      recado.hidden = false;
+      campoData.focus();
+      return;
+    }
+    recado.hidden = true;
+
     var t = normalizar(novoId(), {
       titulo: titulo,
       prazo: prazo,
@@ -1548,9 +1571,12 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     var temData = !!campoPrazoNovo.value;
     campoHoraNovo.hidden = !temData;
     if (!temData) campoHoraNovo.value = "";
+    else document.getElementById("recado").hidden = true;
   }
   campoPrazoNovo.addEventListener("change", sincronizarHoraNova);
   campoPrazoNovo.addEventListener("input", sincronizarHoraNova);
+  // O prazo já entra preenchido com hoje: nunca se cria uma atividade sem ele.
+  campoPrazoNovo.value = isoHoje();
   sincronizarHoraNova();
 
   document.getElementById("filtros").addEventListener("click", function(e){
