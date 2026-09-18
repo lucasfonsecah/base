@@ -147,8 +147,8 @@ body{
   border-radius:var(--raio);
   box-shadow:var(--sombra);
 }
-.adicionar input[type="text"]{
-  flex:1 1 200px;
+.adicionar input.texto{
+  flex:1 1 100%;
   min-width:0;
   border:0;
   background:transparent;
@@ -157,10 +157,9 @@ body{
   font-size:15.5px;
   padding:7px 6px;
 }
-.adicionar input[type="text"]::placeholder{color:var(--tinta-fraca)}
-.adicionar input[type="date"],
-.adicionar input[type="time"]{
-  flex:0 1 142px;
+.adicionar input.texto::placeholder{color:var(--tinta-fraca)}
+.adicionar input[type="date"]{
+  flex:0 0 auto;
   border:1px solid var(--linha);
   border-radius:6px;
   background:var(--papel);
@@ -169,8 +168,36 @@ body{
   font-size:12.5px;
   padding:6px 8px;
 }
-.adicionar input[type="time"]{flex:0 1 104px}
-.adicionar input:invalid{border-color:var(--atraso)}
+.adicionar input[type="date"]:invalid{border-color:var(--atraso)}
+.adicionar .botao-principal{margin-left:auto}
+
+/* par rotulado: um horário com o nome do papel colado nele */
+.par{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  flex:0 0 auto;
+  border:1px solid var(--linha);
+  border-radius:6px;
+  background:var(--papel);
+  padding:0 8px;
+}
+.par > span{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--tinta-fraca);
+}
+.par input{
+  border:0;
+  background:transparent;
+  color:var(--tinta-suave);
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:12.5px;
+  padding:6px 0;
+  width:74px;
+}
 .recado{
   flex:1 0 100%;
   margin:0;
@@ -252,6 +279,8 @@ body{
   letter-spacing:.04em;
   white-space:nowrap;
 }
+.faixa-aviso li.limite .quando,
+.faixa-aviso li.limite .restante{font-weight:600}
 .acoes-aviso{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-top:8px}
 .acoes-aviso button{
   border:0;background:transparent;color:inherit;font:inherit;
@@ -414,7 +443,27 @@ body{
 .chip.perigo:hover{color:var(--atraso);border-color:var(--atraso)}
 input.chip{cursor:text}
 input.chip[type="date"]{width:118px;padding-block:2px}
-input.chip[type="time"]{width:84px;padding-block:2px}
+label.chip.par{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  padding:1px 8px;
+  cursor:text;
+}
+label.chip.par > span{
+  font-size:9.5px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  opacity:.75;
+}
+label.chip.par input{
+  border:0;
+  background:transparent;
+  color:inherit;
+  font:inherit;
+  padding:2px 0;
+  width:62px;
+}
 input.chip.categoria{width:108px}
 input.chip.categoria::placeholder{color:var(--tinta-fraca)}
 input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;color:var(--acento-tinta)}
@@ -597,9 +646,12 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   </nav>
 
   <form class="adicionar" id="formAdd" autocomplete="off" novalidate>
-    <input type="text" id="campoNova" placeholder="O que precisa ser feito?" aria-label="Nova atividade" maxlength="300">
-    <input type="date" id="campoPrazo" aria-label="Prazo da nova atividade" required>
-    <input type="time" id="campoHora" aria-label="Horário da nova atividade" hidden>
+    <input type="text" class="texto" id="campoNova" placeholder="O que precisa ser feito?" aria-label="Nova atividade" maxlength="300">
+    <input type="date" id="campoPrazo" aria-label="Dia da nova atividade" required>
+    <label class="par"><span>início</span>
+      <input type="time" id="campoInicio" aria-label="Hora de início"></label>
+    <label class="par"><span>limite</span>
+      <input type="time" id="campoLimite" aria-label="Prazo limite"></label>
     <button type="submit" class="botao-principal">Adicionar</button>
     <p class="recado" id="recado" hidden></p>
   </form>
@@ -734,7 +786,9 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       titulo: typeof d.titulo === "string" ? d.titulo : "",
       notas: typeof d.notas === "string" ? d.notas : "",
       prazo: typeof d.prazo === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d.prazo) ? d.prazo : "",
-      hora: typeof d.hora === "string" && /^\d{2}:\d{2}$/.test(d.hora) ? d.hora : "",
+      // `hora` é o campo único das versões antigas: virou o início.
+      inicio: validarHora(d.inicio !== undefined ? d.inicio : d.hora),
+      limite: validarHora(d.limite),
       categoria: typeof d.categoria === "string" ? d.categoria.trim() : "",
       status: status,
       criadaEm: typeof d.criadaEm === "string" ? d.criadaEm : new Date().toISOString(),
@@ -745,47 +799,84 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
   function corpo(t){
     return {
-      titulo: t.titulo, notas: t.notas, prazo: t.prazo, hora: t.hora, categoria: t.categoria,
-      status: t.status, criadaEm: t.criadaEm, iniciadaEm: t.iniciadaEm, concluidaEm: t.concluidaEm
+      titulo: t.titulo, notas: t.notas, prazo: t.prazo, inicio: t.inicio, limite: t.limite,
+      categoria: t.categoria, status: t.status, criadaEm: t.criadaEm,
+      iniciadaEm: t.iniciadaEm, concluidaEm: t.concluidaEm
     };
+  }
+
+  function validarHora(v){
+    return typeof v === "string" && /^\d{2}:\d{2}$/.test(v) ? v : "";
   }
 
   /* ---------------- prazo ---------------- */
 
-  // O prazo se cumpre no DIA. A hora marca quando a coisa acontece, não um
-  // instante fatal: uma reunião das 9h fechada ao meio-dia saiu no prazo.
-  function estaAtrasada(t, hoje){
-    return t.status !== "concluida" && !!t.prazo && t.prazo < hoje;
+  // O instante em que a atividade tinha de estar pronta. Com prazo limite
+  // marcado, é aquele minuto; sem ele, o fim do dia do prazo.
+  function instanteLimite(t){
+    if (!t.prazo) return null;
+    var d = dataDeIso(t.prazo);
+    if (t.limite) {
+      var p = t.limite.split(":");
+      d.setHours(Number(p[0]), Number(p[1]), 0, 0);
+    } else {
+      d.setHours(23, 59, 59, 999);
+    }
+    return d;
   }
 
-  // Sinal de dentro do dia: a hora marcada já passou, mas o prazo ainda é hoje.
-  function passouDaHora(t, hoje){
-    return t.status !== "concluida" && t.prazo === hoje && !!t.hora && t.hora < horaDe(new Date());
+  // O mesmo instante, mas para uma hora avulsa de hoje (início ou limite).
+  function instanteHoje(hhmm){
+    var p = hhmm.split(":");
+    var d = new Date();
+    d.setHours(Number(p[0]), Number(p[1]), 0, 0);
+    return d;
+  }
+
+  // Estourou o prazo: o dia passou, ou o limite de hoje já venceu. O início
+  // nunca atrasa nada — uma reunião das 17h não está atrasada às 17h05.
+  function estaAtrasada(t, hoje){
+    if (t.status === "concluida" || !t.prazo) return false;
+    if (t.prazo < hoje) return true;
+    return t.prazo === hoje && !!t.limite && t.limite < horaDe(new Date());
   }
 
   // Calculado na hora a partir do prazo e da conclusão, nunca congelado:
   // corrigir o prazo de algo já concluído corrige também o veredito.
   function veredito(t){
     if (t.status !== "concluida" || !t.prazo || !t.concluidaEm) return null;
-    var fim = diaDoCarimbo(t.concluidaEm);
-    if (!fim) return null;
-    return fim <= t.prazo;
+    var lim = instanteLimite(t);
+    if (!lim) return null;
+    return new Date(t.concluidaEm).getTime() <= lim.getTime();
   }
 
   function atrasoTexto(t){
-    var fim = diaDoCarimbo(t.concluidaEm);
-    if (!fim || !t.prazo || fim <= t.prazo) return "";
-    var dias = Math.round((dataDeIso(fim) - dataDeIso(t.prazo)) / 86400000);
-    return plural(dias, "dia depois", "dias depois");
+    var lim = instanteLimite(t);
+    if (!lim || !t.concluidaEm) return "";
+    var min = Math.round((new Date(t.concluidaEm).getTime() - lim.getTime()) / 60000);
+    if (min <= 0) return "";
+    if (min < 60) return min + " min depois";
+    var horas = Math.floor(min / 60), resto = min % 60;
+    if (horas < 24) return horas + "h" + (resto ? doisDigitos(resto) : "") + " depois";
+    return plural(Math.round(horas / 24), "dia depois", "dias depois");
   }
 
-  // Minutos até a hora marcada de hoje; null quando não se aplica.
-  function minutosAte(t, hoje){
-    if (t.status === "concluida" || t.prazo !== hoje || !t.hora) return null;
-    var p = t.hora.split(":");
-    var alvo = new Date();
-    alvo.setHours(Number(p[0]), Number(p[1]), 0, 0);
-    return Math.round((alvo.getTime() - Date.now()) / 60000);
+  // Os momentos de hoje que ainda vão chegar: o começo e o limite.
+  function marcos(t, hoje){
+    if (t.status === "concluida" || t.prazo !== hoje) return [];
+    var agora = Date.now(), lista = [];
+    ["inicio", "limite"].forEach(function(tipo){
+      if (!t[tipo]) return;
+      lista.push({ tipo: tipo, hora: t[tipo], min: Math.round((instanteHoje(t[tipo]) - agora) / 60000) });
+    });
+    return lista;
+  }
+
+  // O próximo marco dentro da janela de alerta, se houver.
+  function marcoProximo(t, hoje){
+    var candidatos = marcos(t, hoje).filter(function(m){ return m.min >= 0 && m.min <= JANELA_ALERTA; });
+    candidatos.sort(function(a, b){ return a.min - b.min; });
+    return candidatos[0] || null;
   }
 
   function emQuanto(min){
@@ -794,6 +885,16 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     var h = Math.floor(min / 60), m = min % 60;
     return "em " + h + "h" + (m ? doisDigitos(m) : "");
   }
+
+  // "17:00–18:00", "17:00", "até 20:00" — como a linha mostra seus horários.
+  function faixaHoraria(t){
+    if (t.inicio && t.limite) return t.inicio + "–" + t.limite;
+    if (t.inicio) return t.inicio;
+    if (t.limite) return "até " + t.limite;
+    return "";
+  }
+
+  function horaDeOrdem(t){ return t.inicio || t.limite || "99:99"; }
 
   /* ---------------- preferências (só deste navegador) ---------------- */
 
@@ -1017,16 +1118,18 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   function dispararAvisos(hoje){
     if (estado.avisosNavegador !== "granted") return;
     estado.tarefas.forEach(function(t){
-      var min = minutosAte(t, hoje);
-      if (min === null || min > AVISO_ANTECEDENCIA || min < -1) return;
-      if (jaAvisados.has(t.id)) return;
-      jaAvisados.add(t.id);
-      try {
-        new window.Notification(t.titulo || "Atividade sem título", {
-          body: t.hora + " · " + emQuanto(min),
-          tag: "work-" + t.id
-        });
-      } catch (e) { /* o navegador pode recusar sem aviso */ }
+      marcos(t, hoje).forEach(function(m){
+        if (m.min > AVISO_ANTECEDENCIA || m.min < -1) return;
+        var chave = t.id + ":" + m.tipo;
+        if (jaAvisados.has(chave)) return;
+        jaAvisados.add(chave);
+        try {
+          new window.Notification(t.titulo || "Atividade sem título", {
+            body: (m.tipo === "limite" ? "Prazo limite " : "Começa ") + m.hora + " · " + emQuanto(m.min),
+            tag: "work-" + chave
+          });
+        } catch (e) { /* o navegador pode recusar sem aviso */ }
+      });
     });
     gravarAvisados();
   }
@@ -1065,14 +1168,16 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     if (t.status !== "concluida" && !t.prazo) partes.push('<span class="selo faltando">falta o prazo</span>');
     if (t.status === "andamento") partes.push('<span class="selo andamento">em andamento</span>');
 
-    var min = minutosAte(t, hoje);
-    if (min !== null && min >= 0 && min <= JANELA_ALERTA) {
-      partes.push('<span class="selo ' + (min <= JANELA_IMINENTE ? "iminente" : "perto") + '">' + esc(emQuanto(min)) + "</span>");
+    var m = marcoProximo(t, hoje);
+    if (m) {
+      partes.push('<span class="selo ' + (m.min <= JANELA_IMINENTE ? "iminente" : "perto") + '">' +
+        (m.tipo === "limite" ? "limite " : "começa ") + esc(emQuanto(m.min)) + "</span>");
     }
 
-    var vencido = estaAtrasada(t, hoje) || passouDaHora(t, hoje);
-    if (t.prazo && comData) partes.push('<span class="prazo' + (estaAtrasada(t, hoje) ? " vencido" : "") + '">' + esc(rotuloPrazo(t.prazo)) + "</span>");
-    if (t.hora) partes.push('<span class="hora' + (vencido ? " vencido" : "") + '">' + esc(t.hora) + "</span>");
+    var vencido = estaAtrasada(t, hoje);
+    if (t.prazo && comData) partes.push('<span class="prazo' + (vencido ? " vencido" : "") + '">' + esc(rotuloPrazo(t.prazo)) + "</span>");
+    var faixa = faixaHoraria(t);
+    if (faixa) partes.push('<span class="hora' + (vencido ? " vencido" : "") + '">' + esc(faixa) + "</span>");
     if (t.categoria) partes.push('<span class="selo">' + esc(t.categoria) + "</span>");
     return partes.join("");
   }
@@ -1093,8 +1198,10 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
         'data-campo="prazo" aria-label="Dia" value="' + esc(t.prazo) + '">';
 
     if (t.prazo) {
-      html += '<input type="time" class="chip' + (t.hora ? " preenchido" : "") + '" id="hora-' + esc(t.id) + '" ' +
-        'data-campo="hora" aria-label="Horário" value="' + esc(t.hora) + '">';
+      html += '<label class="chip par' + (t.inicio ? " preenchido" : "") + '"><span>início</span>' +
+        '<input type="time" id="inicio-' + esc(t.id) + '" data-campo="inicio" aria-label="Hora de início" value="' + esc(t.inicio) + '"></label>' +
+        '<label class="chip par' + (t.limite ? " preenchido" : "") + '"><span>limite</span>' +
+        '<input type="time" id="limite-' + esc(t.id) + '" data-campo="limite" aria-label="Prazo limite" value="' + esc(t.limite) + '"></label>';
     }
 
     html += '<input type="text" class="chip categoria' + (t.categoria ? " preenchido" : "") + '" id="categoria-' + esc(t.id) + '" ' +
@@ -1141,7 +1248,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   }
 
   function porHorario(a, b){
-    var ha = a.hora || "99:99", hb = b.hora || "99:99";
+    var ha = horaDeOrdem(a), hb = horaDeOrdem(b);
     if (ha !== hb) return ha < hb ? -1 : 1;
     return a.criadaEm < b.criadaEm ? -1 : 1;
   }
@@ -1162,7 +1269,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     });
 
     atrasadas.sort(function(a, b){
-      var ka = a.prazo + (a.hora || "99:99"), kb = b.prazo + (b.hora || "99:99");
+      var ka = a.prazo + (a.limite || horaDeOrdem(a)), kb = b.prazo + (b.limite || horaDeOrdem(b));
       if (ka !== kb) return ka < kb ? -1 : 1;
       return a.criadaEm < b.criadaEm ? -1 : 1;
     });
@@ -1212,10 +1319,11 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
     var proximas = [];
     visiveis.forEach(function(t){
-      var min = minutosAte(t, hoje);
-      if (min !== null && min >= 0 && min <= JANELA_ALERTA) proximas.push({ t: t, min: min });
+      marcos(t, hoje).forEach(function(m){
+        if (m.min >= 0 && m.min <= JANELA_ALERTA) proximas.push({ t: t, m: m });
+      });
     });
-    proximas.sort(function(a, b){ return a.min - b.min; });
+    proximas.sort(function(a, b){ return a.m.min - b.m.min; });
 
     var podePedir = estado.avisosNavegador === "default";
     if (!proximas.length && !podePedir) { alvo.innerHTML = ""; return; }
@@ -1224,10 +1332,10 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     if (proximas.length) {
       html += '<span class="titulo-aviso">Daqui a pouco</span><ul>';
       proximas.slice(0, 4).forEach(function(p){
-        html += "<li>" +
-          '<span class="quando">' + esc(p.t.hora) + "</span>" +
+        html += '<li' + (p.m.tipo === "limite" ? ' class="limite"' : "") + ">" +
+          '<span class="quando">' + esc(p.m.hora) + "</span>" +
           "<span>" + (p.t.titulo ? esc(p.t.titulo) : "<em>sem título</em>") + "</span>" +
-          '<span class="restante">' + esc(emQuanto(p.min)) + "</span></li>";
+          '<span class="restante">' + (p.m.tipo === "limite" ? "limite " : "começa ") + esc(emQuanto(p.m.min)) + "</span></li>";
       });
       html += "</ul>";
     } else {
@@ -1381,9 +1489,9 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     var hoje = isoHoje(), partes = [];
     estado.tarefas.forEach(function(t){
       if (estaAtrasada(t, hoje)) partes.push("a:" + t.id);
-      if (passouDaHora(t, hoje)) partes.push("h:" + t.id);
-      var min = minutosAte(t, hoje);
-      if (min !== null && min >= 0 && min <= JANELA_ALERTA) partes.push("p:" + t.id + ":" + min);
+      marcos(t, hoje).forEach(function(m){
+        if (m.min >= 0 && m.min <= JANELA_ALERTA) partes.push("p:" + t.id + ":" + m.tipo + ":" + m.min);
+      });
     });
     return hoje + "|" + partes.sort().join(",");
   }
@@ -1532,7 +1640,8 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     var t = normalizar(novoId(), {
       titulo: titulo,
       prazo: prazo,
-      hora: prazo ? (document.getElementById("campoHora").value || "") : "",
+      inicio: document.getElementById("campoInicio").value || "",
+      limite: document.getElementById("campoLimite").value || "",
       categoria: estado.filtro === "todas" ? "" : estado.filtro,
       criadaEm: new Date().toISOString()
     });
@@ -1566,18 +1675,13 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   });
 
   var campoPrazoNovo = document.getElementById("campoPrazo");
-  var campoHoraNovo = document.getElementById("campoHora");
-  function sincronizarHoraNova(){
-    var temData = !!campoPrazoNovo.value;
-    campoHoraNovo.hidden = !temData;
-    if (!temData) campoHoraNovo.value = "";
-    else document.getElementById("recado").hidden = true;
+  function sincronizarPrazoNovo(){
+    if (campoPrazoNovo.value) document.getElementById("recado").hidden = true;
   }
-  campoPrazoNovo.addEventListener("change", sincronizarHoraNova);
-  campoPrazoNovo.addEventListener("input", sincronizarHoraNova);
-  // O prazo já entra preenchido com hoje: nunca se cria uma atividade sem ele.
+  campoPrazoNovo.addEventListener("change", sincronizarPrazoNovo);
+  campoPrazoNovo.addEventListener("input", sincronizarPrazoNovo);
+  // O dia já entra preenchido com hoje: nunca se cria uma atividade sem ele.
   campoPrazoNovo.value = isoHoje();
-  sincronizarHoraNova();
 
   document.getElementById("filtros").addEventListener("click", function(e){
     var b = e.target.closest("button[data-filtro]");
@@ -1673,7 +1777,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     var nome = campo.getAttribute("data-campo");
     comTarefa(campo, function(t){
       t[nome] = nome === "categoria" ? campo.value.trim() : campo.value;
-      if (nome === "prazo" && !campo.value) t.hora = "";
+      if (nome === "prazo" && !campo.value) { t.inicio = ""; t.limite = ""; }
       gravar(t);
       if (nome !== "titulo" && nome !== "notas") desenhar();
     });
