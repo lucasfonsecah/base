@@ -17,7 +17,6 @@
   --acento-tinta:#255A4C;
   --acento-fundo:#E3EFE9;
   --atraso:#A63B28;
-  --atraso-fundo:#F7E6E2;
   --andamento:#8C6110;
   --andamento-fundo:#F6EEDC;
   --sombra:0 1px 1px rgba(27,31,42,.04), 0 10px 26px -20px rgba(27,31,42,.45);
@@ -37,7 +36,6 @@
     --acento-tinta:#8FCBB3;
     --acento-fundo:#1B2E29;
     --atraso:#E28E78;
-    --atraso-fundo:#33211D;
     --andamento:#D6AC61;
     --andamento-fundo:#2E2617;
     --sombra:0 1px 1px rgba(0,0,0,.3), 0 10px 26px -20px rgba(0,0,0,.8);
@@ -56,7 +54,6 @@
   --acento-tinta:#8FCBB3;
   --acento-fundo:#1B2E29;
   --atraso:#E28E78;
-  --atraso-fundo:#33211D;
   --andamento:#D6AC61;
   --andamento-fundo:#2E2617;
   --sombra:0 1px 1px rgba(0,0,0,.3), 0 10px 26px -20px rgba(0,0,0,.8);
@@ -73,7 +70,7 @@ body{
   padding-inline:16px;
   -webkit-font-smoothing:antialiased;
 }
-.folha{max-width:720px;margin:0 auto}
+.folha{max-width:680px;margin:0 auto}
 
 :is(button,input,textarea,select):focus-visible{
   outline:2px solid var(--acento);
@@ -130,7 +127,7 @@ body{
   box-shadow:var(--sombra);
 }
 .adicionar input[type="text"]{
-  flex:1 1 220px;
+  flex:1 1 200px;
   min-width:0;
   border:0;
   background:transparent;
@@ -141,7 +138,7 @@ body{
 }
 .adicionar input[type="text"]::placeholder{color:var(--tinta-fraca)}
 .adicionar input[type="date"]{
-  flex:0 1 150px;
+  flex:0 1 145px;
   border:1px solid var(--linha);
   border-radius:6px;
   background:var(--papel);
@@ -235,8 +232,7 @@ body{
 /* ---------- item ---------- */
 .item{
   display:grid;
-  grid-template-columns:auto 1fr;
-  align-items:start;
+  grid-template-columns:auto minmax(0,1fr);
   column-gap:10px;
   padding:0 12px 0 10px;
   border-left:2px solid transparent;
@@ -245,11 +241,11 @@ body{
 .item:first-child{border-top:0}
 .item.atrasada{border-left-color:var(--atraso)}
 .item.andando{border-left-color:var(--andamento)}
+.item.aberto{background:var(--recuo)}
 
 .marcar{
-  margin-top:11px;
-  width:20px;height:20px;
-  flex:0 0 auto;
+  margin-top:10px;
+  width:19px;height:19px;
   display:grid;place-items:center;
   border:1.5px solid var(--linha-forte);
   border-radius:50%;
@@ -259,7 +255,7 @@ body{
   padding:0;
   transition:border-color .15s ease, background .15s ease;
 }
-.marcar svg{width:12px;height:12px;opacity:0;transition:opacity .15s ease}
+.marcar svg{width:11px;height:11px;opacity:0;transition:opacity .15s ease}
 .marcar:hover{border-color:var(--acento)}
 .marcar:hover svg{opacity:.5}
 .item.feita .marcar{background:var(--acento);border-color:var(--acento);color:var(--superficie)}
@@ -274,7 +270,7 @@ body{
   color:inherit;
   font:inherit;
   cursor:pointer;
-  padding:9px 0 10px;
+  padding:8px 0 9px;
 }
 .titulo{display:block;font-size:15px;line-height:1.35;color:var(--tinta)}
 .item.feita .titulo{color:var(--tinta-fraca);text-decoration:line-through;text-decoration-thickness:1px}
@@ -282,8 +278,8 @@ body{
   display:flex;
   flex-wrap:wrap;
   align-items:center;
-  gap:4px 8px;
-  margin-top:4px;
+  gap:3px 8px;
+  margin-top:3px;
   font-family:"IBM Plex Mono",ui-monospace,monospace;
   font-size:11px;
   letter-spacing:.03em;
@@ -292,71 +288,62 @@ body{
 .meta:empty{display:none}
 .meta .prazo.vencido{color:var(--atraso)}
 .meta .prazo.agora{color:var(--acento-tinta);font-weight:500}
-.selo{
-  padding:1px 7px;
-  border-radius:999px;
-  background:var(--recuo);
-  color:var(--tinta-suave);
-}
+.selo{padding:1px 7px;border-radius:999px;background:var(--recuo);color:var(--tinta-suave)}
+.item.aberto .selo{background:var(--superficie)}
 .selo.andamento{background:var(--andamento-fundo);color:var(--andamento)}
 .selo.exemplo{background:transparent;border:1px dashed var(--linha-forte);color:var(--tinta-fraca)}
 
-/* ---------- detalhe ---------- */
-.detalhe{
-  grid-column:1 / -1;
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:12px;
-  margin:0 0 14px;
-  padding:14px;
-  background:var(--recuo);
-  border-radius:8px;
-}
-.campo{display:flex;flex-direction:column;gap:5px;min-width:0}
-.campo.largo{grid-column:1 / -1}
-.campo > span{
-  font-family:"IBM Plex Mono",ui-monospace,monospace;
-  font-size:10.5px;
-  letter-spacing:.09em;
-  text-transform:uppercase;
-  color:var(--tinta-fraca);
-}
-.campo input,.campo textarea{
+/* ---------- rascunho aberto ---------- */
+.edicao{padding:6px 0 10px}
+.escrita{
+  display:block;
   width:100%;
-  border:1px solid var(--linha);
-  border-radius:6px;
-  background:var(--superficie);
+  border:0;
+  background:transparent;
   color:var(--tinta);
   font:inherit;
-  font-size:14px;
-  padding:7px 9px;
-  resize:vertical;
+  padding:0;
+  margin:0;
+  resize:none;
+  overflow:hidden;
 }
-.campo input[type="date"]{
-  font-family:"IBM Plex Mono",ui-monospace,monospace;
-  font-size:12.5px;
+.escrita::placeholder{color:var(--tinta-fraca)}
+.escrita.titulo-edit{font-size:15px;line-height:1.35;padding:2px 0}
+.escrita.nota-edit{
+  font-size:13.5px;
+  line-height:1.45;
+  color:var(--tinta-suave);
+  margin-top:3px;
+  padding-left:9px;
+  border-left:1px solid var(--linha-forte);
 }
-.acoes{
-  grid-column:1 / -1;
+.ferramentas{
   display:flex;
   flex-wrap:wrap;
-  gap:8px;
-  padding-top:2px;
+  align-items:center;
+  gap:5px;
+  margin-top:8px;
 }
-.acoes button{
+.chip{
   border:1px solid var(--linha-forte);
   background:var(--superficie);
   color:var(--tinta-suave);
-  font:inherit;
-  font-size:13px;
-  font-weight:500;
-  padding:6px 13px;
-  border-radius:6px;
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11px;
+  letter-spacing:.03em;
+  line-height:1.4;
+  padding:3px 9px;
+  border-radius:999px;
   cursor:pointer;
 }
-.acoes button:hover{color:var(--tinta);border-color:var(--tinta-fraca)}
-.acoes button.perigo{margin-left:auto;color:var(--atraso);border-color:transparent}
-.acoes button.perigo:hover{border-color:var(--atraso)}
+.chip:hover{color:var(--tinta);border-color:var(--tinta-fraca)}
+.chip.perigo{margin-left:auto;border-color:transparent;color:var(--tinta-fraca)}
+.chip.perigo:hover{color:var(--atraso);border-color:var(--atraso)}
+input.chip{cursor:text}
+input.chip[type="date"]{width:118px;padding-block:2px}
+input.chip.categoria{width:108px}
+input.chip.categoria::placeholder{color:var(--tinta-fraca)}
+input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;color:var(--acento-tinta)}
 
 /* ---------- vazio / rodapé ---------- */
 .vazio{
@@ -369,11 +356,7 @@ body{
 }
 .vazio p{margin:0}
 .vazio p + p{margin-top:6px;font-size:13px;color:var(--tinta-fraca)}
-.vazio .serif{
-  font-family:"Newsreader",Georgia,serif;
-  font-size:19px;
-  color:var(--tinta);
-}
+.vazio .serif{font-family:"Newsreader",Georgia,serif;font-size:19px;color:var(--tinta)}
 .mais-concluidas{
   border:0;background:transparent;
   font-family:"IBM Plex Mono",ui-monospace,monospace;
@@ -397,8 +380,7 @@ body{
 
 @media (max-width:520px){
   .topo h1{font-size:28px}
-  .detalhe{grid-template-columns:minmax(0,1fr)}
-  .acoes button.perigo{margin-left:0}
+  .chip.perigo{margin-left:0}
 }
 @media (prefers-reduced-motion: reduce){
   *{animation-duration:.01ms !important;transition-duration:.01ms !important}
@@ -446,7 +428,8 @@ body{
 
   var estado = {
     tarefas: new Map(),
-    abertos: new Set(),
+    aberto: null,        // uma atividade em edição por vez
+    mostrarNota: false,  // a anotação da atividade aberta está à vista
     pendentes: new Set(),
     filtro: "todas",
     mostrarTodasConcluidas: false,
@@ -622,7 +605,7 @@ body{
 
   function remover(id){
     estado.tarefas.delete(id);
-    estado.abertos.delete(id);
+    if (estado.aberto === id) estado.aberto = null;
     if (!db) { gravarLocal(); return; }
     estado.pendentes.add(id);
     db.collection(COLECAO).doc(id).delete().then(function(){
@@ -680,6 +663,11 @@ body{
     } catch (e) { /* ignora */ }
   }
 
+  function crescer(el){
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
+  }
+
   function metaHtml(t, hoje){
     var partes = [];
     if (t.status === "andamento") partes.push('<span class="selo andamento">em andamento</span>');
@@ -694,39 +682,54 @@ body{
     return partes.join("");
   }
 
+  function corpoAbertoHtml(t){
+    var comNota = estado.mostrarNota || !!t.notas;
+    var html = '<div class="edicao">' +
+      '<textarea class="escrita titulo-edit" id="titulo-' + esc(t.id) + '" data-campo="titulo" rows="1" ' +
+        'aria-label="Título da atividade" placeholder="Escreva a atividade…">' + esc(t.titulo) + "</textarea>";
+
+    if (comNota) {
+      html += '<textarea class="escrita nota-edit" id="notas-' + esc(t.id) + '" data-campo="notas" rows="1" ' +
+        'aria-label="Anotação" placeholder="anotação…">' + esc(t.notas) + "</textarea>";
+    }
+
+    html += '<div class="ferramentas">' +
+      '<input type="date" class="chip' + (t.prazo ? " preenchido" : "") + '" id="prazo-' + esc(t.id) + '" ' +
+        'data-campo="prazo" aria-label="Prazo" value="' + esc(t.prazo) + '">' +
+      '<input type="text" class="chip categoria' + (t.categoria ? " preenchido" : "") + '" id="categoria-' + esc(t.id) + '" ' +
+        'data-campo="categoria" list="listaCategorias" maxlength="40" placeholder="categoria" ' +
+        'aria-label="Categoria" value="' + esc(t.categoria) + '">' +
+      '<button type="button" class="chip" data-acao="andamento">' + (t.status === "andamento" ? "pausar" : "começar") + "</button>";
+
+    if (!comNota) html += '<button type="button" class="chip" data-acao="nota">+ anotação</button>';
+
+    html += '<button type="button" class="chip perigo" data-acao="excluir">excluir</button>' +
+      "</div></div>";
+    return html;
+  }
+
   function itemHtml(t, hoje){
-    var aberto = estado.abertos.has(t.id);
+    var aberto = estado.aberto === t.id;
     var feita = t.status === "concluida";
     var classes = ["item"];
     if (feita) classes.push("feita");
     else if (t.status === "andamento") classes.push("andando");
     else if (t.prazo && t.prazo < hoje) classes.push("atrasada");
+    if (aberto) classes.push("aberto");
 
     var rotuloBotao = (feita ? "Reabrir" : "Concluir") + ": " + (t.titulo || "atividade sem título");
+
+    var interior = aberto
+      ? corpoAbertoHtml(t)
+      : '<button type="button" class="linha" data-acao="abrir">' +
+          '<span class="titulo">' + (t.titulo ? esc(t.titulo) : "<em>sem título</em>") + "</span>" +
+          '<span class="meta">' + metaHtml(t, hoje) + "</span>" +
+        "</button>";
 
     return '<article class="' + classes.join(" ") + '" data-id="' + esc(t.id) + '">' +
       '<button type="button" class="marcar" data-acao="alternar" aria-pressed="' + feita + '" aria-label="' + esc(rotuloBotao) + '">' +
         '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 8.4l3.2 3.2 6.4-7.2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
-      '</button>' +
-      '<button type="button" class="linha" data-acao="abrir" aria-expanded="' + aberto + '" aria-controls="detalhe-' + esc(t.id) + '">' +
-        '<span class="titulo">' + (t.titulo ? esc(t.titulo) : "<em>sem título</em>") + "</span>" +
-        '<span class="meta">' + metaHtml(t, hoje) + "</span>" +
-      "</button>" +
-      '<div class="detalhe" id="detalhe-' + esc(t.id) + '"' + (aberto ? "" : " hidden") + ">" +
-        '<label class="campo largo"><span>Título</span>' +
-          '<input type="text" id="titulo-' + esc(t.id) + '" data-campo="titulo" maxlength="300" value="' + esc(t.titulo) + '"></label>' +
-        '<label class="campo"><span>Prazo</span>' +
-          '<input type="date" id="prazo-' + esc(t.id) + '" data-campo="prazo" value="' + esc(t.prazo) + '"></label>' +
-        '<label class="campo"><span>Categoria</span>' +
-          '<input type="text" id="categoria-' + esc(t.id) + '" data-campo="categoria" list="listaCategorias" maxlength="40" value="' + esc(t.categoria) + '"></label>' +
-        '<label class="campo largo"><span>Anotações</span>' +
-          '<textarea id="notas-' + esc(t.id) + '" data-campo="notas" rows="3" placeholder="Detalhes, links, próximo passo…">' + esc(t.notas) + "</textarea></label>" +
-        '<div class="acoes">' +
-          '<button type="button" data-acao="andamento">' + (t.status === "andamento" ? "Pausar" : "Começar") + "</button>" +
-          '<button type="button" data-acao="hoje">Puxar para hoje</button>' +
-          '<button type="button" class="perigo" data-acao="excluir">Excluir</button>' +
-        "</div>" +
-      "</div></article>";
+      "</button>" + interior + "</article>";
   }
 
   function secaoHtml(titulo, itens, hoje, urgente){
@@ -746,6 +749,8 @@ body{
     var foco = capturarFoco();
     var hoje = isoHoje();
     var todas = Array.from(estado.tarefas.values());
+
+    if (estado.aberto && !estado.tarefas.has(estado.aberto)) estado.aberto = null;
 
     var categorias = [];
     todas.forEach(function(t){
@@ -802,8 +807,7 @@ body{
     document.getElementById("listaCategorias").innerHTML =
       categorias.map(function(c){ return '<option value="' + esc(c) + '"></option>'; }).join("");
 
-    var temExemplos = todas.some(function(t){ return t.exemplo; });
-    document.getElementById("avisoExemplos").hidden = !temExemplos;
+    document.getElementById("avisoExemplos").hidden = !todas.some(function(t){ return t.exemplo; });
 
     // Listas
     var html = "";
@@ -814,10 +818,9 @@ body{
 
     if (grupos.concluidas.length) {
       var limite = estado.mostrarTodasConcluidas ? grupos.concluidas.length : 8;
-      var mostradas = grupos.concluidas.slice(0, limite);
       html += '<section class="secao">' +
         "<h2>Concluídas" + '<span class="qtd">' + grupos.concluidas.length + "</span></h2>" +
-        '<div class="painel">' + mostradas.map(function(t){ return itemHtml(t, hoje); }).join("") + "</div>";
+        '<div class="painel">' + grupos.concluidas.slice(0, limite).map(function(t){ return itemHtml(t, hoje); }).join("") + "</div>";
       if (grupos.concluidas.length > 8) {
         html += '<p style="margin:8px 0 0"><button type="button" class="mais-concluidas" data-acao="maisConcluidas">' +
           (estado.mostrarTodasConcluidas ? "Mostrar menos" : "Ver todas as " + grupos.concluidas.length) + "</button></p>";
@@ -833,6 +836,8 @@ body{
     }
     document.getElementById("listas").innerHTML = html;
 
+    Array.prototype.forEach.call(document.querySelectorAll(".escrita"), crescer);
+
     // Rodapé
     var modo = document.getElementById("modoArmazenamento");
     if (estado.modo === "nuvem") modo.textContent = "Salvo na sua conta · sincroniza entre dispositivos";
@@ -846,19 +851,39 @@ body{
 
   /* ---------------- ações ---------------- */
 
+  function abrir(id){
+    var t = estado.tarefas.get(id);
+    estado.aberto = id;
+    estado.mostrarNota = !!(t && t.notas);
+    desenhar();
+    var campo = document.getElementById("titulo-" + id);
+    if (campo) {
+      campo.focus({ preventScroll: true });
+      var fim = campo.value.length;
+      try { campo.setSelectionRange(fim, fim); } catch (e) { /* ignora */ }
+    }
+  }
+
+  function fechar(){
+    if (!estado.aberto) return;
+    estado.aberto = null;
+    estado.mostrarNota = false;
+    desenhar();
+  }
+
   function adicionar(){
     var campo = document.getElementById("campoNova");
     var titulo = campo.value.trim();
     if (!titulo) { campo.focus(); return; }
-    var prazo = document.getElementById("campoPrazo").value || "";
     var t = normalizar(novoId(), {
       titulo: titulo,
-      prazo: prazo,
+      prazo: document.getElementById("campoPrazo").value || "",
       categoria: estado.filtro === "todas" ? "" : estado.filtro,
       criadaEm: new Date().toISOString()
     });
     gravar(t);
     campo.value = "";
+    estado.aberto = null;
     desenhar();
     campo.focus();
   }
@@ -901,22 +926,29 @@ body{
     }
 
     comTarefa(botao, function(t){
-      if (acao === "alternar") {
-        if (t.status === "concluida") { t.status = "aberta"; t.concluidaEm = ""; }
-        else { t.status = "concluida"; t.concluidaEm = new Date().toISOString(); estado.abertos.delete(t.id); }
-      } else if (acao === "abrir") {
-        if (estado.abertos.has(t.id)) estado.abertos.delete(t.id); else estado.abertos.add(t.id);
+      if (acao === "abrir") { abrir(t.id); return; }
+
+      if (acao === "nota") {
+        estado.mostrarNota = true;
         desenhar();
-        return;
-      } else if (acao === "andamento") {
-        t.status = t.status === "andamento" ? "aberta" : "andamento";
-      } else if (acao === "hoje") {
-        t.prazo = isoHoje();
-      } else if (acao === "excluir") {
-        remover(t.id);
-        desenhar();
+        var campo = document.getElementById("notas-" + t.id);
+        if (campo) campo.focus({ preventScroll: true });
         return;
       }
+
+      if (acao === "excluir") { remover(t.id); desenhar(); return; }
+
+      if (acao === "alternar") {
+        if (t.status === "concluida") { t.status = "aberta"; t.concluidaEm = ""; }
+        else {
+          t.status = "concluida";
+          t.concluidaEm = new Date().toISOString();
+          if (estado.aberto === t.id) { estado.aberto = null; estado.mostrarNota = false; }
+        }
+      } else if (acao === "andamento") {
+        t.status = t.status === "andamento" ? "aberta" : "andamento";
+      }
+
       gravar(t);
       desenhar();
     });
@@ -927,6 +959,7 @@ body{
     if (!campo) return;
     var nome = campo.getAttribute("data-campo");
     if (nome !== "titulo" && nome !== "notas") return;
+    crescer(campo);
     comTarefa(campo, function(t){
       t[nome] = campo.value;
       estado.tarefas.set(t.id, t);
@@ -946,11 +979,21 @@ body{
   });
 
   document.getElementById("listas").addEventListener("keydown", function(e){
-    if (e.key !== "Enter") return;
-    var campo = e.target.closest('input[data-campo="titulo"], input[data-campo="categoria"]');
+    if (e.key === "Escape") { fechar(); return; }
+    if (e.key !== "Enter" || e.shiftKey) return;
+    // Enter fecha o rascunho; Shift+Enter quebra linha na anotação.
+    var campo = e.target.closest('[data-campo="titulo"], [data-campo="categoria"]');
     if (!campo) return;
     e.preventDefault();
-    campo.blur();
+    fechar();
+  });
+
+  // Clicar fora fecha o rascunho aberto.
+  document.addEventListener("click", function(e){
+    if (!estado.aberto) return;
+    var art = e.target.closest("article.item");
+    if (art && art.getAttribute("data-id") === estado.aberto) return;
+    fechar();
   });
 
   /* ---------------- partida ---------------- */
