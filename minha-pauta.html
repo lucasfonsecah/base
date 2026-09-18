@@ -35,7 +35,7 @@
     --acento:#6FB59A;
     --acento-tinta:#8FCBB3;
     --acento-fundo:#1B2E29;
-    --atraso:#E28E78;
+    --atraso:#E9925A;
     --andamento:#D6AC61;
     --andamento-fundo:#2E2617;
     --sombra:0 1px 1px rgba(0,0,0,.3), 0 10px 26px -20px rgba(0,0,0,.8);
@@ -53,7 +53,7 @@
   --acento:#6FB59A;
   --acento-tinta:#8FCBB3;
   --acento-fundo:#1B2E29;
-  --atraso:#E28E78;
+  --atraso:#E9925A;
   --andamento:#D6AC61;
   --andamento-fundo:#2E2617;
   --sombra:0 1px 1px rgba(0,0,0,.3), 0 10px 26px -20px rgba(0,0,0,.8);
@@ -85,8 +85,6 @@ body{
   align-items:flex-end;
   justify-content:space-between;
   gap:10px 20px;
-  padding-bottom:16px;
-  border-bottom:1px solid var(--linha);
 }
 .topo h1{
   font-family:"Newsreader",Georgia,"Times New Roman",serif;
@@ -114,6 +112,29 @@ body{
   padding-bottom:3px;
 }
 
+/* ---------- abas ---------- */
+.abas{
+  display:flex;
+  gap:18px;
+  margin-top:14px;
+  border-bottom:1px solid var(--linha);
+}
+.abas button{
+  border:0;
+  background:transparent;
+  color:var(--tinta-fraca);
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11.5px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  padding:0 0 9px;
+  margin-bottom:-1px;
+  border-bottom:2px solid transparent;
+  cursor:pointer;
+}
+.abas button:hover{color:var(--tinta-suave)}
+.abas button[aria-selected="true"]{color:var(--tinta);border-bottom-color:var(--acento)}
+
 /* ---------- adicionar ---------- */
 .adicionar{
   display:flex;
@@ -137,8 +158,9 @@ body{
   padding:7px 6px;
 }
 .adicionar input[type="text"]::placeholder{color:var(--tinta-fraca)}
-.adicionar input[type="date"]{
-  flex:0 1 145px;
+.adicionar input[type="date"],
+.adicionar input[type="time"]{
+  flex:0 1 142px;
   border:1px solid var(--linha);
   border-radius:6px;
   background:var(--papel);
@@ -147,6 +169,7 @@ body{
   font-size:12.5px;
   padding:6px 8px;
 }
+.adicionar input[type="time"]{flex:0 1 104px}
 .botao-principal{
   flex:0 0 auto;
   border:0;
@@ -205,28 +228,44 @@ body{
   font-weight:600;text-decoration:underline;cursor:pointer;padding:0;
 }
 
-/* ---------- seções ---------- */
-.secao{margin-top:26px}
-.secao > h2{
+/* ---------- seções / dias ---------- */
+.secao{margin-top:24px}
+.cabeca-dia{
   display:flex;
   align-items:baseline;
-  gap:8px;
+  flex-wrap:wrap;
+  gap:4px 10px;
   margin:0 0 8px;
+}
+.cabeca-dia .nome{
+  font-family:"Newsreader",Georgia,serif;
+  font-size:19px;
+  font-weight:600;
+  letter-spacing:-.01em;
+  color:var(--tinta);
+}
+.cabeca-dia .detalhe,
+.cabeca-dia .qtd{
   font-family:"IBM Plex Mono",ui-monospace,monospace;
   font-size:11px;
-  font-weight:500;
-  letter-spacing:.11em;
+  letter-spacing:.08em;
   text-transform:uppercase;
   color:var(--tinta-fraca);
 }
-.secao > h2 .qtd{font-variant-numeric:tabular-nums}
-.secao.urgente > h2{color:var(--atraso)}
+.cabeca-dia .qtd{margin-left:auto;font-variant-numeric:tabular-nums}
+.secao.urgente .cabeca-dia .nome{color:var(--atraso)}
 .painel{
   background:var(--superficie);
   border:1px solid var(--linha);
   border-radius:var(--raio);
   box-shadow:var(--sombra);
   overflow:hidden;
+}
+.dia-vazio{
+  padding:14px 16px;
+  font-size:13.5px;
+  color:var(--tinta-fraca);
+  font-style:italic;
 }
 
 /* ---------- item ---------- */
@@ -286,8 +325,9 @@ body{
   color:var(--tinta-fraca);
 }
 .meta:empty{display:none}
-.meta .prazo.vencido{color:var(--atraso)}
-.meta .prazo.agora{color:var(--acento-tinta);font-weight:500}
+.meta .prazo.vencido,.meta .hora.vencido{color:var(--atraso)}
+.meta .prazo.agora,.meta .hora.agora{color:var(--acento-tinta)}
+.meta .hora{font-weight:500;color:var(--tinta-suave)}
 .selo{padding:1px 7px;border-radius:999px;background:var(--recuo);color:var(--tinta-suave)}
 .item.aberto .selo{background:var(--superficie)}
 .selo.andamento{background:var(--andamento-fundo);color:var(--andamento)}
@@ -341,9 +381,119 @@ body{
 .chip.perigo:hover{color:var(--atraso);border-color:var(--atraso)}
 input.chip{cursor:text}
 input.chip[type="date"]{width:118px;padding-block:2px}
+input.chip[type="time"]{width:84px;padding-block:2px}
 input.chip.categoria{width:108px}
 input.chip.categoria::placeholder{color:var(--tinta-fraca)}
 input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;color:var(--acento-tinta)}
+
+/* ---------- histórico ---------- */
+.periodo{
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px 26px;
+  margin-top:20px;
+  padding:14px 16px;
+  background:var(--superficie);
+  border:1px solid var(--linha);
+  border-radius:var(--raio);
+  box-shadow:var(--sombra);
+}
+.celula{display:flex;flex-direction:column;gap:1px}
+.celula .numero{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:21px;
+  font-weight:500;
+  line-height:1.1;
+  font-variant-numeric:tabular-nums;
+  color:var(--tinta);
+}
+.celula .rotulo{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:10px;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+  color:var(--tinta-fraca);
+}
+.celula.boa .numero{color:var(--acento-tinta)}
+.celula.ruim .numero{color:var(--atraso)}
+
+.legenda{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px 16px;
+  margin-top:14px;
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11px;
+  color:var(--tinta-suave);
+}
+.legenda span{display:inline-flex;align-items:center;gap:6px}
+.amostra{width:22px;height:9px;border-radius:3px;display:inline-block}
+.amostra.dentro{background:var(--acento)}
+.amostra.fora{
+  background-color:var(--atraso);
+  background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.5) 0 2px,transparent 2px 5px);
+}
+
+.dia-hist{
+  margin-top:18px;
+  padding-top:16px;
+  border-top:1px solid var(--linha);
+}
+.dia-hist:first-child{border-top:0;padding-top:0}
+.contagens{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11.5px;
+  letter-spacing:.03em;
+  color:var(--tinta-suave);
+  font-variant-numeric:tabular-nums;
+  margin:2px 0 8px;
+}
+.trilho{
+  height:9px;
+  background:var(--recuo);
+  border-radius:3px;
+  overflow:hidden;
+  margin-bottom:10px;
+}
+.faixa{display:flex;gap:2px;height:100%;min-width:3px}
+.tramo{border-radius:3px;min-width:3px}
+.tramo.dentro{background:var(--acento)}
+.tramo.fora{
+  background-color:var(--atraso);
+  background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.5) 0 2px,transparent 2px 5px);
+}
+.registro{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+.registro li{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:baseline;
+  gap:4px 9px;
+  font-size:14px;
+  color:var(--tinta-suave);
+  padding-left:16px;
+  position:relative;
+}
+.registro .marca{
+  position:absolute;
+  left:0;
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:12px;
+  font-weight:500;
+}
+.registro .marca.dentro{color:var(--acento-tinta)}
+.registro .marca.fora{color:var(--atraso)}
+.registro .marca.neutra{color:var(--tinta-fraca)}
+.registro .veredito{
+  margin-left:auto;
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:10.5px;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+.registro .veredito.dentro{color:var(--acento-tinta)}
+.registro .veredito.fora{color:var(--atraso)}
+.registro .veredito.neutra{color:var(--tinta-fraca)}
 
 /* ---------- vazio / rodapé ---------- */
 .vazio{
@@ -357,13 +507,14 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 .vazio p{margin:0}
 .vazio p + p{margin-top:6px;font-size:13px;color:var(--tinta-fraca)}
 .vazio .serif{font-family:"Newsreader",Georgia,serif;font-size:19px;color:var(--tinta)}
-.mais-concluidas{
+.mais{
+  margin-top:16px;
   border:0;background:transparent;
   font-family:"IBM Plex Mono",ui-monospace,monospace;
   font-size:11px;letter-spacing:.06em;text-transform:uppercase;
   color:var(--tinta-fraca);cursor:pointer;padding:0;
 }
-.mais-concluidas:hover{color:var(--tinta)}
+.mais:hover{color:var(--tinta)}
 .rodape{
   margin-top:34px;
   padding-top:12px;
@@ -381,6 +532,9 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 @media (max-width:520px){
   .topo h1{font-size:28px}
   .chip.perigo{margin-left:0}
+  .cabeca-dia .qtd{margin-left:0}
+  .registro .veredito{margin-left:0;width:100%}
+  .periodo{gap:12px 20px}
 }
 @media (prefers-reduced-motion: reduce){
   *{animation-duration:.01ms !important;transition-duration:.01ms !important}
@@ -396,9 +550,15 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     <div class="data-hoje" id="dataHoje"></div>
   </header>
 
+  <nav class="abas" id="abas" role="tablist" aria-label="Seções">
+    <button type="button" role="tab" data-vista="agenda" aria-selected="true">Agenda</button>
+    <button type="button" role="tab" data-vista="historico" aria-selected="false">Histórico</button>
+  </nav>
+
   <form class="adicionar" id="formAdd" autocomplete="off">
     <input type="text" id="campoNova" placeholder="O que precisa ser feito?" aria-label="Nova atividade" maxlength="300">
-    <input type="date" id="campoPrazo" aria-label="Prazo da nova atividade">
+    <input type="date" id="campoPrazo" aria-label="Dia da nova atividade">
+    <input type="time" id="campoHora" aria-label="Horário da nova atividade" hidden>
     <button type="submit" class="botao-principal">Adicionar</button>
   </form>
 
@@ -425,16 +585,19 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   var COLECAO = "atividades";
   var CHAVE_DADOS = "minha-pauta:atividades:v1";
   var CHAVE_PREF  = "minha-pauta:preferencias:v1";
+  var DIAS_VISIVEIS = 10;
 
   var estado = {
     tarefas: new Map(),
+    vista: "agenda",
     aberto: null,        // uma atividade em edição por vez
     mostrarNota: false,  // a anotação da atividade aberta está à vista
     pendentes: new Set(),
     filtro: "todas",
-    mostrarTodasConcluidas: false,
+    verTudo: false,
     modo: "carregando",
-    pronto: false
+    pronto: false,
+    assinatura: ""
   };
 
   var db = null;
@@ -458,13 +621,46 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
   function isoHoje(){ return isoDe(new Date()); }
 
+  function horaDe(d){ return doisDigitos(d.getHours()) + ":" + doisDigitos(d.getMinutes()); }
+
   function dataDeIso(iso){
     var p = String(iso).split("-");
     return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
   }
 
+  // "2026-09-18T14:30:00Z" -> o dia local em que isso aconteceu
+  function diaDoCarimbo(carimbo){
+    var d = new Date(carimbo);
+    return isNaN(d.getTime()) ? "" : isoDe(d);
+  }
+
+  function somarDias(iso, n){
+    var d = dataDeIso(iso);
+    d.setDate(d.getDate() + n);
+    return isoDe(d);
+  }
+
   function diasAte(iso){
     return Math.round((dataDeIso(iso) - dataDeIso(isoHoje())) / 86400000);
+  }
+
+  function dataLonga(iso){
+    return new Intl.DateTimeFormat("pt-BR", { weekday:"long", day:"numeric", month:"long" }).format(dataDeIso(iso));
+  }
+
+  function dataCurta(iso){
+    var d = dataDeIso(iso);
+    var opcoes = { day:"numeric", month:"short" };
+    if (d.getFullYear() !== new Date().getFullYear()) opcoes.year = "numeric";
+    return new Intl.DateTimeFormat("pt-BR", opcoes).format(d).replace(/\.$/, "");
+  }
+
+  function rotuloDia(iso){
+    var n = diasAte(iso);
+    if (n === 0) return { nome:"Hoje", detalhe: dataLonga(iso) };
+    if (n === 1) return { nome:"Amanhã", detalhe: dataLonga(iso) };
+    if (n === -1) return { nome:"Ontem", detalhe: dataLonga(iso) };
+    return { nome: dataLonga(iso), detalhe: "" };
   }
 
   function rotuloPrazo(iso){
@@ -472,10 +668,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     if (n === 0) return "hoje";
     if (n === 1) return "amanhã";
     if (n === -1) return "ontem";
-    var d = dataDeIso(iso);
-    var opcoes = { day:"numeric", month:"short" };
-    if (d.getFullYear() !== new Date().getFullYear()) opcoes.year = "numeric";
-    var texto = new Intl.DateTimeFormat("pt-BR", opcoes).format(d).replace(/\.$/, "");
+    var texto = dataCurta(iso);
     if (n < -1) return texto + " · " + Math.abs(n) + " dias atrás";
     if (n <= 7) return texto + " · em " + n + " dias";
     return texto;
@@ -494,19 +687,60 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       titulo: typeof d.titulo === "string" ? d.titulo : "",
       notas: typeof d.notas === "string" ? d.notas : "",
       prazo: typeof d.prazo === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d.prazo) ? d.prazo : "",
+      hora: typeof d.hora === "string" && /^\d{2}:\d{2}$/.test(d.hora) ? d.hora : "",
       categoria: typeof d.categoria === "string" ? d.categoria.trim() : "",
       status: status,
       exemplo: d.exemplo === true,
       criadaEm: typeof d.criadaEm === "string" ? d.criadaEm : new Date().toISOString(),
-      concluidaEm: typeof d.concluidaEm === "string" ? d.concluidaEm : ""
+      iniciadaEm: typeof d.iniciadaEm === "string" ? d.iniciadaEm : "",
+      concluidaEm: typeof d.concluidaEm === "string" ? d.concluidaEm : "",
+      noPrazo: d.noPrazo === true || d.noPrazo === false ? d.noPrazo : null
     };
   }
 
   function corpo(t){
     return {
-      titulo: t.titulo, notas: t.notas, prazo: t.prazo, categoria: t.categoria,
-      status: t.status, exemplo: t.exemplo, criadaEm: t.criadaEm, concluidaEm: t.concluidaEm
+      titulo: t.titulo, notas: t.notas, prazo: t.prazo, hora: t.hora, categoria: t.categoria,
+      status: t.status, exemplo: t.exemplo, criadaEm: t.criadaEm, iniciadaEm: t.iniciadaEm,
+      concluidaEm: t.concluidaEm, noPrazo: t.noPrazo
     };
+  }
+
+  // Uma atividade passou do ponto quando o dia já foi, ou quando é hoje e a hora marcada passou.
+  function estaAtrasada(t, hoje){
+    if (t.status === "concluida" || !t.prazo) return false;
+    if (t.prazo < hoje) return true;
+    return t.prazo === hoje && !!t.hora && t.hora < horaDe(new Date());
+  }
+
+  // Comparado no momento em que foi concluída; null quando não havia prazo para cumprir.
+  function julgarEntrega(t, quando){
+    if (!t.prazo) return null;
+    var limite = dataDeIso(t.prazo);
+    if (t.hora) {
+      var p = t.hora.split(":");
+      limite.setHours(Number(p[0]), Number(p[1]), 0, 0);
+    } else {
+      limite.setHours(23, 59, 59, 999);
+    }
+    return quando.getTime() <= limite.getTime();
+  }
+
+  function atrasoTexto(t){
+    if (!t.prazo || !t.concluidaEm) return "";
+    var limite = dataDeIso(t.prazo);
+    if (t.hora) {
+      var p = t.hora.split(":");
+      limite.setHours(Number(p[0]), Number(p[1]), 0, 0);
+    } else {
+      limite.setHours(23, 59, 59, 999);
+    }
+    var minutos = Math.round((new Date(t.concluidaEm).getTime() - limite.getTime()) / 60000);
+    if (minutos <= 0) return "";
+    if (minutos < 60) return minutos + " min depois";
+    var horas = Math.round(minutos / 60);
+    if (horas < 24) return plural(horas, "hora depois", "horas depois");
+    return plural(Math.round(horas / 24), "dia depois", "dias depois");
   }
 
   /* ---------------- preferências (só deste navegador) ---------------- */
@@ -517,15 +751,14 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       if (!cru) return;
       var p = JSON.parse(cru);
       if (typeof p.filtro === "string") estado.filtro = p.filtro;
-      estado.mostrarTodasConcluidas = p.mostrarTodasConcluidas === true;
+      if (p.vista === "historico" || p.vista === "agenda") estado.vista = p.vista;
     } catch (e) { /* navegação privada ou armazenamento bloqueado */ }
   }
 
   function gravarPreferencias(){
     try {
       window.localStorage.setItem(CHAVE_PREF, JSON.stringify({
-        filtro: estado.filtro,
-        mostrarTodasConcluidas: estado.mostrarTodasConcluidas
+        filtro: estado.filtro, vista: estado.vista
       }));
     } catch (e) { /* segue sem lembrar */ }
   }
@@ -634,22 +867,14 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     }, 700));
   }
 
-  /* ---------------- desenho ---------------- */
-
-  function grupoDe(t, hoje){
-    if (t.status === "concluida") return "concluidas";
-    if (!t.prazo) return "semPrazo";
-    if (t.prazo < hoje) return "atrasadas";
-    if (t.prazo === hoje) return "hoje";
-    return "emBreve";
-  }
+  /* ---------------- foco e altura ---------------- */
 
   function capturarFoco(){
     var el = document.activeElement;
     if (!el || !el.id) return null;
     var f = { id: el.id };
     try { if (typeof el.selectionStart === "number") { f.ini = el.selectionStart; f.fim = el.selectionEnd; } }
-    catch (e) { /* campos de data não expõem seleção */ }
+    catch (e) { /* campos de data e hora não expõem seleção */ }
     return f;
   }
 
@@ -668,15 +893,15 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     el.style.height = el.scrollHeight + "px";
   }
 
-  function metaHtml(t, hoje){
+  /* ---------------- agenda ---------------- */
+
+  function metaHtml(t, hoje, comData){
     var partes = [];
     if (t.status === "andamento") partes.push('<span class="selo andamento">em andamento</span>');
-    if (t.prazo){
-      var classe = "prazo";
-      if (t.status !== "concluida" && t.prazo < hoje) classe += " vencido";
-      else if (t.status !== "concluida" && t.prazo === hoje) classe += " agora";
-      partes.push('<span class="' + classe + '">' + esc(rotuloPrazo(t.prazo)) + "</span>");
-    }
+    var atrasada = estaAtrasada(t, hoje);
+    var tom = atrasada ? " vencido" : (t.status !== "concluida" && t.prazo === hoje ? " agora" : "");
+    if (t.prazo && comData) partes.push('<span class="prazo' + tom + '">' + esc(rotuloPrazo(t.prazo)) + "</span>");
+    if (t.hora) partes.push('<span class="hora' + tom + '">' + esc(t.hora) + "</span>");
     if (t.categoria) partes.push('<span class="selo">' + esc(t.categoria) + "</span>");
     if (t.exemplo) partes.push('<span class="selo exemplo">exemplo</span>');
     return partes.join("");
@@ -695,8 +920,14 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
     html += '<div class="ferramentas">' +
       '<input type="date" class="chip' + (t.prazo ? " preenchido" : "") + '" id="prazo-' + esc(t.id) + '" ' +
-        'data-campo="prazo" aria-label="Prazo" value="' + esc(t.prazo) + '">' +
-      '<input type="text" class="chip categoria' + (t.categoria ? " preenchido" : "") + '" id="categoria-' + esc(t.id) + '" ' +
+        'data-campo="prazo" aria-label="Dia" value="' + esc(t.prazo) + '">';
+
+    if (t.prazo) {
+      html += '<input type="time" class="chip' + (t.hora ? " preenchido" : "") + '" id="hora-' + esc(t.id) + '" ' +
+        'data-campo="hora" aria-label="Horário" value="' + esc(t.hora) + '">';
+    }
+
+    html += '<input type="text" class="chip categoria' + (t.categoria ? " preenchido" : "") + '" id="categoria-' + esc(t.id) + '" ' +
         'data-campo="categoria" list="listaCategorias" maxlength="40" placeholder="categoria" ' +
         'aria-label="Categoria" value="' + esc(t.categoria) + '">' +
       '<button type="button" class="chip" data-acao="andamento">' + (t.status === "andamento" ? "pausar" : "começar") + "</button>";
@@ -708,13 +939,13 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     return html;
   }
 
-  function itemHtml(t, hoje){
+  function itemHtml(t, hoje, comData){
     var aberto = estado.aberto === t.id;
     var feita = t.status === "concluida";
     var classes = ["item"];
     if (feita) classes.push("feita");
     else if (t.status === "andamento") classes.push("andando");
-    else if (t.prazo && t.prazo < hoje) classes.push("atrasada");
+    else if (estaAtrasada(t, hoje)) classes.push("atrasada");
     if (aberto) classes.push("aberto");
 
     var rotuloBotao = (feita ? "Reabrir" : "Concluir") + ": " + (t.titulo || "atividade sem título");
@@ -723,7 +954,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       ? corpoAbertoHtml(t)
       : '<button type="button" class="linha" data-acao="abrir">' +
           '<span class="titulo">' + (t.titulo ? esc(t.titulo) : "<em>sem título</em>") + "</span>" +
-          '<span class="meta">' + metaHtml(t, hoje) + "</span>" +
+          '<span class="meta">' + metaHtml(t, hoje, comData) + "</span>" +
         "</button>";
 
     return '<article class="' + classes.join(" ") + '" data-id="' + esc(t.id) + '">' +
@@ -732,17 +963,198 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       "</button>" + interior + "</article>";
   }
 
-  function secaoHtml(titulo, itens, hoje, urgente){
-    if (!itens.length) return "";
-    return '<section class="secao' + (urgente ? " urgente" : "") + '">' +
-      "<h2>" + esc(titulo) + '<span class="qtd">' + itens.length + "</span></h2>" +
-      '<div class="painel">' + itens.map(function(t){ return itemHtml(t, hoje); }).join("") + "</div>" +
-    "</section>";
+  function cabecaHtml(nome, detalhe, qtd){
+    return '<div class="cabeca-dia"><span class="nome">' + esc(nome) + "</span>" +
+      (detalhe ? '<span class="detalhe">' + esc(detalhe) + "</span>" : "") +
+      (qtd ? '<span class="qtd">' + esc(qtd) + "</span>" : "") +
+    "</div>";
   }
 
-  function ordenarPorPrazo(a, b){
-    if (a.prazo !== b.prazo) return a.prazo < b.prazo ? -1 : 1;
+  function porHorario(a, b){
+    var ha = a.hora || "99:99", hb = b.hora || "99:99";
+    if (ha !== hb) return ha < hb ? -1 : 1;
     return a.criadaEm < b.criadaEm ? -1 : 1;
+  }
+
+  function desenharAgenda(visiveis, hoje){
+    var html = "";
+
+    var atrasadas = [], semData = [], porDia = new Map(), concluidasHoje = [];
+    visiveis.forEach(function(t){
+      if (t.status === "concluida") {
+        if (diaDoCarimbo(t.concluidaEm) === hoje) concluidasHoje.push(t);
+        return;
+      }
+      if (estaAtrasada(t, hoje)) { atrasadas.push(t); return; }
+      if (!t.prazo) { semData.push(t); return; }
+      if (!porDia.has(t.prazo)) porDia.set(t.prazo, []);
+      porDia.get(t.prazo).push(t);
+    });
+
+    atrasadas.sort(function(a, b){
+      var ka = a.prazo + (a.hora || "99:99"), kb = b.prazo + (b.hora || "99:99");
+      if (ka !== kb) return ka < kb ? -1 : 1;
+      return a.criadaEm < b.criadaEm ? -1 : 1;
+    });
+
+    if (atrasadas.length) {
+      html += '<section class="secao urgente">' +
+        cabecaHtml("Passou do ponto", "", String(atrasadas.length)) +
+        '<div class="painel">' +
+          atrasadas.map(function(t){ return itemHtml(t, hoje, true); }).join("") +
+        "</div></section>";
+    }
+
+    // O dia de hoje sempre aparece; os demais só quando têm algo marcado.
+    var dias = Array.from(porDia.keys()).filter(function(d){ return d >= hoje; });
+    if (dias.indexOf(hoje) === -1) dias.push(hoje);
+    dias.sort();
+
+    dias.forEach(function(dia){
+      var itens = (porDia.get(dia) || []).slice().sort(porHorario);
+      if (dia === hoje) itens = itens.concat(concluidasHoje);
+      var r = rotuloDia(dia);
+      html += '<section class="secao">' + cabecaHtml(r.nome, r.detalhe, itens.length ? String(itens.length) : "");
+      html += itens.length
+        ? '<div class="painel">' + itens.map(function(t){ return itemHtml(t, hoje, false); }).join("") + "</div>"
+        : '<div class="painel"><p class="dia-vazio">Nada marcado para hoje.</p></div>';
+      html += "</section>";
+    });
+
+    if (semData.length) {
+      semData.sort(function(a, b){
+        if ((a.status === "andamento") !== (b.status === "andamento")) return a.status === "andamento" ? -1 : 1;
+        return a.criadaEm < b.criadaEm ? -1 : 1;
+      });
+      html += '<section class="secao">' +
+        cabecaHtml("Sem data", "quando der", String(semData.length)) +
+        '<div class="painel">' + semData.map(function(t){ return itemHtml(t, hoje, false); }).join("") + "</div></section>";
+    }
+
+    return html;
+  }
+
+  /* ---------------- histórico ---------------- */
+
+  function agregar(visiveis){
+    var mapa = new Map();
+    function dia(d){
+      if (!mapa.has(d)) mapa.set(d, { dia:d, criadas:0, iniciadas:0, feitas:[], dentro:0, fora:0, semPrazo:0 });
+      return mapa.get(d);
+    }
+    visiveis.forEach(function(t){
+      var d;
+      d = diaDoCarimbo(t.criadaEm);   if (d) dia(d).criadas++;
+      d = diaDoCarimbo(t.iniciadaEm); if (d) dia(d).iniciadas++;
+      d = diaDoCarimbo(t.concluidaEm);
+      if (d && t.status === "concluida") {
+        var r = dia(d);
+        r.feitas.push(t);
+        if (t.noPrazo === true) r.dentro++;
+        else if (t.noPrazo === false) r.fora++;
+        else r.semPrazo++;
+      }
+    });
+    return Array.from(mapa.values()).sort(function(a, b){ return a.dia > b.dia ? -1 : 1; });
+  }
+
+  function desenharHistorico(visiveis, hoje){
+    var registros = agregar(visiveis);
+    if (!registros.length) {
+      return '<div class="vazio"><p class="serif">O histórico começa agora.</p>' +
+        "<p>Conforme você criar, começar e concluir atividades, cada dia vira uma linha aqui.</p></div>";
+    }
+
+    // Resumo dos últimos 7 dias, incluindo hoje.
+    var corte = somarDias(hoje, -6);
+    var soma = { criadas:0, iniciadas:0, feitas:0, dentro:0, fora:0 };
+    registros.forEach(function(r){
+      if (r.dia < corte || r.dia > hoje) return;
+      soma.criadas += r.criadas;
+      soma.iniciadas += r.iniciadas;
+      soma.feitas += r.feitas.length;
+      soma.dentro += r.dentro;
+      soma.fora += r.fora;
+    });
+
+    var html = '<section class="secao">' +
+      cabecaHtml("Últimos 7 dias", dataCurta(corte) + " – " + dataCurta(hoje), "") +
+      '<div class="periodo">' +
+        celulaHtml(soma.criadas, "criadas", "") +
+        celulaHtml(soma.iniciadas, "iniciadas", "") +
+        celulaHtml(soma.feitas, "concluídas", "") +
+        celulaHtml(soma.dentro, "no prazo", "boa") +
+        celulaHtml(soma.fora, "fora do prazo", "ruim") +
+      "</div>" +
+      '<div class="legenda">' +
+        '<span><i class="amostra dentro"></i>entregue no prazo</span>' +
+        '<span><i class="amostra fora"></i>entregue fora do prazo</span>' +
+      "</div></section>";
+
+    // A escala das barras é comum a todos os dias mostrados, para poderem ser comparados.
+    var mostrados = estado.verTudo ? registros : registros.slice(0, DIAS_VISIVEIS);
+    var teto = 1;
+    mostrados.forEach(function(r){ if (r.feitas.length > teto) teto = r.feitas.length; });
+
+    html += '<section class="secao">';
+    mostrados.forEach(function(r){ html += diaHistoricoHtml(r, teto); });
+    html += "</section>";
+
+    if (registros.length > DIAS_VISIVEIS) {
+      html += '<button type="button" class="mais" data-acao="verTudo">' +
+        (estado.verTudo ? "Mostrar menos" : "Ver todos os " + registros.length + " dias") + "</button>";
+    }
+    return html;
+  }
+
+  function celulaHtml(n, rotulo, tom){
+    return '<div class="celula' + (tom ? " " + tom : "") + '">' +
+      '<span class="numero">' + n + "</span>" +
+      '<span class="rotulo">' + esc(rotulo) + "</span></div>";
+  }
+
+  function diaHistoricoHtml(r, teto){
+    var total = r.feitas.length;
+    var rot = rotuloDia(r.dia);
+
+    var html = '<article class="dia-hist">' + cabecaHtml(rot.nome, rot.detalhe, "");
+    html += '<p class="contagens">' +
+      r.criadas + " criadas · " + r.iniciadas + " iniciadas · " + total + " concluídas</p>";
+
+    if (total) {
+      var largura = Math.max(6, Math.round((total / teto) * 100));
+      var descricao = r.dentro + " no prazo, " + r.fora + " fora do prazo" +
+        (r.semPrazo ? ", " + r.semPrazo + " sem prazo definido" : "");
+      html += '<div class="trilho"><div class="faixa" style="width:' + largura + '%" role="img" aria-label="' + esc(descricao) + '">';
+      if (r.dentro) html += '<span class="tramo dentro" style="flex:' + r.dentro + '"></span>';
+      if (r.fora) html += '<span class="tramo fora" style="flex:' + r.fora + '"></span>';
+      if (r.semPrazo) html += '<span class="tramo" style="flex:' + r.semPrazo + ';background:var(--linha-forte)"></span>';
+      html += "</div></div>";
+
+      html += '<ul class="registro">';
+      r.feitas.slice().sort(function(a, b){ return a.concluidaEm < b.concluidaEm ? -1 : 1; }).forEach(function(t){
+        var tom = t.noPrazo === true ? "dentro" : (t.noPrazo === false ? "fora" : "neutra");
+        var marca = t.noPrazo === true ? "✓" : (t.noPrazo === false ? "!" : "·");
+        var veredito = t.noPrazo === true
+          ? "no prazo"
+          : (t.noPrazo === false ? (atrasoTexto(t) || "fora do prazo") : "sem prazo");
+        html += "<li>" +
+          '<span class="marca ' + tom + '" aria-hidden="true">' + marca + "</span>" +
+          "<span>" + (t.titulo ? esc(t.titulo) : "<em>sem título</em>") + "</span>" +
+          '<span class="veredito ' + tom + '">' + esc(veredito) + "</span></li>";
+      });
+      html += "</ul>";
+    }
+
+    return html + "</article>";
+  }
+
+  /* ---------------- desenho ---------------- */
+
+  function assinaturaTempo(){
+    var hoje = isoHoje(), ids = [];
+    estado.tarefas.forEach(function(t){ if (estaAtrasada(t, hoje)) ids.push(t.id); });
+    return hoje + "|" + ids.sort().join(",");
   }
 
   function desenhar(){
@@ -763,29 +1175,31 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       ? todas
       : todas.filter(function(t){ return t.categoria === estado.filtro; });
 
-    var grupos = { atrasadas: [], hoje: [], emBreve: [], semPrazo: [], concluidas: [] };
-    visiveis.forEach(function(t){ grupos[grupoDe(t, hoje)].push(t); });
+    var naAgenda = estado.vista === "agenda";
 
-    grupos.atrasadas.sort(ordenarPorPrazo);
-    grupos.hoje.sort(function(a, b){ return a.criadaEm < b.criadaEm ? -1 : 1; });
-    grupos.emBreve.sort(ordenarPorPrazo);
-    grupos.semPrazo.sort(function(a, b){
-      if ((a.status === "andamento") !== (b.status === "andamento")) return a.status === "andamento" ? -1 : 1;
-      return a.criadaEm < b.criadaEm ? -1 : 1;
+    // Abas
+    Array.prototype.forEach.call(document.querySelectorAll("#abas button"), function(b){
+      b.setAttribute("aria-selected", String(b.getAttribute("data-vista") === estado.vista));
     });
-    grupos.concluidas.sort(function(a, b){ return a.concluidaEm > b.concluidaEm ? -1 : 1; });
+    document.getElementById("formAdd").hidden = !naAgenda;
 
     // Resumo
-    var abertas = grupos.atrasadas.length + grupos.hoje.length + grupos.emBreve.length + grupos.semPrazo.length;
+    var abertas = 0, atrasadas = 0, deHoje = 0;
+    visiveis.forEach(function(t){
+      if (t.status === "concluida") return;
+      abertas++;
+      if (estaAtrasada(t, hoje)) atrasadas++;
+      else if (t.prazo === hoje) deHoje++;
+    });
     var resumo;
     if (!estado.pronto) {
       resumo = "Carregando suas atividades…";
     } else if (abertas === 0) {
-      resumo = grupos.concluidas.length ? "Nada em aberto. " + plural(grupos.concluidas.length, "concluída", "concluídas") + "." : "Nada em aberto.";
+      resumo = "Nada em aberto.";
     } else {
       var trechos = ["<b>" + plural(abertas, "atividade aberta", "atividades abertas") + "</b>"];
-      if (grupos.atrasadas.length) trechos.push('<span class="vermelho">' + plural(grupos.atrasadas.length, "atrasada", "atrasadas") + "</span>");
-      if (grupos.hoje.length) trechos.push(grupos.hoje.length + " para hoje");
+      if (atrasadas) trechos.push('<span class="vermelho">' + plural(atrasadas, "passou do ponto", "passaram do ponto") + "</span>");
+      if (deHoje) trechos.push(deHoje + " para hoje");
       resumo = trechos.join(" · ");
     }
     document.getElementById("resumo").innerHTML = resumo;
@@ -807,32 +1221,22 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     document.getElementById("listaCategorias").innerHTML =
       categorias.map(function(c){ return '<option value="' + esc(c) + '"></option>'; }).join("");
 
-    document.getElementById("avisoExemplos").hidden = !todas.some(function(t){ return t.exemplo; });
+    document.getElementById("avisoExemplos").hidden = !naAgenda || !todas.some(function(t){ return t.exemplo; });
 
-    // Listas
-    var html = "";
-    html += secaoHtml("Atrasadas", grupos.atrasadas, hoje, true);
-    html += secaoHtml("Hoje", grupos.hoje, hoje, false);
-    html += secaoHtml("Em breve", grupos.emBreve, hoje, false);
-    html += secaoHtml("Sem prazo", grupos.semPrazo, hoje, false);
-
-    if (grupos.concluidas.length) {
-      var limite = estado.mostrarTodasConcluidas ? grupos.concluidas.length : 8;
-      html += '<section class="secao">' +
-        "<h2>Concluídas" + '<span class="qtd">' + grupos.concluidas.length + "</span></h2>" +
-        '<div class="painel">' + grupos.concluidas.slice(0, limite).map(function(t){ return itemHtml(t, hoje); }).join("") + "</div>";
-      if (grupos.concluidas.length > 8) {
-        html += '<p style="margin:8px 0 0"><button type="button" class="mais-concluidas" data-acao="maisConcluidas">' +
-          (estado.mostrarTodasConcluidas ? "Mostrar menos" : "Ver todas as " + grupos.concluidas.length) + "</button></p>";
+    // Corpo
+    var html;
+    if (!estado.pronto) {
+      html = '<div class="vazio"><p class="serif">Abrindo sua pauta…</p></div>';
+    } else if (naAgenda) {
+      html = desenharAgenda(visiveis, hoje);
+      if (!html) {
+        html = '<div class="vazio"><p class="serif">' +
+          (todas.length ? "Nenhuma atividade nesta categoria." : "A pauta está limpa.") + "</p><p>" +
+          (todas.length ? "Troque o filtro acima para ver o resto." : "Escreva a primeira atividade no campo acima e aperte Enter.") +
+          "</p></div>";
       }
-      html += "</section>";
-    }
-
-    if (!html) {
-      html = estado.pronto
-        ? '<div class="vazio"><p class="serif">' + (todas.length ? "Nenhuma atividade nesta categoria." : "A pauta está limpa.") + "</p>" +
-          "<p>" + (todas.length ? "Troque o filtro acima para ver o resto." : "Escreva a primeira atividade no campo acima e aperte Enter.") + "</p></div>"
-        : '<div class="vazio"><p class="serif">Abrindo sua pauta…</p></div>';
+    } else {
+      html = desenharHistorico(visiveis, hoje);
     }
     document.getElementById("listas").innerHTML = html;
 
@@ -846,6 +1250,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     document.getElementById("totalGeral").textContent =
       todas.length ? plural(todas.length, "atividade no total", "atividades no total") : "";
 
+    estado.assinatura = assinaturaTempo();
     restaurarFoco(foco);
   }
 
@@ -871,13 +1276,25 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     desenhar();
   }
 
+  function concluir(t){
+    var agora = new Date();
+    t.status = "concluida";
+    t.concluidaEm = agora.toISOString();
+    t.noPrazo = julgarEntrega(t, agora);
+    // Concluir sem nunca ter começado ainda conta como trabalho feito naquele dia.
+    if (!t.iniciadaEm) t.iniciadaEm = t.concluidaEm;
+    if (estado.aberto === t.id) { estado.aberto = null; estado.mostrarNota = false; }
+  }
+
   function adicionar(){
     var campo = document.getElementById("campoNova");
     var titulo = campo.value.trim();
     if (!titulo) { campo.focus(); return; }
+    var prazo = document.getElementById("campoPrazo").value || "";
     var t = normalizar(novoId(), {
       titulo: titulo,
-      prazo: document.getElementById("campoPrazo").value || "",
+      prazo: prazo,
+      hora: prazo ? (document.getElementById("campoHora").value || "") : "",
       categoria: estado.filtro === "todas" ? "" : estado.filtro,
       criadaEm: new Date().toISOString()
     });
@@ -895,10 +1312,31 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     if (t) fn(Object.assign({}, t));
   }
 
+  document.getElementById("abas").addEventListener("click", function(e){
+    var b = e.target.closest("button[data-vista]");
+    if (!b) return;
+    estado.vista = b.getAttribute("data-vista");
+    estado.aberto = null;
+    estado.verTudo = false;
+    gravarPreferencias();
+    desenhar();
+  });
+
   document.getElementById("formAdd").addEventListener("submit", function(e){
     e.preventDefault();
     adicionar();
   });
+
+  var campoPrazoNovo = document.getElementById("campoPrazo");
+  var campoHoraNovo = document.getElementById("campoHora");
+  function sincronizarHoraNova(){
+    var temData = !!campoPrazoNovo.value;
+    campoHoraNovo.hidden = !temData;
+    if (!temData) campoHoraNovo.value = "";
+  }
+  campoPrazoNovo.addEventListener("change", sincronizarHoraNova);
+  campoPrazoNovo.addEventListener("input", sincronizarHoraNova);
+  sincronizarHoraNova();
 
   document.getElementById("limparExemplos").addEventListener("click", function(){
     Array.from(estado.tarefas.values()).forEach(function(t){ if (t.exemplo) remover(t.id); });
@@ -918,9 +1356,8 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     if (!botao) return;
     var acao = botao.getAttribute("data-acao");
 
-    if (acao === "maisConcluidas") {
-      estado.mostrarTodasConcluidas = !estado.mostrarTodasConcluidas;
-      gravarPreferencias();
+    if (acao === "verTudo") {
+      estado.verTudo = !estado.verTudo;
       desenhar();
       return;
     }
@@ -939,14 +1376,15 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       if (acao === "excluir") { remover(t.id); desenhar(); return; }
 
       if (acao === "alternar") {
-        if (t.status === "concluida") { t.status = "aberta"; t.concluidaEm = ""; }
-        else {
-          t.status = "concluida";
-          t.concluidaEm = new Date().toISOString();
-          if (estado.aberto === t.id) { estado.aberto = null; estado.mostrarNota = false; }
-        }
+        if (t.status === "concluida") { t.status = "aberta"; t.concluidaEm = ""; t.noPrazo = null; }
+        else concluir(t);
       } else if (acao === "andamento") {
-        t.status = t.status === "andamento" ? "aberta" : "andamento";
+        if (t.status === "andamento") {
+          t.status = "aberta";
+        } else {
+          t.status = "andamento";
+          if (!t.iniciadaEm) t.iniciadaEm = new Date().toISOString();
+        }
       }
 
       gravar(t);
@@ -973,8 +1411,9 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     var nome = campo.getAttribute("data-campo");
     comTarefa(campo, function(t){
       t[nome] = nome === "categoria" ? campo.value.trim() : campo.value;
+      if (nome === "prazo" && !campo.value) t.hora = "";
       gravar(t);
-      if (nome === "prazo" || nome === "categoria") desenhar();
+      if (nome !== "titulo" && nome !== "notas") desenhar();
     });
   });
 
@@ -995,6 +1434,12 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     if (art && art.getAttribute("data-id") === estado.aberto) return;
     fechar();
   });
+
+  // A virada de um horário marcado muda o que está atrasado; redesenha só quando isso acontece.
+  window.setInterval(function(){
+    if (estado.aberto) return;
+    if (assinaturaTempo() !== estado.assinatura) desenhar();
+  }, 30000);
 
   /* ---------------- partida ---------------- */
 
