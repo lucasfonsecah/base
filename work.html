@@ -201,7 +201,7 @@ body{
   cursor:pointer;
 }
 .mini:hover{background:var(--acento-fundo)}
-.controles .campo-cat{width:104px}
+.controles .campo-cat{width:132px}
 .controles .campo-cat::placeholder{color:var(--tinta-fraca)}
 select.chip{-webkit-appearance:none;appearance:none;padding-right:9px}
 
@@ -253,7 +253,8 @@ select.chip{-webkit-appearance:none;appearance:none;padding-right:9px}
 .botao-principal:hover{background:var(--acento-tinta)}
 
 /* ---------- filtros ---------- */
-.filtros{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.filtros{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:14px}
+.grupo-filtro{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px}
 .filtros button{
   border:1px solid var(--linha);
   background:transparent;
@@ -965,7 +966,6 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     <p class="recado" id="recado" hidden></p>
   </form>
 
-  <div class="filtros" id="filtrosQuem" hidden></div>
   <div class="filtros" id="filtros" hidden></div>
   <div id="faixaResgate"></div>
   <div id="faixaDesfazer"></div>
@@ -1160,6 +1160,23 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
   function validarHora(v){
     return typeof v === "string" && /^\d{2}:\d{2}$/.test(v) ? v : "";
+  }
+
+  function semAcento(v){
+    return String(v == null ? "" : v).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+  }
+
+  // "Kaue Pereira" digitado onde já existe "Kauê Pereira" é a mesma pessoa.
+  // Sem isto a lista de responsáveis enche de variações do mesmo nome.
+  function canonizar(valor, campo, exceto){
+    var limpo = String(valor || "").trim();
+    var alvo = semAcento(limpo);
+    if (!alvo) return "";
+    var achado = limpo;
+    estado.tarefas.forEach(function(t){
+      if (t.id !== exceto && t[campo] && semAcento(t[campo]) === alvo) achado = t[campo];
+    });
+    return achado;
   }
 
   /* ---------------- repetição ---------------- */
@@ -2217,34 +2234,33 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     }
     document.getElementById("resumo").innerHTML = resumo;
 
-    // Filtros por categoria
-    var caixaFiltros = document.getElementById("filtros");
-    if (categorias.length) {
-      var botoes = ['<button type="button" data-filtro="todas" aria-pressed="' + (estado.filtro === "todas") + '">todas</button>'];
-      categorias.forEach(function(c){
-        botoes.push('<button type="button" data-filtro="' + esc(c) + '" aria-pressed="' + (estado.filtro === c) + '">' + esc(c) + "</button>");
-      });
-      caixaFiltros.innerHTML = botoes.join("");
-      caixaFiltros.hidden = false;
-    } else {
-      caixaFiltros.innerHTML = "";
-      caixaFiltros.hidden = true;
+    // Os dois filtros vivem na mesma barra, cada um com o nome do que filtra.
+    // Sem isso, um nome de pessoa usado também como categoria aparecia duas
+    // vezes em linhas idênticas, sem nada dizendo o que era o quê.
+    function grupoFiltro(rotulo, atributo, atual, itens){
+      return '<span class="grupo-filtro"><span class="rotulo-filtro">' + esc(rotulo) + "</span>" +
+        itens.map(function(par){
+          return '<button type="button" data-' + atributo + '="' + esc(par[0]) + '" aria-pressed="' +
+            (atual === par[0]) + '">' + esc(par[1]) + "</button>";
+        }).join("") + "</span>";
     }
 
-    // Filtro por quem faz — só aparece quando há alguém além de você.
-    var caixaQuem = document.getElementById("filtrosQuem");
+    var caixaFiltros = document.getElementById("filtros");
+    var barras = "";
+
     if (pessoas.length) {
-      var lista = [["todas", "todas"], ["minhas", "minhas"]];
-      pessoas.forEach(function(p){ lista.push([p, p]); });
-      caixaQuem.innerHTML = '<span class="rotulo-filtro">quem</span>' + lista.map(function(par){
-        return '<button type="button" data-quem="' + esc(par[0]) + '" aria-pressed="' +
-          (estado.quem === par[0]) + '">' + esc(par[1]) + "</button>";
-      }).join("");
-      caixaQuem.hidden = false;
-    } else {
-      caixaQuem.innerHTML = "";
-      caixaQuem.hidden = true;
+      var deQuem = [["todas", "todos"], ["minhas", "comigo"]];
+      pessoas.forEach(function(p){ deQuem.push([p, p]); });
+      barras += grupoFiltro("responsável", "quem", estado.quem, deQuem);
     }
+    if (categorias.length) {
+      var deCat = [["todas", "todas"]];
+      categorias.forEach(function(c){ deCat.push([c, c]); });
+      barras += grupoFiltro("categoria", "filtro", estado.filtro, deCat);
+    }
+
+    caixaFiltros.innerHTML = barras;
+    caixaFiltros.hidden = !barras;
 
     document.getElementById("listaCategorias").innerHTML =
       categorias.map(function(c){ return '<option value="' + esc(c) + '"></option>'; }).join("");
@@ -2400,14 +2416,14 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     var t = normalizar(novoId(), {
       titulo: titulo,
       notas: campoNota.value.trim(),
-      responsavel: campoResp.value.trim(),
+      responsavel: canonizar(campoResp.value, "responsavel"),
       retorno: document.getElementById("campoRetorno").checked,
       prazo: prazo,
       inicio: document.getElementById("campoInicio").value || "",
       limite: document.getElementById("campoLimite").value || "",
       repete: document.getElementById("campoRepete").value || "",
       // A categoria digitada vence; sem ela, herda o filtro em que se está.
-      categoria: campoCat.value.trim() || (estado.filtro === "todas" ? "" : estado.filtro),
+      categoria: canonizar(campoCat.value, "categoria") || (estado.filtro === "todas" ? "" : estado.filtro),
       criadaEm: new Date().toISOString()
     });
     gravar(t);
@@ -2459,17 +2475,10 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   sincronizarPrazoNovo();
 
   document.getElementById("filtros").addEventListener("click", function(e){
-    var b = e.target.closest("button[data-filtro]");
+    var b = e.target.closest("button[data-filtro], button[data-quem]");
     if (!b) return;
-    estado.filtro = b.getAttribute("data-filtro");
-    gravarPreferencias();
-    desenhar();
-  });
-
-  document.getElementById("filtrosQuem").addEventListener("click", function(e){
-    var b = e.target.closest("button[data-quem]");
-    if (!b) return;
-    estado.quem = b.getAttribute("data-quem");
+    if (b.hasAttribute("data-quem")) estado.quem = b.getAttribute("data-quem");
+    else estado.filtro = b.getAttribute("data-filtro");
     gravarPreferencias();
     desenhar();
   });
@@ -2681,7 +2690,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     var nome = campo.getAttribute("data-campo");
     comTarefa(campo, function(t){
       if (campo.type === "checkbox") t[nome] = campo.checked;
-      else if (nome === "categoria" || nome === "responsavel") t[nome] = campo.value.trim();
+      else if (nome === "categoria" || nome === "responsavel") t[nome] = canonizar(campo.value, nome, t.id);
       else t[nome] = campo.value;
       if (nome === "responsavel" && !t.responsavel) t.retorno = false;
       if (nome === "prazo" && !campo.value) { t.inicio = ""; t.limite = ""; }
