@@ -135,88 +135,92 @@ body{
 .abas button:hover{color:var(--tinta-suave)}
 .abas button[aria-selected="true"]{color:var(--tinta);border-bottom-color:var(--acento)}
 
-/* ---------- adicionar ---------- */
-.adicionar{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  margin-top:18px;
-  padding:10px;
+/* ---------- compor ---------- */
+.compor{
+  margin-top:16px;
+  padding:12px 14px 11px;
   background:var(--superficie);
   border:1px solid var(--linha);
   border-radius:var(--raio);
   box-shadow:var(--sombra);
 }
-.adicionar input.texto{
-  flex:1 1 100%;
-  min-width:0;
+.compor input{
   border:0;
   background:transparent;
   color:var(--tinta);
   font:inherit;
-  font-size:15.5px;
-  padding:7px 6px;
+  width:100%;
+  padding:0;
 }
-.adicionar input.texto::placeholder{color:var(--tinta-fraca)}
-.adicionar input[type="date"]{
-  flex:0 0 auto;
-  border:1px solid var(--linha);
-  border-radius:6px;
-  background:var(--papel);
+.compor .campo-titulo{
+  font-size:17px;
+  line-height:1.3;
+  padding:2px 0;
+}
+.compor .campo-nota{
+  font-size:13.5px;
   color:var(--tinta-suave);
-  font-family:"IBM Plex Mono",ui-monospace,monospace;
-  font-size:12.5px;
-  padding:6px 8px;
+  padding:3px 0 1px;
 }
-.adicionar input[type="date"]:invalid{border-color:var(--atraso)}
-.adicionar .botao-principal{margin-left:auto}
-.adicionar select.ciclo{
-  flex:0 0 auto;
+.compor input::placeholder{color:var(--tinta-fraca)}
+.controles{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:6px;
+  margin-top:10px;
+  padding-top:10px;
+  border-top:1px solid var(--linha);
+}
+.controles > *{flex:0 0 auto}
+.controles .botao-principal{padding:7px 16px}
+
+/* um controle compacto: fundo recuado, mono, do tamanho do seu conteúdo */
+.controles input[type="date"],
+.controles select,
+.controles .campo-cat,
+.controles .par{
   border:1px solid var(--linha);
   border-radius:6px;
   background:var(--papel);
   color:var(--tinta-suave);
   font-family:"IBM Plex Mono",ui-monospace,monospace;
   font-size:12px;
-  padding:6px 8px;
+  padding:5px 8px;
+  width:auto;
 }
-select.chip{
-  -webkit-appearance:none;
-  appearance:none;
-  padding-right:9px;
-}
+.controles input[type="date"]{font-size:12px}
+.controles input[type="date"]:invalid{border-color:var(--atraso)}
+.controles .campo-cat{width:104px}
+.controles .campo-cat::placeholder{color:var(--tinta-fraca)}
+select.chip{-webkit-appearance:none;appearance:none;padding-right:9px}
 
 /* par rotulado: um horário com o nome do papel colado nele */
-.par{
+.controles .par{
   display:inline-flex;
-  align-items:center;
-  gap:6px;
-  flex:0 0 auto;
-  border:1px solid var(--linha);
-  border-radius:6px;
-  background:var(--papel);
-  padding:0 8px;
+  align-items:baseline;
+  gap:5px;
+  padding:5px 8px;
 }
-.par > span{
-  font-family:"IBM Plex Mono",ui-monospace,monospace;
+.controles .par > span{
   font-size:10px;
   letter-spacing:.08em;
   text-transform:uppercase;
   color:var(--tinta-fraca);
 }
-.par input{
+.controles .par input{
   border:0;
   background:transparent;
   color:var(--tinta-suave);
-  font-family:"IBM Plex Mono",ui-monospace,monospace;
-  font-size:12.5px;
-  padding:6px 0;
-  width:74px;
+  font:inherit;
+  padding:0;
+  /* sem largura fixa: o campo de hora muda de tamanho conforme o formato
+     do idioma (24h, ou 12h com AM/PM) e cortá-lo esconde os dígitos */
+  width:auto;
+  min-width:0;
 }
 .recado{
-  flex:1 0 100%;
-  margin:0;
-  padding:4px 6px 0;
+  margin:8px 0 0;
   font-size:12.5px;
   color:var(--atraso);
 }
@@ -305,7 +309,7 @@ select.chip{
 .acoes-aviso button.discreto:hover{text-decoration:underline;opacity:1}
 
 /* ---------- seções / dias ---------- */
-.secao{margin-top:24px}
+.secao{margin-top:20px}
 .cabeca-dia{
   display:flex;
   align-items:baseline;
@@ -338,10 +342,10 @@ select.chip{
   overflow:hidden;
 }
 .dia-vazio{
-  padding:14px 16px;
+  margin:0;
+  padding:2px 0 4px;
   font-size:13.5px;
   color:var(--tinta-fraca);
-  font-style:italic;
 }
 
 /* ---------- item ---------- */
@@ -700,15 +704,20 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     <button type="button" role="tab" data-vista="historico" aria-selected="false">Histórico</button>
   </nav>
 
-  <form class="adicionar" id="formAdd" autocomplete="off" novalidate>
-    <input type="text" class="texto" id="campoNova" placeholder="O que precisa ser feito?" aria-label="Nova atividade" maxlength="300">
-    <input type="date" id="campoPrazo" aria-label="Dia da nova atividade" required>
-    <label class="par"><span>início</span>
-      <input type="time" id="campoInicio" aria-label="Hora de início"></label>
-    <label class="par"><span>limite</span>
-      <input type="time" id="campoLimite" aria-label="Prazo limite"></label>
-    <select id="campoRepete" class="ciclo" aria-label="Repetição"></select>
-    <button type="submit" class="botao-principal">Adicionar</button>
+  <form class="compor" id="formAdd" autocomplete="off" novalidate>
+    <input type="text" class="campo-titulo" id="campoNova" placeholder="O que precisa ser feito?"
+           aria-label="Nova atividade" maxlength="300">
+    <input type="text" class="campo-nota" id="campoNota" placeholder="Detalhes, link, próximo passo…"
+           aria-label="Descrição" maxlength="500">
+    <div class="controles">
+      <input type="date" id="campoPrazo" aria-label="Dia" required>
+      <label class="par"><span>de</span><input type="time" id="campoInicio" aria-label="Hora de início"></label>
+      <label class="par"><span>até</span><input type="time" id="campoLimite" aria-label="Prazo limite"></label>
+      <input type="text" class="campo-cat" id="campoCategoria" list="listaCategorias"
+             placeholder="categoria" aria-label="Categoria" maxlength="40">
+      <select id="campoRepete" class="ciclo" aria-label="Repetição"></select>
+      <button type="submit" class="botao-principal">Adicionar</button>
+    </div>
     <p class="recado" id="recado" hidden></p>
   </form>
 
@@ -1290,9 +1299,9 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
         'data-campo="prazo" aria-label="Dia" value="' + esc(t.prazo) + '">';
 
     if (t.prazo) {
-      html += '<label class="chip par' + (t.inicio ? " preenchido" : "") + '"><span>início</span>' +
+      html += '<label class="chip par' + (t.inicio ? " preenchido" : "") + '"><span>de</span>' +
         '<input type="time" id="inicio-' + esc(t.id) + '" data-campo="inicio" aria-label="Hora de início" value="' + esc(t.inicio) + '"></label>' +
-        '<label class="chip par' + (t.limite ? " preenchido" : "") + '"><span>limite</span>' +
+        '<label class="chip par' + (t.limite ? " preenchido" : "") + '"><span>até</span>' +
         '<input type="time" id="limite-' + esc(t.id) + '" data-campo="limite" aria-label="Prazo limite" value="' + esc(t.limite) + '"></label>';
     }
 
@@ -1390,7 +1399,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       html += '<section class="secao">' + cabecaHtml(r.nome, r.detalhe, itens.length ? String(itens.length) : "");
       html += itens.length
         ? '<div class="painel">' + itens.map(function(t){ return itemHtml(t, hoje, false); }).join("") + "</div>"
-        : '<div class="painel"><p class="dia-vazio">Nada marcado para hoje.</p></div>';
+        : '<p class="dia-vazio">Nada marcado para hoje.</p>';
       html += "</section>";
     });
 
@@ -1801,17 +1810,25 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     }
     recado.hidden = true;
 
+    var campoNota = document.getElementById("campoNota");
+    var campoCat = document.getElementById("campoCategoria");
+
     var t = normalizar(novoId(), {
       titulo: titulo,
+      notas: campoNota.value.trim(),
       prazo: prazo,
       inicio: document.getElementById("campoInicio").value || "",
       limite: document.getElementById("campoLimite").value || "",
       repete: document.getElementById("campoRepete").value || "",
-      categoria: estado.filtro === "todas" ? "" : estado.filtro,
+      // A categoria digitada vence; sem ela, herda o filtro em que se está.
+      categoria: campoCat.value.trim() || (estado.filtro === "todas" ? "" : estado.filtro),
       criadaEm: new Date().toISOString()
     });
     gravar(t);
+
+    // Some o que é próprio desta atividade; o resto fica para a seguinte.
     campo.value = "";
+    campoNota.value = "";
     estado.aberto = null;
     desenhar();
     campo.focus();
