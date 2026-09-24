@@ -1069,6 +1069,9 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       // `hora` é o campo único das versões antigas: virou o início.
       inicio: validarHora(d.inicio !== undefined ? d.inicio : d.hora),
       limite: validarHora(d.limite),
+      // Com hora de início marcada, a atividade entra em andamento sozinha na
+      // hora dela. Quem não quer isso desmarca; o padrão é o caso comum.
+      autoInicio: d.autoInicio !== false,
       categoria: typeof d.categoria === "string" ? d.categoria.trim() : "",
       responsavel: typeof d.responsavel === "string" ? d.responsavel.trim() : "",
       retorno: d.retorno === true,
@@ -1109,7 +1112,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   function corpo(t){
     return {
       titulo: t.titulo, notas: t.notas, prazo: t.prazo, inicio: t.inicio, limite: t.limite,
-      categoria: t.categoria, responsavel: t.responsavel, retorno: t.retorno,
+      autoInicio: t.autoInicio, categoria: t.categoria, responsavel: t.responsavel, retorno: t.retorno,
       repete: t.repete, serie: t.serie, status: t.status,
       progresso: t.progresso, atualizacoes: t.atualizacoes,
       criadaEm: t.criadaEm, atualizadaEm: t.atualizadaEm,
@@ -1618,6 +1621,12 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
         '<input type="time" id="limite-' + esc(t.id) + '" data-campo="limite" aria-label="Prazo limite" value="' + esc(t.limite) + '"></label>';
     }
 
+    if (t.inicio && t.status !== "concluida") {
+      html += '<label class="chip marca' + (t.autoInicio ? " preenchido" : "") + '">' +
+        '<input type="checkbox" id="auto-' + esc(t.id) + '" data-campo="autoInicio"' +
+        (t.autoInicio ? " checked" : "") + "><span>começa sozinha</span></label>";
+    }
+
     html += '<input type="text" class="chip categoria' + (t.responsavel ? " preenchido" : "") + '" id="responsavel-' + esc(t.id) + '" ' +
         'data-campo="responsavel" list="listaPessoas" maxlength="40" placeholder="quem faz" ' +
         'aria-label="Responsável" value="' + esc(t.responsavel) + '">';
@@ -2057,6 +2066,25 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
   // Muda quando vira o dia, quando algo passa do prazo ou quando uma contagem
   // regressiva visível avança — só então vale redesenhar sozinho.
+  // Chegada a hora de início, a atividade entra em andamento por conta própria.
+  // Só dispara uma vez: pausar depois deixa `iniciadaEm` gravada, e ela não
+  // volta a começar sozinha no mesmo ciclo.
+  function aplicarAutoInicio(hoje){
+    if (!estado.pronto) return false;
+    var agora = horaDe(new Date()), mudou = false;
+    estado.tarefas.forEach(function(t){
+      if (t.status !== "aberta" || !t.autoInicio || t.iniciadaEm) return;
+      if (t.prazo !== hoje || !t.inicio || t.inicio > agora) return;
+      var novo = Object.assign({}, t);
+      novo.status = "andamento";
+      novo.iniciadaEm = new Date().toISOString();
+      novo.atualizadaEm = novo.iniciadaEm;
+      gravar(novo);
+      mudou = true;
+    });
+    return mudou;
+  }
+
   function assinaturaTempo(){
     var hoje = isoHoje(), partes = [];
     estado.tarefas.forEach(function(t){
@@ -2071,6 +2099,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   function desenhar(){
     var foco = capturarFoco();
     var hoje = isoHoje();
+    aplicarAutoInicio(hoje);
     var todas = Array.from(estado.tarefas.values());
 
     if (estado.aberto && !estado.tarefas.has(estado.aberto)) estado.aberto = null;
@@ -2215,7 +2244,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   function copiar(t, mudancas){
     return normalizar(novoId(), Object.assign({
       titulo: t.titulo, notas: t.notas, prazo: t.prazo, inicio: t.inicio, limite: t.limite,
-      categoria: t.categoria, responsavel: t.responsavel, retorno: t.retorno,
+      autoInicio: t.autoInicio, categoria: t.categoria, responsavel: t.responsavel, retorno: t.retorno,
       repete: t.repete, serie: "",
       criadaEm: new Date().toISOString()
     }, mudancas || {}));
@@ -2558,7 +2587,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     if (!campo) return;
     var nome = campo.getAttribute("data-campo");
     comTarefa(campo, function(t){
-      if (nome === "retorno") t.retorno = campo.checked;
+      if (campo.type === "checkbox") t[nome] = campo.checked;
       else if (nome === "categoria" || nome === "responsavel") t[nome] = campo.value.trim();
       else t[nome] = campo.value;
       if (nome === "responsavel" && !t.responsavel) t.retorno = false;
@@ -2599,6 +2628,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   });
 
   window.setInterval(function(){
+    if (aplicarAutoInicio(isoHoje())) { desenhar(); return; }
     if (estado.aberto) return;
     if (assinaturaTempo() !== estado.assinatura) desenhar();
   }, 20000);
