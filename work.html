@@ -351,7 +351,7 @@ select.chip{-webkit-appearance:none;appearance:none;padding-right:9px}
 /* ---------- item ---------- */
 .item{
   display:grid;
-  grid-template-columns:auto minmax(0,1fr);
+  grid-template-columns:auto minmax(0,1fr) auto;
   column-gap:10px;
   padding:0 12px 0 10px;
   border-left:2px solid transparent;
@@ -414,6 +414,104 @@ select.chip{-webkit-appearance:none;appearance:none;padding-right:9px}
 .selo.faltando{background:transparent;border:1px dashed var(--atraso);color:var(--atraso)}
 .selo.ciclo{background:transparent;border:1px solid var(--linha-forte);color:var(--tinta-fraca)}
 .selo.previsto{background:transparent;border:1px dashed var(--linha-forte);color:var(--tinta-fraca)}
+.selo.pessoa{background:var(--acento-fundo);color:var(--acento-tinta)}
+.selo.avanco{background:var(--acento-fundo);color:var(--acento-tinta);font-weight:500}
+.selo.parado{background:transparent;border:1px solid var(--andamento);color:var(--andamento)}
+.barra-avanco{
+  display:block;
+  height:3px;
+  margin-top:6px;
+  border-radius:2px;
+  background:var(--recuo);
+  overflow:hidden;
+}
+.barra-avanco i{display:block;height:100%;background:var(--acento);border-radius:2px}
+
+/* ---------- avanço ---------- */
+.avanco{
+  margin-top:10px;
+  padding-top:10px;
+  border-top:1px solid var(--linha-forte);
+}
+.avanco-linha{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.entrada-avanco{
+  flex:1 1 200px;
+  min-width:0;
+  width:auto;
+  font-size:13.5px;
+  padding:4px 0;
+  color:var(--tinta);
+}
+label.chip.par .pct{
+  width:44px;
+  border:0;
+  background:transparent;
+  color:inherit;
+  font:inherit;
+  padding:2px 0;
+  text-align:right;
+  -moz-appearance:textfield;
+}
+label.chip.par .pct::-webkit-outer-spin-button,
+label.chip.par .pct::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.chip.registrar{border-color:var(--acento);color:var(--acento-tinta);font-weight:500}
+.trilha{
+  list-style:none;
+  margin:9px 0 0;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.trilha li{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:baseline;
+  gap:3px 9px;
+  font-size:13px;
+  color:var(--tinta-suave);
+  padding-left:9px;
+  border-left:1px solid var(--linha-forte);
+}
+.trilha .quando-avanco{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:10.5px;
+  color:var(--tinta-fraca);
+  white-space:nowrap;
+}
+.trilha .pct-avanco{
+  margin-left:auto;
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:10.5px;
+  color:var(--acento-tinta);
+  font-variant-numeric:tabular-nums;
+}
+.selo.volta{background:transparent;border:1px solid var(--acento);color:var(--acento-tinta)}
+.filtros .rotulo-filtro{
+  align-self:center;
+  margin-right:2px;
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:10px;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+  color:var(--tinta-fraca);
+}
+.faixa-aviso.desfazer{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:space-between;
+  gap:4px 14px;
+  border-left-color:var(--linha-forte);
+  background:var(--recuo);
+  color:var(--tinta-suave);
+}
+.faixa-aviso.desfazer .acoes-aviso{margin-top:0}
+.controles .par.marca{gap:6px;cursor:pointer}
+.controles .par.marca input{width:auto;margin:0;accent-color:var(--acento)}
+label.chip.marca{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;cursor:pointer}
+label.chip.marca input{margin:0;accent-color:var(--acento)}
+label.chip.marca span{font-size:10px;letter-spacing:.06em;text-transform:uppercase}
 
 /* volta futura de uma recorrente: aparece na agenda, mas ainda não existe */
 .item.previsto{opacity:.6}
@@ -429,7 +527,7 @@ select.chip{-webkit-appearance:none;appearance:none;padding-right:9px}
 .selo.iminente{background:var(--andamento);color:var(--papel);font-weight:500}
 
 /* ---------- rascunho aberto ---------- */
-.edicao{padding:6px 0 10px}
+.edicao{grid-column:2 / -1;padding:6px 0 10px}
 .escrita{
   display:block;
   width:100%;
@@ -650,6 +748,96 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 .registro .veredito.fora{color:var(--atraso)}
 .registro .veredito.neutra{color:var(--tinta-fraca)}
 
+/* ---------- atalhos na linha ---------- */
+.atalhos{display:flex;align-items:center;gap:2px;align-self:center}
+.atalho{
+  display:grid;
+  place-items:center;
+  width:26px;
+  height:26px;
+  padding:0;
+  border:0;
+  border-radius:6px;
+  background:transparent;
+  color:var(--tinta-fraca);
+  opacity:.5;
+  cursor:pointer;
+  transition:opacity .15s ease, color .15s ease;
+}
+.atalho svg{width:14px;height:14px}
+.atalho:hover{opacity:1;background:var(--recuo);color:var(--tinta)}
+.atalho[data-acao="excluir"]:hover{color:var(--atraso)}
+.item.andando .atalho[data-acao="pausar"]{opacity:1;color:var(--andamento)}
+
+/* ---------- semana ---------- */
+.semana{
+  margin-top:14px;
+  padding:12px 14px 10px;
+  background:var(--superficie);
+  border:1px solid var(--linha);
+  border-radius:var(--raio);
+  box-shadow:var(--sombra);
+}
+.semana .titulo-aviso{
+  display:block;
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:10.5px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--tinta-fraca);
+}
+.semana .grade{
+  display:grid;
+  grid-template-columns:repeat(7,minmax(0,1fr));
+  gap:4px;
+  margin-top:8px;
+}
+.celula-dia{
+  display:grid;
+  gap:2px;
+  justify-items:center;
+  padding:6px 2px 5px;
+  border:1px solid transparent;
+  border-radius:7px;
+  background:transparent;
+  font:inherit;
+  color:var(--tinta-fraca);
+  cursor:pointer;
+}
+.celula-dia:hover{background:var(--recuo)}
+.celula-dia.agora{border-color:var(--acento)}
+.celula-dia .sigla{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:9.5px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.celula-dia .numero-dia{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:14px;
+  color:var(--tinta);
+  font-variant-numeric:tabular-nums;
+}
+.celula-dia .coluna{
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  width:100%;
+  height:24px;
+}
+.celula-dia .coluna i{
+  display:block;
+  width:13px;
+  border-radius:3px 3px 0 0;
+  background:var(--acento);
+}
+.celula-dia .qtd-dia{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:10.5px;
+  color:var(--tinta-suave);
+  font-variant-numeric:tabular-nums;
+}
+
 /* ---------- vazio / rodapé ---------- */
 .vazio{
   margin-top:26px;
@@ -723,9 +911,13 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     <input type="text" class="campo-nota" id="campoNota" placeholder="Detalhes, link, próximo passo…"
            aria-label="Descrição" maxlength="500">
     <div class="controles">
-      <input type="date" id="campoPrazo" aria-label="Dia" required>
+      <input type="date" id="campoPrazo" aria-label="Dia">
       <label class="par"><span>de</span><input type="time" id="campoInicio" aria-label="Hora de início"></label>
       <label class="par"><span>até</span><input type="time" id="campoLimite" aria-label="Prazo limite"></label>
+      <input type="text" class="campo-cat" id="campoResponsavel" list="listaPessoas"
+             placeholder="quem faz" aria-label="Responsável" maxlength="40">
+      <label class="par marca" id="marcaRetorno" hidden>
+        <input type="checkbox" id="campoRetorno"><span>volta p/ mim</span></label>
       <input type="text" class="campo-cat" id="campoCategoria" list="listaCategorias"
              placeholder="categoria" aria-label="Categoria" maxlength="40">
       <select id="campoRepete" class="ciclo" aria-label="Repetição"></select>
@@ -734,8 +926,11 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     <p class="recado" id="recado" hidden></p>
   </form>
 
+  <div class="filtros" id="filtrosQuem" hidden></div>
   <div class="filtros" id="filtros" hidden></div>
   <div id="faixaResgate"></div>
+  <div id="faixaDesfazer"></div>
+  <div id="faixaSemana"></div>
   <div id="faixaAlertas"></div>
 
   <main id="listas"></main>
@@ -747,6 +942,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 </div>
 
 <datalist id="listaCategorias"></datalist>
+<datalist id="listaPessoas"></datalist>
 
 <script>
 (function(){
@@ -761,6 +957,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   var JANELA_IMINENTE = 15;  // minutos: a partir daqui ela é iminente
   var AVISO_ANTECEDENCIA = 15;
   var HORIZONTE_DIAS = 35;   // até onde a agenda desenha as voltas futuras
+  var DIAS_PARADO = 3;       // a partir daqui a atividade é cobrada de parada
 
   var estado = {
     tarefas: new Map(),
@@ -771,6 +968,8 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     mostrarNota: false,  // a anotação da atividade aberta está à vista
     pendentes: new Set(),
     filtro: "todas",
+    quem: "todas",
+    desfazer: null,     // a última atividade excluída, enquanto dá para voltar
     verTudo: false,
     modo: "carregando",
     pronto: false,
@@ -871,20 +1070,50 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       inicio: validarHora(d.inicio !== undefined ? d.inicio : d.hora),
       limite: validarHora(d.limite),
       categoria: typeof d.categoria === "string" ? d.categoria.trim() : "",
+      responsavel: typeof d.responsavel === "string" ? d.responsavel.trim() : "",
+      retorno: d.retorno === true,
       repete: REPETICOES[d.repete] ? d.repete : "",
       serie: typeof d.serie === "string" ? d.serie : "",
       status: status,
+      progresso: Math.max(0, Math.min(100, Math.round(Number(d.progresso) || 0))),
+      atualizacoes: Array.isArray(d.atualizacoes) ? d.atualizacoes.slice(-30).map(function(a){
+        return {
+          em: typeof a.em === "string" ? a.em : "",
+          texto: typeof a.texto === "string" ? a.texto : "",
+          progresso: Math.max(0, Math.min(100, Math.round(Number(a.progresso) || 0)))
+        };
+      }) : [],
       criadaEm: typeof d.criadaEm === "string" ? d.criadaEm : new Date().toISOString(),
+      atualizadaEm: typeof d.atualizadaEm === "string" ? d.atualizadaEm : "",
       iniciadaEm: typeof d.iniciadaEm === "string" ? d.iniciadaEm : "",
       concluidaEm: typeof d.concluidaEm === "string" ? d.concluidaEm : ""
     };
   }
 
+  // Quando a atividade deu sinal de vida pela última vez.
+  function ultimoSinal(t){
+    return t.atualizadaEm || t.iniciadaEm || t.criadaEm;
+  }
+
+  // Dias sem qualquer avanço registrado; null quando não faz sentido cobrar.
+  function diasParado(t){
+    if (t.status === "concluida") return null;
+    // Marcada para frente não está parada: ainda não é a vez dela.
+    if (t.prazo && t.prazo > isoHoje()) return null;
+    var quando = diaDoCarimbo(ultimoSinal(t));
+    if (!quando) return null;
+    var dias = Math.round((dataDeIso(isoHoje()) - dataDeIso(quando)) / 86400000);
+    return dias >= DIAS_PARADO ? dias : null;
+  }
+
   function corpo(t){
     return {
       titulo: t.titulo, notas: t.notas, prazo: t.prazo, inicio: t.inicio, limite: t.limite,
-      categoria: t.categoria, repete: t.repete, serie: t.serie, status: t.status,
-      criadaEm: t.criadaEm, iniciadaEm: t.iniciadaEm, concluidaEm: t.concluidaEm
+      categoria: t.categoria, responsavel: t.responsavel, retorno: t.retorno,
+      repete: t.repete, serie: t.serie, status: t.status,
+      progresso: t.progresso, atualizacoes: t.atualizacoes,
+      criadaEm: t.criadaEm, atualizadaEm: t.atualizadaEm,
+      iniciadaEm: t.iniciadaEm, concluidaEm: t.concluidaEm
     };
   }
 
@@ -1009,6 +1238,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       if (cru) {
         var p = JSON.parse(cru);
         if (typeof p.filtro === "string") estado.filtro = p.filtro;
+        if (typeof p.quem === "string") estado.quem = p.quem;
         if (p.vista === "historico" || p.vista === "agenda") estado.vista = p.vista;
       }
       var avisados = window.localStorage.getItem(CHAVE_AVISADOS);
@@ -1022,7 +1252,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   function gravarPreferencias(){
     try {
       window.localStorage.setItem(CHAVE_PREF, JSON.stringify({
-        filtro: estado.filtro, vista: estado.vista
+        filtro: estado.filtro, quem: estado.quem, vista: estado.vista
       }));
     } catch (e) { /* segue sem lembrar */ }
   }
@@ -1269,9 +1499,10 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
   function metaHtml(t, hoje, comData){
     var partes = [];
-    // Sem prazo não há como julgar a entrega: a atividade fica pedindo um.
-    if (t.status !== "concluida" && !t.prazo) partes.push('<span class="selo faltando">falta o prazo</span>');
     if (t.status === "andamento") partes.push('<span class="selo andamento">em andamento</span>');
+    if (t.progresso > 0 && t.status !== "concluida") partes.push('<span class="selo avanco">' + t.progresso + "%</span>");
+    var parado = diasParado(t);
+    if (parado) partes.push('<span class="selo parado">parada há ' + parado + " dias</span>");
 
     var m = marcoProximo(t, hoje);
     if (m) {
@@ -1283,9 +1514,26 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     if (t.prazo && comData) partes.push('<span class="prazo' + (vencido ? " vencido" : "") + '">' + esc(rotuloPrazo(t.prazo)) + "</span>");
     var faixa = faixaHoraria(t);
     if (faixa) partes.push('<span class="hora' + (vencido ? " vencido" : "") + '">' + esc(faixa) + "</span>");
+    if (t.responsavel) partes.push('<span class="selo pessoa">→ ' + esc(t.responsavel) + "</span>");
+    if (t.responsavel && t.retorno) partes.push('<span class="selo volta">volta p/ mim</span>');
     if (t.categoria) partes.push('<span class="selo">' + esc(t.categoria) + "</span>");
     if (t.repete) partes.push('<span class="selo ciclo">⟳ ' + esc(rotuloCiclo(t.repete, t.prazo)) + "</span>");
     return partes.join("");
+  }
+
+  var ICONES = {
+    comecar: '<path d="M4.5 2.8v10.4l9-5.2z" fill="currentColor"/>',
+    pausar: '<path d="M5 3h2.2v10H5zM8.8 3H11v10H8.8z" fill="currentColor"/>',
+    atualizar: '<path d="M2.5 11.5l3.5-4 2.5 2.5 5-5.5" fill="none" stroke="currentColor" ' +
+               'stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>',
+    excluir: '<path d="M3.5 4.5h9M6.5 4.5V3h3v1.5M5 4.5l.6 8.5h4.8l.6-8.5" fill="none" ' +
+             'stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>'
+  };
+
+  function atalhoHtml(acao, rotulo){
+    return '<button type="button" class="atalho" data-acao="' + acao + '" title="' + esc(rotulo) + '" ' +
+      'aria-label="' + esc(rotulo) + '"><svg viewBox="0 0 16 16" aria-hidden="true">' +
+      ICONES[acao] + "</svg></button>";
   }
 
   // Uma ocorrência prevista mostra-se, mas não se deixa mexer: ela ainda não
@@ -1370,6 +1618,16 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
         '<input type="time" id="limite-' + esc(t.id) + '" data-campo="limite" aria-label="Prazo limite" value="' + esc(t.limite) + '"></label>';
     }
 
+    html += '<input type="text" class="chip categoria' + (t.responsavel ? " preenchido" : "") + '" id="responsavel-' + esc(t.id) + '" ' +
+        'data-campo="responsavel" list="listaPessoas" maxlength="40" placeholder="quem faz" ' +
+        'aria-label="Responsável" value="' + esc(t.responsavel) + '">';
+
+    if (t.responsavel) {
+      html += '<label class="chip marca' + (t.retorno ? " preenchido" : "") + '">' +
+        '<input type="checkbox" id="retorno-' + esc(t.id) + '" data-campo="retorno"' +
+        (t.retorno ? " checked" : "") + "><span>volta p/ mim</span></label>";
+    }
+
     html += '<input type="text" class="chip categoria' + (t.categoria ? " preenchido" : "") + '" id="categoria-' + esc(t.id) + '" ' +
         'data-campo="categoria" list="listaCategorias" maxlength="40" placeholder="categoria" ' +
         'aria-label="Categoria" value="' + esc(t.categoria) + '">' +
@@ -1382,8 +1640,33 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     html += '<button type="button" class="chip" data-acao="duplicar">duplicar</button>';
 
     html += '<button type="button" class="chip perigo" data-acao="excluir">excluir</button>' +
-      "</div></div>";
+      "</div>" + avancoHtml(t) + "</div>";
     return html;
+  }
+
+  // Entregas parciais: o que andou, quanto está, e o rastro das anteriores.
+  function avancoHtml(t){
+    var html = '<div class="avanco">' +
+      '<div class="avanco-linha">' +
+        '<input type="text" class="escrita entrada-avanco" id="avanco-' + esc(t.id) + '" ' +
+          'maxlength="300" placeholder="O que avançou? (entrega parcial, bloqueio, próximo passo)" ' +
+          'aria-label="Registrar avanço">' +
+        '<label class="chip par"><input type="number" class="pct" id="pct-' + esc(t.id) + '" ' +
+          'min="0" max="100" step="5" value="' + t.progresso + '" aria-label="Progresso"><span>%</span></label>' +
+        '<button type="button" class="chip registrar" data-acao="registrar">registrar</button>' +
+      "</div>";
+
+    if (t.atualizacoes.length) {
+      html += '<ol class="trilha">';
+      t.atualizacoes.slice().reverse().slice(0, 6).forEach(function(a){
+        html += "<li>" +
+          '<span class="quando-avanco">' + esc(carimboLegivel(a.em)) + "</span>" +
+          "<span>" + esc(a.texto) + "</span>" +
+          '<span class="pct-avanco">' + a.progresso + "%</span></li>";
+      });
+      html += "</ol>";
+    }
+    return html + "</div>";
   }
 
   function itemHtml(t, hoje, comData){
@@ -1402,12 +1685,25 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       : '<button type="button" class="linha" data-acao="abrir">' +
           '<span class="titulo">' + (t.titulo ? esc(t.titulo) : "<em>sem título</em>") + "</span>" +
           '<span class="meta">' + metaHtml(t, hoje, comData) + "</span>" +
+          (t.progresso > 0 && !feita
+            ? '<span class="barra-avanco"><i style="width:' + t.progresso + '%"></i></span>'
+            : "") +
         "</button>";
+
+    // Começar e excluir ficam na própria linha: são o que mais se faz, e abrir
+    // o rascunho toda vez só para isso é trabalho à toa.
+    var atalhos = aberto || feita ? "" :
+      '<div class="atalhos">' +
+        atalhoHtml(t.status === "andamento" ? "pausar" : "comecar",
+                   t.status === "andamento" ? "Pausar" : "Começar") +
+        atalhoHtml("atualizar", "Registrar avanço") +
+        atalhoHtml("excluir", "Excluir") +
+      "</div>";
 
     return '<article class="' + classes.join(" ") + '" data-id="' + esc(t.id) + '">' +
       '<button type="button" class="marcar" data-acao="alternar" aria-pressed="' + feita + '" aria-label="' + esc(rotuloBotao) + '">' +
         '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 8.4l3.2 3.2 6.4-7.2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
-      "</button>" + interior + "</article>";
+      "</button>" + interior + atalhos + "</article>";
   }
 
   function cabecaHtml(nome, detalhe, qtd){
@@ -1469,7 +1765,8 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       var itens = (porDia.get(dia) || []).slice().sort(porHorario);
       if (dia === hoje) itens = itens.concat(concluidasHoje);
       var r = rotuloDia(dia);
-      html += '<section class="secao">' + cabecaHtml(r.nome, r.detalhe, itens.length ? String(itens.length) : "");
+      html += '<section class="secao" id="dia-' + esc(dia) + '">' +
+        cabecaHtml(r.nome, r.detalhe, itens.length ? String(itens.length) : "");
       html += itens.length
         ? '<div class="painel">' + itens.map(function(t){
             return t.previsto ? previstoHtml(t) : itemHtml(t, hoje, false);
@@ -1484,7 +1781,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
         return a.criadaEm < b.criadaEm ? -1 : 1;
       });
       html += '<section class="secao">' +
-        cabecaHtml("Sem prazo", "precisam de um prazo", String(semData.length)) +
+        cabecaHtml("Sem prazo", "seguem pelo avanço", String(semData.length)) +
         '<div class="painel">' + semData.map(function(t){ return itemHtml(t, hoje, false); }).join("") + "</div></section>";
     }
 
@@ -1531,6 +1828,52 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     }
 
     alvo.innerHTML = html + "</div>";
+  }
+
+  function desenharDesfazer(){
+    var alvo = document.getElementById("faixaDesfazer");
+    if (!estado.desfazer) { alvo.innerHTML = ""; return; }
+    alvo.innerHTML = '<div class="faixa-aviso desfazer">' +
+      "<span>Excluída: " + (estado.desfazer.titulo ? esc(estado.desfazer.titulo) : "atividade sem título") + "</span>" +
+      '<div class="acoes-aviso"><button type="button" data-desfazer="1">desfazer</button></div>' +
+    "</div>";
+  }
+
+  // Como a semana está: quantos compromissos em cada dia, na mesma escala.
+  function desenharSemana(visiveis, hoje){
+    var alvo = document.getElementById("faixaSemana");
+    if (estado.vista !== "agenda") { alvo.innerHTML = ""; return; }
+
+    var horizonte = somarDias(hoje, HORIZONTE_DIAS);
+    var porDia = {};
+    function conta(d){ porDia[d] = (porDia[d] || 0) + 1; }
+    visiveis.forEach(function(t){
+      if (t.status === "concluida") return;
+      if (t.repete) projetar(t, horizonte).forEach(function(v){ conta(v.prazo); });
+      // Conta pela data: o que vence hoje continua sendo compromisso de hoje,
+      // mesmo que a hora já tenha passado. Dias anteriores caem fora da janela.
+      if (t.prazo) conta(t.prazo);
+    });
+
+    var dias = [], teto = 1;
+    for (var i = 0; i < 7; i++) {
+      var d = somarDias(hoje, i), n = porDia[d] || 0;
+      if (n > teto) teto = n;
+      dias.push({ dia: d, n: n });
+    }
+    if (!dias.some(function(x){ return x.n; })) { alvo.innerHTML = ""; return; }
+
+    var html = '<div class="semana"><span class="titulo-aviso">Próximos 7 dias</span><div class="grade">';
+    dias.forEach(function(x){
+      var altura = x.n ? Math.max(12, Math.round((x.n / teto) * 100)) : 0;
+      html += '<button type="button" class="celula-dia' + (x.dia === hoje ? " agora" : "") + '" ' +
+        'data-ir="' + esc(x.dia) + '" aria-label="' + esc(dataLonga(x.dia) + ": " + plural(x.n, "compromisso", "compromissos")) + '">' +
+        '<span class="sigla">' + esc(nomeDia(x.dia).slice(0, 3)) + "</span>" +
+        '<span class="numero-dia">' + dataDeIso(x.dia).getDate() + "</span>" +
+        '<span class="coluna"><i style="height:' + altura + '%"></i></span>' +
+        '<span class="qtd-dia">' + (x.n || "—") + "</span></button>";
+    });
+    alvo.innerHTML = html + "</div></div>";
   }
 
   function desenharResgate(){
@@ -1583,6 +1926,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     var faixa = faixaHoraria(t);
     var linhas = [];
     linhas.push(["prazo", t.prazo ? dataCurta(t.prazo) + (faixa ? " · " + faixa : "") : "sem prazo"]);
+    if (t.responsavel) linhas.push(["quem fez", t.responsavel + (t.retorno ? " (com retorno p/ mim)" : "")]);
     if (t.categoria) linhas.push(["categoria", t.categoria]);
     if (t.repete) linhas.push(["repete", rotuloCiclo(t.repete, t.prazo)]);
     linhas.push(["criada", carimboLegivel(t.criadaEm)]);
@@ -1595,6 +1939,18 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     });
     html += "</dl>";
     if (t.notas) html += '<p class="nota-hist">' + esc(t.notas) + "</p>";
+
+    if (t.atualizacoes.length) {
+      html += '<ol class="trilha">';
+      t.atualizacoes.slice().reverse().forEach(function(a){
+        html += "<li>" +
+          '<span class="quando-avanco">' + esc(carimboLegivel(a.em)) + "</span>" +
+          "<span>" + esc(a.texto) + "</span>" +
+          '<span class="pct-avanco">' + a.progresso + "%</span></li>";
+      });
+      html += "</ol>";
+    }
+
     html += '<div class="acoes-hist">' +
       '<button type="button" class="chip" data-acao="reabrir" data-id="' + esc(t.id) + '">reabrir na agenda</button>' +
     "</div>";
@@ -1726,9 +2082,19 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     categorias.sort(function(a, b){ return a.localeCompare(b, "pt-BR"); });
     if (estado.filtro !== "todas" && categorias.indexOf(estado.filtro) === -1) estado.filtro = "todas";
 
-    var visiveis = estado.filtro === "todas"
-      ? todas
-      : todas.filter(function(t){ return t.categoria === estado.filtro; });
+    var pessoas = [];
+    todas.forEach(function(t){
+      if (t.responsavel && pessoas.indexOf(t.responsavel) === -1) pessoas.push(t.responsavel);
+    });
+    pessoas.sort(function(a, b){ return a.localeCompare(b, "pt-BR"); });
+    if (estado.quem !== "todas" && estado.quem !== "minhas" && pessoas.indexOf(estado.quem) === -1) estado.quem = "todas";
+
+    var visiveis = todas.filter(function(t){
+      if (estado.filtro !== "todas" && t.categoria !== estado.filtro) return false;
+      if (estado.quem === "minhas") return !t.responsavel;
+      if (estado.quem !== "todas") return t.responsavel === estado.quem;
+      return true;
+    });
 
     var naAgenda = estado.vista === "agenda";
 
@@ -1772,10 +2138,29 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       caixaFiltros.hidden = true;
     }
 
+    // Filtro por quem faz — só aparece quando há alguém além de você.
+    var caixaQuem = document.getElementById("filtrosQuem");
+    if (pessoas.length) {
+      var lista = [["todas", "todas"], ["minhas", "minhas"]];
+      pessoas.forEach(function(p){ lista.push([p, p]); });
+      caixaQuem.innerHTML = '<span class="rotulo-filtro">quem</span>' + lista.map(function(par){
+        return '<button type="button" data-quem="' + esc(par[0]) + '" aria-pressed="' +
+          (estado.quem === par[0]) + '">' + esc(par[1]) + "</button>";
+      }).join("");
+      caixaQuem.hidden = false;
+    } else {
+      caixaQuem.innerHTML = "";
+      caixaQuem.hidden = true;
+    }
+
     document.getElementById("listaCategorias").innerHTML =
       categorias.map(function(c){ return '<option value="' + esc(c) + '"></option>'; }).join("");
+    document.getElementById("listaPessoas").innerHTML =
+      pessoas.map(function(p){ return '<option value="' + esc(p) + '"></option>'; }).join("");
 
     desenharResgate();
+    desenharDesfazer();
+    desenharSemana(visiveis, hoje);
     desenharAlertas(visiveis, hoje);
 
     // Corpo
@@ -1830,7 +2215,8 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   function copiar(t, mudancas){
     return normalizar(novoId(), Object.assign({
       titulo: t.titulo, notas: t.notas, prazo: t.prazo, inicio: t.inicio, limite: t.limite,
-      categoria: t.categoria, repete: t.repete, serie: "",
+      categoria: t.categoria, responsavel: t.responsavel, retorno: t.retorno,
+      repete: t.repete, serie: "",
       criadaEm: new Date().toISOString()
     }, mudancas || {}));
   }
@@ -1857,6 +2243,28 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     t.concluidaEm = "";
     t.prazo = proximaData(t);
     gravar(t);
+  }
+
+  // Excluir com um clique só é prático, mas perigoso. A atividade sai na hora
+  // e fica guardada por um tempo para poder voltar inteira.
+  var relogioDesfazer = null;
+  function excluirComVolta(t){
+    var guardada = Object.assign({}, t);
+    remover(t.id);
+    estado.desfazer = guardada;
+    if (relogioDesfazer) window.clearTimeout(relogioDesfazer);
+    relogioDesfazer = window.setTimeout(function(){
+      estado.desfazer = null;
+      desenhar();
+    }, 12000);
+  }
+
+  function desfazerExclusao(){
+    if (!estado.desfazer) return;
+    gravar(estado.desfazer);
+    estado.desfazer = null;
+    if (relogioDesfazer) window.clearTimeout(relogioDesfazer);
+    desenhar();
   }
 
   function abrir(id){
@@ -1887,21 +2295,20 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     var titulo = campo.value.trim();
     if (!titulo) { recado.hidden = true; campo.focus(); return; }
 
+    // O prazo vem preenchido com hoje, mas pode ser apagado: há atividade que
+    // corre sem data e é acompanhada pelo avanço, não pelo calendário.
     var prazo = campoData.value || "";
-    if (!prazo) {
-      recado.textContent = "Toda atividade precisa de um prazo — é ele que diz depois se a entrega saiu no tempo.";
-      recado.hidden = false;
-      campoData.focus();
-      return;
-    }
     recado.hidden = true;
 
     var campoNota = document.getElementById("campoNota");
     var campoCat = document.getElementById("campoCategoria");
+    var campoResp = document.getElementById("campoResponsavel");
 
     var t = normalizar(novoId(), {
       titulo: titulo,
       notas: campoNota.value.trim(),
+      responsavel: campoResp.value.trim(),
+      retorno: document.getElementById("campoRetorno").checked,
       prazo: prazo,
       inicio: document.getElementById("campoInicio").value || "",
       limite: document.getElementById("campoLimite").value || "",
@@ -1965,6 +2372,34 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     desenhar();
   });
 
+  document.getElementById("filtrosQuem").addEventListener("click", function(e){
+    var b = e.target.closest("button[data-quem]");
+    if (!b) return;
+    estado.quem = b.getAttribute("data-quem");
+    gravarPreferencias();
+    desenhar();
+  });
+
+  document.getElementById("faixaDesfazer").addEventListener("click", function(e){
+    if (e.target.closest("button[data-desfazer]")) desfazerExclusao();
+  });
+
+  document.getElementById("faixaSemana").addEventListener("click", function(e){
+    var b = e.target.closest("button[data-ir]");
+    if (!b) return;
+    var secao = document.getElementById("dia-" + b.getAttribute("data-ir"));
+    if (secao) secao.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  var campoRespNovo = document.getElementById("campoResponsavel");
+  function sincronizarRetorno(){
+    var marca = document.getElementById("marcaRetorno");
+    marca.hidden = !campoRespNovo.value.trim();
+    if (marca.hidden) document.getElementById("campoRetorno").checked = false;
+  }
+  campoRespNovo.addEventListener("input", sincronizarRetorno);
+  campoRespNovo.addEventListener("change", sincronizarRetorno);
+
   document.getElementById("faixaResgate").addEventListener("click", function(e){
     var b = e.target.closest("button[data-resgate]");
     if (!b) return;
@@ -2027,7 +2462,39 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
         return;
       }
 
-      if (acao === "excluir") { remover(t.id); desenhar(); return; }
+      if (acao === "excluir") { excluirComVolta(t); desenhar(); return; }
+
+      if (acao === "atualizar") { abrir(t.id); return; }
+
+      if (acao === "registrar") {
+        var entrada = document.getElementById("avanco-" + t.id);
+        var pct = document.getElementById("pct-" + t.id);
+        var texto = entrada ? entrada.value.trim() : "";
+        var valor = pct ? Math.max(0, Math.min(100, Math.round(Number(pct.value) || 0))) : t.progresso;
+        if (!texto && valor === t.progresso) { if (entrada) entrada.focus(); return; }
+        var agora = new Date().toISOString();
+        t.atualizacoes = t.atualizacoes.concat([{ em: agora, texto: texto || "sem descrição", progresso: valor }]).slice(-30);
+        t.progresso = valor;
+        t.atualizadaEm = agora;
+        // Registrar avanço numa atividade parada já a coloca em andamento.
+        if (t.status === "aberta") { t.status = "andamento"; if (!t.iniciadaEm) t.iniciadaEm = agora; }
+        gravar(t);
+        estado.protegerAberto = true;
+        desenhar();
+        var volta = document.getElementById("avanco-" + t.id);
+        if (volta) volta.focus({ preventScroll: true });
+        return;
+      }
+
+      if (acao === "comecar" || acao === "pausar") {
+        var marca = new Date().toISOString();
+        if (t.status === "andamento") t.status = "aberta";
+        else { t.status = "andamento"; if (!t.iniciadaEm) t.iniciadaEm = marca; }
+        t.atualizadaEm = marca;
+        gravar(t);
+        desenhar();
+        return;
+      }
 
       if (acao === "duplicar") {
         var copia = copiar(t);
@@ -2091,7 +2558,10 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     if (!campo) return;
     var nome = campo.getAttribute("data-campo");
     comTarefa(campo, function(t){
-      t[nome] = nome === "categoria" ? campo.value.trim() : campo.value;
+      if (nome === "retorno") t.retorno = campo.checked;
+      else if (nome === "categoria" || nome === "responsavel") t[nome] = campo.value.trim();
+      else t[nome] = campo.value;
+      if (nome === "responsavel" && !t.responsavel) t.retorno = false;
       if (nome === "prazo" && !campo.value) { t.inicio = ""; t.limite = ""; }
       gravar(t);
       if (nome !== "titulo" && nome !== "notas") desenhar();
@@ -2101,8 +2571,19 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   document.getElementById("listas").addEventListener("keydown", function(e){
     if (e.key === "Escape") { fechar(); return; }
     if (e.key !== "Enter" || e.shiftKey) return;
+
+    // Enter no campo de avanço registra, sem tirar a mão do teclado.
+    var avanco = e.target.closest(".entrada-avanco, .pct");
+    if (avanco) {
+      e.preventDefault();
+      var art = avanco.closest("article.item");
+      var botao = art && art.querySelector('button[data-acao="registrar"]');
+      if (botao) botao.click();
+      return;
+    }
+
     // Enter fecha o rascunho; Shift+Enter quebra linha na anotação.
-    var campo = e.target.closest('[data-campo="titulo"], [data-campo="categoria"]');
+    var campo = e.target.closest('[data-campo="titulo"], [data-campo="categoria"], [data-campo="responsavel"]');
     if (!campo) return;
     e.preventDefault();
     fechar();
