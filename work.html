@@ -2249,7 +2249,9 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     var barras = "";
 
     if (pessoas.length) {
-      var deQuem = [["todas", "todos"], ["minhas", "comigo"]];
+      // "Eu" entra na mesma lista dos outros nomes; sem responsável marcado,
+      // a atividade é sua.
+      var deQuem = [["todas", "todos"], ["minhas", "Eu"]];
       pessoas.forEach(function(p){ deQuem.push([p, p]); });
       barras += grupoFiltro("responsável", "quem", estado.quem, deQuem);
     }
