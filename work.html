@@ -413,6 +413,19 @@ select.chip{-webkit-appearance:none;appearance:none;padding-right:9px}
 .selo.perto{background:var(--andamento-fundo);color:var(--andamento);font-weight:500}
 .selo.faltando{background:transparent;border:1px dashed var(--atraso);color:var(--atraso)}
 .selo.ciclo{background:transparent;border:1px solid var(--linha-forte);color:var(--tinta-fraca)}
+.selo.previsto{background:transparent;border:1px dashed var(--linha-forte);color:var(--tinta-fraca)}
+
+/* volta futura de uma recorrente: aparece na agenda, mas ainda não existe */
+.item.previsto{opacity:.6}
+.marcar-oco{
+  display:block;
+  margin-top:10px;
+  width:19px;
+  height:19px;
+  border:1.5px dashed var(--linha-forte);
+  border-radius:50%;
+}
+.linha-previsto{padding:8px 0 9px}
 .selo.iminente{background:var(--andamento);color:var(--papel);font-weight:500}
 
 /* ---------- rascunho aberto ---------- */
@@ -747,6 +760,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   var JANELA_ALERTA = 120;   // minutos: a partir daqui a atividade entra em "daqui a pouco"
   var JANELA_IMINENTE = 15;  // minutos: a partir daqui ela é iminente
   var AVISO_ANTECEDENCIA = 15;
+  var HORIZONTE_DIAS = 35;   // até onde a agenda desenha as voltas futuras
 
   var estado = {
     tarefas: new Map(),
@@ -1270,17 +1284,68 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     var faixa = faixaHoraria(t);
     if (faixa) partes.push('<span class="hora' + (vencido ? " vencido" : "") + '">' + esc(faixa) + "</span>");
     if (t.categoria) partes.push('<span class="selo">' + esc(t.categoria) + "</span>");
-    if (t.repete) partes.push('<span class="selo ciclo">⟳ ' + esc(REPETICOES[t.repete].rotulo) + "</span>");
+    if (t.repete) partes.push('<span class="selo ciclo">⟳ ' + esc(rotuloCiclo(t.repete, t.prazo)) + "</span>");
     return partes.join("");
   }
 
-  function opcoesRepeticao(atual){
+  // Uma ocorrência prevista mostra-se, mas não se deixa mexer: ela ainda não
+  // existe. Vira editável quando chega a vez dela.
+  function previstoHtml(t){
+    var partes = [];
+    var faixa = faixaHoraria(t);
+    if (faixa) partes.push('<span class="hora">' + esc(faixa) + "</span>");
+    if (t.categoria) partes.push('<span class="selo">' + esc(t.categoria) + "</span>");
+    partes.push('<span class="selo previsto">prevista</span>');
+    return '<article class="item previsto">' +
+      '<span class="marcar-oco" aria-hidden="true"></span>' +
+      '<div class="linha-previsto">' +
+        '<span class="titulo">' + (t.titulo ? esc(t.titulo) : "<em>sem título</em>") + "</span>" +
+        '<span class="meta">' + partes.join("") + "</span>" +
+      "</div></article>";
+  }
+
+  // "terça-feira" -> "terça"
+  function nomeDia(iso){
+    return new Intl.DateTimeFormat("pt-BR", { weekday:"long" })
+      .format(dataDeIso(iso)).replace("-feira", "");
+  }
+
+  // O ciclo dito pela data que o ancora: "toda semana" a partir de uma terça
+  // é "toda terça", que é como a pessoa pensa a reunião.
+  function rotuloCiclo(repete, prazo){
+    var regra = REPETICOES[repete];
+    if (!regra) return "";
+    if (!prazo) return regra.rotulo;
+    if (repete === "semanal") return "toda " + nomeDia(prazo);
+    if (repete === "quinzenal") return "a cada 15 dias · " + nomeDia(prazo);
+    if (repete === "mensal") return "todo dia " + dataDeIso(prazo).getDate();
+    return regra.rotulo;
+  }
+
+  function opcoesRepeticao(atual, prazo){
     var html = '<option value=""' + (atual ? "" : " selected") + ">não repete</option>";
     Object.keys(REPETICOES).forEach(function(k){
       html += '<option value="' + k + '"' + (atual === k ? " selected" : "") + ">" +
-        esc(REPETICOES[k].rotulo) + "</option>";
+        esc(rotuloCiclo(k, prazo)) + "</option>";
     });
     return html;
+  }
+
+  // As ocorrências que ainda vão acontecer depois da atual. São previsões:
+  // existem na tela para a agenda ficar completa, não no armazenamento.
+  function projetar(t, horizonte){
+    var regra = REPETICOES[t.repete];
+    if (!regra || t.status === "concluida" || !t.prazo) return [];
+    var lista = [], data = t.prazo, guarda = 0;
+    while (guarda++ < 60) {
+      data = regra.proxima(data);
+      if (data > horizonte) break;
+      lista.push(Object.assign({}, t, {
+        id: t.id + "@" + data, prazo: data, previsto: true,
+        status: "aberta", iniciadaEm: "", concluidaEm: ""
+      }));
+    }
+    return lista;
   }
 
   function corpoAbertoHtml(t){
@@ -1309,7 +1374,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
         'data-campo="categoria" list="listaCategorias" maxlength="40" placeholder="categoria" ' +
         'aria-label="Categoria" value="' + esc(t.categoria) + '">' +
       '<select class="chip' + (t.repete ? " preenchido" : "") + '" id="repete-' + esc(t.id) + '" ' +
-        'data-campo="repete" aria-label="Repetição">' + opcoesRepeticao(t.repete) + "</select>" +
+        'data-campo="repete" aria-label="Repetição">' + opcoesRepeticao(t.repete, t.prazo) + "</select>" +
       '<button type="button" class="chip" data-acao="andamento">' + (t.status === "andamento" ? "pausar" : "começar") + "</button>";
 
     if (!comNota) html += '<button type="button" class="chip" data-acao="nota">+ anotação</button>';
@@ -1362,15 +1427,23 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     var html = "";
 
     var atrasadas = [], semData = [], porDia = new Map(), concluidasHoje = [];
+    var horizonte = somarDias(hoje, HORIZONTE_DIAS);
+
+    function noDia(t){
+      if (!porDia.has(t.prazo)) porDia.set(t.prazo, []);
+      porDia.get(t.prazo).push(t);
+    }
+
     visiveis.forEach(function(t){
       if (t.status === "concluida") {
         if (diaDoCarimbo(t.concluidaEm) === hoje) concluidasHoje.push(t);
         return;
       }
+      // As próximas voltas de uma recorrente aparecem nos dias delas.
+      if (t.repete) projetar(t, horizonte).forEach(noDia);
       if (estaAtrasada(t, hoje)) { atrasadas.push(t); return; }
       if (!t.prazo) { semData.push(t); return; }
-      if (!porDia.has(t.prazo)) porDia.set(t.prazo, []);
-      porDia.get(t.prazo).push(t);
+      noDia(t);
     });
 
     atrasadas.sort(function(a, b){
@@ -1398,7 +1471,9 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       var r = rotuloDia(dia);
       html += '<section class="secao">' + cabecaHtml(r.nome, r.detalhe, itens.length ? String(itens.length) : "");
       html += itens.length
-        ? '<div class="painel">' + itens.map(function(t){ return itemHtml(t, hoje, false); }).join("") + "</div>"
+        ? '<div class="painel">' + itens.map(function(t){
+            return t.previsto ? previstoHtml(t) : itemHtml(t, hoje, false);
+          }).join("") + "</div>"
         : '<p class="dia-vazio">Nada marcado para hoje.</p>';
       html += "</section>";
     });
@@ -1509,7 +1584,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     var linhas = [];
     linhas.push(["prazo", t.prazo ? dataCurta(t.prazo) + (faixa ? " · " + faixa : "") : "sem prazo"]);
     if (t.categoria) linhas.push(["categoria", t.categoria]);
-    if (t.repete) linhas.push(["repete", REPETICOES[t.repete].rotulo]);
+    if (t.repete) linhas.push(["repete", rotuloCiclo(t.repete, t.prazo)]);
     linhas.push(["criada", carimboLegivel(t.criadaEm)]);
     if (t.iniciadaEm) linhas.push(["iniciada", carimboLegivel(t.iniciadaEm)]);
     linhas.push(["concluída", carimboLegivel(t.concluidaEm)]);
@@ -1760,17 +1835,28 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     }, mudancas || {}));
   }
 
-  // Concluir uma recorrente faz nascer a próxima. Uma série mantém uma única
-  // ocorrência aberta por vez, então nada se acumula sozinho.
-  function criarProxima(t){
-    var data = proximaData(t);
-    if (!data) return;
-    var serie = t.serie || t.id, pendente = false;
-    estado.tarefas.forEach(function(o){
-      if (o.id !== t.id && o.status !== "concluida" && (o.serie || o.id) === serie) pendente = true;
+  // Uma recorrente é uma só atividade que anda no tempo. Concluir uma volta
+  // arquiva aquela ocorrência para o histórico e move a atividade para a data
+  // seguinte — nunca se acumulam duas abertas da mesma série.
+  function concluirVolta(t, agora){
+    // Cada volta entra na conta do dia dela, não do dia em que a série nasceu.
+    var nascimento = dataDeIso(t.prazo);
+    nascimento.setHours(0, 0, 0, 0);
+    var arquivo = copiar(t, {
+      serie: t.serie || t.id,
+      criadaEm: (agora.getTime() < nascimento.getTime() ? agora : nascimento).toISOString()
     });
-    if (pendente) return;
-    gravar(copiar(t, { prazo: data, serie: serie }));
+    arquivo.status = "concluida";
+    arquivo.concluidaEm = agora.toISOString();
+    arquivo.iniciadaEm = t.iniciadaEm || arquivo.concluidaEm;
+    gravar(arquivo);
+
+    t.serie = t.serie || t.id;
+    t.status = "aberta";
+    t.iniciadaEm = "";
+    t.concluidaEm = "";
+    t.prazo = proximaData(t);
+    gravar(t);
   }
 
   function abrir(id){
@@ -1859,12 +1945,17 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   var campoPrazoNovo = document.getElementById("campoPrazo");
   function sincronizarPrazoNovo(){
     if (campoPrazoNovo.value) document.getElementById("recado").hidden = true;
+    // O ciclo é nomeado pela data escolhida: numa terça, lê-se "toda terça".
+    var sel = document.getElementById("campoRepete");
+    var escolhido = sel.value;
+    sel.innerHTML = opcoesRepeticao(escolhido, campoPrazoNovo.value);
+    sel.value = escolhido;
   }
   campoPrazoNovo.addEventListener("change", sincronizarPrazoNovo);
   campoPrazoNovo.addEventListener("input", sincronizarPrazoNovo);
   // O dia já entra preenchido com hoje: nunca se cria uma atividade sem ele.
   campoPrazoNovo.value = isoHoje();
-  document.getElementById("campoRepete").innerHTML = opcoesRepeticao("");
+  sincronizarPrazoNovo();
 
   document.getElementById("filtros").addEventListener("click", function(e){
     var b = e.target.closest("button[data-filtro]");
@@ -1963,9 +2054,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
           if (!t.iniciadaEm) t.iniciadaEm = t.concluidaEm;
           if (estado.aberto === t.id) { estado.aberto = null; estado.mostrarNota = false; }
           if (t.repete) {
-            t.serie = t.serie || t.id;
-            gravar(t);
-            criarProxima(t);
+            concluirVolta(t, new Date());
             desenhar();
             return;
           }
