@@ -170,6 +170,21 @@ body{
 }
 .adicionar input[type="date"]:invalid{border-color:var(--atraso)}
 .adicionar .botao-principal{margin-left:auto}
+.adicionar select.ciclo{
+  flex:0 0 auto;
+  border:1px solid var(--linha);
+  border-radius:6px;
+  background:var(--papel);
+  color:var(--tinta-suave);
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:12px;
+  padding:6px 8px;
+}
+select.chip{
+  -webkit-appearance:none;
+  appearance:none;
+  padding-right:9px;
+}
 
 /* par rotulado: um horário com o nome do papel colado nele */
 .par{
@@ -393,6 +408,7 @@ body{
 .selo.andamento{background:var(--andamento-fundo);color:var(--andamento)}
 .selo.perto{background:var(--andamento-fundo);color:var(--andamento);font-weight:500}
 .selo.faltando{background:transparent;border:1px dashed var(--atraso);color:var(--atraso)}
+.selo.ciclo{background:transparent;border:1px solid var(--linha-forte);color:var(--tinta-fraca)}
 .selo.iminente{background:var(--andamento);color:var(--papel);font-weight:500}
 
 /* ---------- rascunho aberto ---------- */
@@ -546,16 +562,55 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.5) 0 2px,transparent 2px 5px);
 }
 .registro{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
-.registro li{
+.registro li{display:block}
+.registro-linha{
   display:flex;
   flex-wrap:wrap;
   align-items:baseline;
   gap:4px 9px;
+  width:100%;
+  text-align:left;
+  border:0;
+  background:transparent;
+  font:inherit;
   font-size:14px;
   color:var(--tinta-suave);
-  padding-left:16px;
+  padding:3px 0 3px 16px;
   position:relative;
+  cursor:pointer;
 }
+.registro-linha:hover{color:var(--tinta)}
+.registro-linha .nome{flex:1 1 auto}
+.detalhe-hist{
+  margin:2px 0 10px 16px;
+  padding:11px 13px;
+  background:var(--recuo);
+  border-radius:8px;
+}
+.detalhe-hist dl{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  gap:3px 14px;
+  margin:0;
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11.5px;
+}
+.detalhe-hist dt{
+  font-size:10px;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+  color:var(--tinta-fraca);
+}
+.detalhe-hist dd{margin:0;color:var(--tinta-suave)}
+.nota-hist{
+  margin:9px 0 0;
+  padding-left:9px;
+  border-left:1px solid var(--linha-forte);
+  font-size:13.5px;
+  color:var(--tinta-suave);
+  white-space:pre-wrap;
+}
+.acoes-hist{margin-top:10px}
 .registro .marca{
   position:absolute;
   left:0;
@@ -652,6 +707,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       <input type="time" id="campoInicio" aria-label="Hora de início"></label>
     <label class="par"><span>limite</span>
       <input type="time" id="campoLimite" aria-label="Prazo limite"></label>
+    <select id="campoRepete" class="ciclo" aria-label="Repetição"></select>
     <button type="submit" class="botao-principal">Adicionar</button>
     <p class="recado" id="recado" hidden></p>
   </form>
@@ -686,7 +742,9 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   var estado = {
     tarefas: new Map(),
     vista: "agenda",
-    aberto: null,        // uma atividade em edição por vez
+    aberto: null,          // uma atividade em edição por vez
+    historicoAberto: null, // uma linha do histórico expandida por vez
+    protegerAberto: false, // o clique que abriu um rascunho não pode fechá-lo ao borbulhar
     mostrarNota: false,  // a anotação da atividade aberta está à vista
     pendentes: new Set(),
     filtro: "todas",
@@ -790,6 +848,8 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       inicio: validarHora(d.inicio !== undefined ? d.inicio : d.hora),
       limite: validarHora(d.limite),
       categoria: typeof d.categoria === "string" ? d.categoria.trim() : "",
+      repete: REPETICOES[d.repete] ? d.repete : "",
+      serie: typeof d.serie === "string" ? d.serie : "",
       status: status,
       criadaEm: typeof d.criadaEm === "string" ? d.criadaEm : new Date().toISOString(),
       iniciadaEm: typeof d.iniciadaEm === "string" ? d.iniciadaEm : "",
@@ -800,14 +860,36 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   function corpo(t){
     return {
       titulo: t.titulo, notas: t.notas, prazo: t.prazo, inicio: t.inicio, limite: t.limite,
-      categoria: t.categoria, status: t.status, criadaEm: t.criadaEm,
-      iniciadaEm: t.iniciadaEm, concluidaEm: t.concluidaEm
+      categoria: t.categoria, repete: t.repete, serie: t.serie, status: t.status,
+      criadaEm: t.criadaEm, iniciadaEm: t.iniciadaEm, concluidaEm: t.concluidaEm
     };
   }
 
   function validarHora(v){
     return typeof v === "string" && /^\d{2}:\d{2}$/.test(v) ? v : "";
   }
+
+  /* ---------------- repetição ---------------- */
+
+  // Cada ciclo sabe se chamar e sabe achar a próxima data a partir de uma dada.
+  var REPETICOES = {
+    diario:     { rotulo: "todo dia",       proxima: function(d){ return somarDias(d, 1); } },
+    uteis:      { rotulo: "dias úteis",     proxima: function(d){
+                    var p = somarDias(d, 1);
+                    while ([0, 6].indexOf(dataDeIso(p).getDay()) !== -1) p = somarDias(p, 1);
+                    return p;
+                  } },
+    semanal:    { rotulo: "toda semana",    proxima: function(d){ return somarDias(d, 7); } },
+    quinzenal:  { rotulo: "a cada 15 dias", proxima: function(d){ return somarDias(d, 14); } },
+    mensal:     { rotulo: "todo mês",       proxima: function(d){
+                    var base = dataDeIso(d), dia = base.getDate();
+                    var alvo = new Date(base.getFullYear(), base.getMonth() + 1, 1);
+                    // 31 de janeiro repetido em fevereiro cai no último dia do mês.
+                    var ultimo = new Date(alvo.getFullYear(), alvo.getMonth() + 1, 0).getDate();
+                    alvo.setDate(Math.min(dia, ultimo));
+                    return isoDe(alvo);
+                  } }
+  };
 
   /* ---------------- prazo ---------------- */
 
@@ -1179,7 +1261,17 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     var faixa = faixaHoraria(t);
     if (faixa) partes.push('<span class="hora' + (vencido ? " vencido" : "") + '">' + esc(faixa) + "</span>");
     if (t.categoria) partes.push('<span class="selo">' + esc(t.categoria) + "</span>");
+    if (t.repete) partes.push('<span class="selo ciclo">⟳ ' + esc(REPETICOES[t.repete].rotulo) + "</span>");
     return partes.join("");
+  }
+
+  function opcoesRepeticao(atual){
+    var html = '<option value=""' + (atual ? "" : " selected") + ">não repete</option>";
+    Object.keys(REPETICOES).forEach(function(k){
+      html += '<option value="' + k + '"' + (atual === k ? " selected" : "") + ">" +
+        esc(REPETICOES[k].rotulo) + "</option>";
+    });
+    return html;
   }
 
   function corpoAbertoHtml(t){
@@ -1207,9 +1299,13 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     html += '<input type="text" class="chip categoria' + (t.categoria ? " preenchido" : "") + '" id="categoria-' + esc(t.id) + '" ' +
         'data-campo="categoria" list="listaCategorias" maxlength="40" placeholder="categoria" ' +
         'aria-label="Categoria" value="' + esc(t.categoria) + '">' +
+      '<select class="chip' + (t.repete ? " preenchido" : "") + '" id="repete-' + esc(t.id) + '" ' +
+        'data-campo="repete" aria-label="Repetição">' + opcoesRepeticao(t.repete) + "</select>" +
       '<button type="button" class="chip" data-acao="andamento">' + (t.status === "andamento" ? "pausar" : "começar") + "</button>";
 
     if (!comNota) html += '<button type="button" class="chip" data-acao="nota">+ anotação</button>';
+    if (t.repete) html += '<button type="button" class="chip" data-acao="pular">pular</button>';
+    html += '<button type="button" class="chip" data-acao="duplicar">duplicar</button>';
 
     html += '<button type="button" class="chip perigo" data-acao="excluir">excluir</button>' +
       "</div></div>";
@@ -1391,6 +1487,36 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     return Array.from(mapa.values()).sort(function(a, b){ return a.dia > b.dia ? -1 : 1; });
   }
 
+  function carimboLegivel(iso){
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return "—";
+    return dataCurta(isoDe(d)) + ", " + horaDe(d);
+  }
+
+  // O que o histórico mostra ao abrir uma linha: a atividade inteira, não só
+  // o fato de ter sido concluída.
+  function detalheHistoricoHtml(t){
+    var faixa = faixaHoraria(t);
+    var linhas = [];
+    linhas.push(["prazo", t.prazo ? dataCurta(t.prazo) + (faixa ? " · " + faixa : "") : "sem prazo"]);
+    if (t.categoria) linhas.push(["categoria", t.categoria]);
+    if (t.repete) linhas.push(["repete", REPETICOES[t.repete].rotulo]);
+    linhas.push(["criada", carimboLegivel(t.criadaEm)]);
+    if (t.iniciadaEm) linhas.push(["iniciada", carimboLegivel(t.iniciadaEm)]);
+    linhas.push(["concluída", carimboLegivel(t.concluidaEm)]);
+
+    var html = '<div class="detalhe-hist"><dl>';
+    linhas.forEach(function(l){
+      html += "<dt>" + esc(l[0]) + "</dt><dd>" + esc(l[1]) + "</dd>";
+    });
+    html += "</dl>";
+    if (t.notas) html += '<p class="nota-hist">' + esc(t.notas) + "</p>";
+    html += '<div class="acoes-hist">' +
+      '<button type="button" class="chip" data-acao="reabrir" data-id="' + esc(t.id) + '">reabrir na agenda</button>' +
+    "</div>";
+    return html + "</div>";
+  }
+
   function celulaHtml(n, rotulo, tom){
     return '<div class="celula' + (tom ? " " + tom : "") + '">' +
       '<span class="numero">' + n + "</span>" +
@@ -1421,10 +1547,16 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
         var tom = v === true ? "dentro" : (v === false ? "fora" : "neutra");
         var marca = v === true ? "✓" : (v === false ? "!" : "·");
         var texto = v === true ? "no prazo" : (v === false ? (atrasoTexto(t) || "fora do prazo") : "sem prazo");
+        var aberta = estado.historicoAberto === t.id;
         html += "<li>" +
-          '<span class="marca ' + tom + '" aria-hidden="true">' + marca + "</span>" +
-          "<span>" + (t.titulo ? esc(t.titulo) : "<em>sem título</em>") + "</span>" +
-          '<span class="veredito ' + tom + '">' + esc(texto) + "</span></li>";
+          '<button type="button" class="registro-linha" data-acao="verHistorico" data-id="' + esc(t.id) + '" ' +
+            'aria-expanded="' + aberta + '">' +
+            '<span class="marca ' + tom + '" aria-hidden="true">' + marca + "</span>" +
+            '<span class="nome">' + (t.titulo ? esc(t.titulo) : "<em>sem título</em>") + "</span>" +
+            '<span class="veredito ' + tom + '">' + esc(texto) + "</span>" +
+          "</button>" +
+          (aberta ? detalheHistoricoHtml(t) : "") +
+        "</li>";
       });
       html += "</ul>";
     }
@@ -1601,9 +1733,41 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
   /* ---------------- ações ---------------- */
 
+  // A próxima data do ciclo, nunca no passado: se a série ficou parada,
+  // avança até alcançar hoje em vez de nascer já atrasada.
+  function proximaData(t){
+    var regra = REPETICOES[t.repete];
+    if (!regra || !t.prazo) return "";
+    var alvo = regra.proxima(t.prazo), hoje = isoHoje(), guarda = 0;
+    while (alvo < hoje && guarda++ < 400) alvo = regra.proxima(alvo);
+    return alvo;
+  }
+
+  function copiar(t, mudancas){
+    return normalizar(novoId(), Object.assign({
+      titulo: t.titulo, notas: t.notas, prazo: t.prazo, inicio: t.inicio, limite: t.limite,
+      categoria: t.categoria, repete: t.repete, serie: "",
+      criadaEm: new Date().toISOString()
+    }, mudancas || {}));
+  }
+
+  // Concluir uma recorrente faz nascer a próxima. Uma série mantém uma única
+  // ocorrência aberta por vez, então nada se acumula sozinho.
+  function criarProxima(t){
+    var data = proximaData(t);
+    if (!data) return;
+    var serie = t.serie || t.id, pendente = false;
+    estado.tarefas.forEach(function(o){
+      if (o.id !== t.id && o.status !== "concluida" && (o.serie || o.id) === serie) pendente = true;
+    });
+    if (pendente) return;
+    gravar(copiar(t, { prazo: data, serie: serie }));
+  }
+
   function abrir(id){
     var t = estado.tarefas.get(id);
     estado.aberto = id;
+    estado.protegerAberto = true;
     estado.mostrarNota = !!(t && t.notas);
     desenhar();
     var campo = document.getElementById("titulo-" + id);
@@ -1642,6 +1806,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       prazo: prazo,
       inicio: document.getElementById("campoInicio").value || "",
       limite: document.getElementById("campoLimite").value || "",
+      repete: document.getElementById("campoRepete").value || "",
       categoria: estado.filtro === "todas" ? "" : estado.filtro,
       criadaEm: new Date().toISOString()
     });
@@ -1682,6 +1847,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   campoPrazoNovo.addEventListener("input", sincronizarPrazoNovo);
   // O dia já entra preenchido com hoje: nunca se cria uma atividade sem ele.
   campoPrazoNovo.value = isoHoje();
+  document.getElementById("campoRepete").innerHTML = opcoesRepeticao("");
 
   document.getElementById("filtros").addEventListener("click", function(e){
     var b = e.target.closest("button[data-filtro]");
@@ -1720,6 +1886,28 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       return;
     }
 
+    if (acao === "verHistorico") {
+      var alvoHist = botao.getAttribute("data-id");
+      estado.historicoAberto = estado.historicoAberto === alvoHist ? null : alvoHist;
+      desenhar();
+      return;
+    }
+
+    if (acao === "reabrir") {
+      var origem = estado.tarefas.get(botao.getAttribute("data-id"));
+      if (origem) {
+        var volta = Object.assign({}, origem);
+        volta.status = "aberta";
+        volta.concluidaEm = "";
+        gravar(volta);
+      }
+      estado.historicoAberto = null;
+      estado.vista = "agenda";
+      gravarPreferencias();
+      desenhar();
+      return;
+    }
+
     comTarefa(botao, function(t){
       if (acao === "abrir") { abrir(t.id); return; }
 
@@ -1733,6 +1921,20 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
       if (acao === "excluir") { remover(t.id); desenhar(); return; }
 
+      if (acao === "duplicar") {
+        var copia = copiar(t);
+        gravar(copia);
+        abrir(copia.id);
+        return;
+      }
+
+      if (acao === "pular") {
+        var adiada = proximaData(t);
+        if (adiada) { t.prazo = adiada; gravar(t); }
+        desenhar();
+        return;
+      }
+
       if (acao === "alternar") {
         if (t.status === "concluida") {
           t.status = "aberta";
@@ -1743,6 +1945,13 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
           // Concluir sem nunca ter começado ainda conta como trabalho do dia.
           if (!t.iniciadaEm) t.iniciadaEm = t.concluidaEm;
           if (estado.aberto === t.id) { estado.aberto = null; estado.mostrarNota = false; }
+          if (t.repete) {
+            t.serie = t.serie || t.id;
+            gravar(t);
+            criarProxima(t);
+            desenhar();
+            return;
+          }
         }
       } else if (acao === "andamento") {
         if (t.status === "andamento") {
@@ -1795,6 +2004,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
   // Clicar fora fecha o rascunho aberto.
   document.addEventListener("click", function(e){
+    if (estado.protegerAberto) { estado.protegerAberto = false; return; }
     if (!estado.aberto) return;
     var art = e.target.closest("article.item");
     if (art && art.getAttribute("data-id") === estado.aberto) return;
