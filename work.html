@@ -537,7 +537,7 @@ label.chip.marca span{font-size:10px;letter-spacing:.06em;text-transform:upperca
 .selo.iminente{background:var(--andamento);color:var(--papel);font-weight:500}
 
 /* ---------- rascunho aberto ---------- */
-.edicao{grid-column:2 / -1;padding:6px 0 10px}
+.edicao{grid-column:2;padding:6px 0 10px}
 .escrita{
   display:block;
   width:100%;
@@ -759,7 +759,8 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 .registro .veredito.neutra{color:var(--tinta-fraca)}
 
 /* ---------- atalhos na linha ---------- */
-.atalhos{display:flex;align-items:center;gap:2px;align-self:center}
+.atalhos{display:flex;align-items:center;gap:2px;align-self:start;margin-top:5px}
+.selo.inicia{background:transparent;border:1px solid var(--linha-forte);color:var(--tinta-suave)}
 .atalho{
   display:grid;
   place-items:center;
@@ -1080,9 +1081,6 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       // `hora` é o campo único das versões antigas: virou o início.
       inicio: validarHora(d.inicio !== undefined ? d.inicio : d.hora),
       limite: validarHora(d.limite),
-      // Com hora de início marcada, a atividade entra em andamento sozinha na
-      // hora dela. Quem não quer isso desmarca; o padrão é o caso comum.
-      autoInicio: d.autoInicio !== false,
       categoria: typeof d.categoria === "string" ? d.categoria.trim() : "",
       responsavel: typeof d.responsavel === "string" ? d.responsavel.trim() : "",
       retorno: d.retorno === true,
@@ -1123,7 +1121,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   function corpo(t){
     return {
       titulo: t.titulo, notas: t.notas, prazo: t.prazo, inicio: t.inicio, limite: t.limite,
-      autoInicio: t.autoInicio, categoria: t.categoria, responsavel: t.responsavel, retorno: t.retorno,
+      categoria: t.categoria, responsavel: t.responsavel, retorno: t.retorno,
       repete: t.repete, serie: t.serie, status: t.status,
       progresso: t.progresso, atualizacoes: t.atualizacoes,
       criadaEm: t.criadaEm, atualizadaEm: t.atualizadaEm,
@@ -1524,6 +1522,13 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
         (m.tipo === "limite" ? "limite " : "começa ") + esc(emQuanto(m.min)) + "</span>");
     }
 
+    // Sem hora marcada nada começa sozinho; com hora, começa. Dizer isso na
+    // linha vale mais do que uma opção escondida no rascunho — mas calado
+    // quando a contagem regressiva já está dizendo o mesmo.
+    if (!m && t.status === "aberta" && t.inicio && !t.iniciadaEm) {
+      partes.push('<span class="selo inicia">inicia ' + esc(t.inicio) + "</span>");
+    }
+
     var vencido = estaAtrasada(t, hoje);
     if (t.prazo && comData) partes.push('<span class="prazo' + (vencido ? " vencido" : "") + '">' + esc(rotuloPrazo(t.prazo)) + "</span>");
     var faixa = faixaHoraria(t);
@@ -1633,11 +1638,6 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
         '<input type="time" id="limite-' + esc(t.id) + '" data-campo="limite" aria-label="Prazo limite" value="' + esc(t.limite) + '"></label>';
     }
 
-    if (t.inicio && t.status !== "concluida") {
-      html += '<label class="chip marca' + (t.autoInicio ? " preenchido" : "") + '">' +
-        '<input type="checkbox" id="auto-' + esc(t.id) + '" data-campo="autoInicio"' +
-        (t.autoInicio ? " checked" : "") + "><span>começa sozinha</span></label>";
-    }
 
     html += '<input type="text" class="chip categoria' + (t.responsavel ? " preenchido" : "") + '" id="responsavel-' + esc(t.id) + '" ' +
         'data-campo="responsavel" list="listaPessoas" maxlength="40" placeholder="quem faz" ' +
@@ -1653,14 +1653,13 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
         'data-campo="categoria" list="listaCategorias" maxlength="40" placeholder="categoria" ' +
         'aria-label="Categoria" value="' + esc(t.categoria) + '">' +
       '<select class="chip' + (t.repete ? " preenchido" : "") + '" id="repete-' + esc(t.id) + '" ' +
-        'data-campo="repete" aria-label="Repetição">' + opcoesRepeticao(t.repete, t.prazo) + "</select>" +
-      '<button type="button" class="chip" data-acao="andamento">' + (t.status === "andamento" ? "pausar" : "começar") + "</button>";
+        'data-campo="repete" aria-label="Repetição">' + opcoesRepeticao(t.repete, t.prazo) + "</select>";
 
+    // Começar, atualizar e excluir moram nos ícones da própria linha; repeti-los
+    // aqui só dava duas portas para a mesma coisa.
     if (!comNota) html += '<button type="button" class="chip" data-acao="nota">+ anotação</button>';
     if (t.repete) html += '<button type="button" class="chip" data-acao="pular">pular</button>';
-    html += '<button type="button" class="chip" data-acao="duplicar">duplicar</button>';
-
-    html += '<button type="button" class="chip perigo" data-acao="excluir">excluir</button>' +
+    html += '<button type="button" class="chip" data-acao="duplicar">duplicar</button>' +
       "</div>" + avancoHtml(t) + "</div>";
     return html;
   }
@@ -1711,9 +1710,9 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
             : "") +
         "</button>";
 
-    // Começar e excluir ficam na própria linha: são o que mais se faz, e abrir
-    // o rascunho toda vez só para isso é trabalho à toa.
-    var atalhos = aberto || feita ? "" :
+    // Começar, atualizar e excluir ficam sempre na linha, aberta ou fechada:
+    // uma ação, um lugar só. O ícone de play/pausa também diz em que pé está.
+    var atalhos = feita ? "" :
       '<div class="atalhos">' +
         atalhoHtml(t.status === "andamento" ? "pausar" : "comecar",
                    t.status === "andamento" ? "Pausar" : "Começar") +
@@ -2085,7 +2084,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     if (!estado.pronto) return false;
     var agora = horaDe(new Date()), mudou = false;
     estado.tarefas.forEach(function(t){
-      if (t.status !== "aberta" || !t.autoInicio || t.iniciadaEm) return;
+      if (t.status !== "aberta" || t.iniciadaEm) return;
       if (t.prazo !== hoje || !t.inicio || t.inicio > agora) return;
       var novo = Object.assign({}, t);
       novo.status = "andamento";
@@ -2256,7 +2255,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   function copiar(t, mudancas){
     return normalizar(novoId(), Object.assign({
       titulo: t.titulo, notas: t.notas, prazo: t.prazo, inicio: t.inicio, limite: t.limite,
-      autoInicio: t.autoInicio, categoria: t.categoria, responsavel: t.responsavel, retorno: t.retorno,
+      categoria: t.categoria, responsavel: t.responsavel, retorno: t.retorno,
       repete: t.repete, serie: "",
       criadaEm: new Date().toISOString()
     }, mudancas || {}));
@@ -2444,7 +2443,9 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   // Demanda que já começa no instante em que é anotada.
   document.getElementById("agoraInicio").addEventListener("click", function(){
     document.getElementById("campoInicio").value = horaDe(new Date());
-    if (!campoPrazoNovo.value) { campoPrazoNovo.value = isoHoje(); sincronizarPrazoNovo(); }
+    // "agora" é hoje: com o prazo noutro dia a atividade nunca começaria já.
+    campoPrazoNovo.value = isoHoje();
+    sincronizarPrazoNovo();
     document.getElementById("campoNova").focus();
   });
 
@@ -2518,8 +2519,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       // arranque automático pega a atividade já na próxima passada.
       if (acao === "agora") {
         t.inicio = horaDe(new Date());
-        if (!t.prazo) t.prazo = isoHoje();
-        t.autoInicio = true;
+        t.prazo = isoHoje();   // "agora" é hoje: prazo noutro dia contradiz isso
         gravar(t);
         estado.protegerAberto = true;
         desenhar();
