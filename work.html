@@ -178,7 +178,8 @@ body{
 /* um controle compacto: fundo recuado, mono, do tamanho do seu conteúdo */
 .controles select,
 .controles .campo-cat,
-.controles .par{
+.controles .par,
+.filtros .par{
   border:1px solid var(--linha);
   border-radius:6px;
   background:var(--papel);
@@ -206,13 +207,15 @@ body{
 select.chip{-webkit-appearance:none;appearance:none;padding-right:9px}
 
 /* par rotulado: um horário com o nome do papel colado nele */
-.controles .par{
+.controles .par,
+.filtros .par{
   display:inline-flex;
   align-items:baseline;
   gap:5px;
   padding:5px 8px;
 }
-.controles .par > span{
+.controles .par > span,
+.filtros .par > span{
   font-size:10px;
   letter-spacing:.08em;
   text-transform:uppercase;
@@ -253,26 +256,24 @@ select.chip{-webkit-appearance:none;appearance:none;padding-right:9px}
 .botao-principal:hover{background:var(--acento-tinta)}
 
 /* ---------- filtros ---------- */
-.filtros{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:14px}
-.grupo-filtro{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px}
-.filtros button{
-  border:1px solid var(--linha);
+/* Seletores, não pastilhas: uma fileira de pastilhas cresce com a equipe e
+   vira uma parede; um seletor ocupa o mesmo espaço com trinta pessoas. */
+.filtros{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:14px}
+.filtros .par{flex:0 0 auto}
+.filtros select{
+  border:0;
   background:transparent;
-  color:var(--tinta-suave);
-  font-family:"IBM Plex Mono",ui-monospace,monospace;
-  font-size:11.5px;
-  letter-spacing:.04em;
-  padding:4px 10px;
-  border-radius:999px;
-  cursor:pointer;
+  color:inherit;
+  font:inherit;
+  padding:0;
+  max-width:150px;
 }
-.filtros button:hover{border-color:var(--linha-forte);color:var(--tinta)}
-.filtros button[aria-pressed="true"]{
+.filtros .par.ativo{
   background:var(--acento-fundo);
   border-color:transparent;
   color:var(--acento-tinta);
-  font-weight:500;
 }
+.filtros .par.ativo > span{color:var(--acento-tinta);opacity:.8}
 
 /* ---------- avisos ---------- */
 .faixa-aviso{
@@ -498,15 +499,6 @@ label.chip.par .pct::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
   font-variant-numeric:tabular-nums;
 }
 .selo.volta{background:transparent;border:1px solid var(--acento);color:var(--acento-tinta)}
-.filtros .rotulo-filtro{
-  align-self:center;
-  margin-right:2px;
-  font-family:"IBM Plex Mono",ui-monospace,monospace;
-  font-size:10px;
-  letter-spacing:.09em;
-  text-transform:uppercase;
-  color:var(--tinta-fraca);
-}
 .faixa-aviso.desfazer{
   display:flex;
   flex-wrap:wrap;
@@ -2241,12 +2233,13 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     // Os dois filtros vivem na mesma barra, cada um com o nome do que filtra.
     // Sem isso, um nome de pessoa usado também como categoria aparecia duas
     // vezes em linhas idênticas, sem nada dizendo o que era o quê.
-    function grupoFiltro(rotulo, atributo, atual, itens){
-      return '<span class="grupo-filtro"><span class="rotulo-filtro">' + esc(rotulo) + "</span>" +
+    function seletorFiltro(rotulo, alvo, atual, itens){
+      return '<label class="par' + (atual !== "todas" ? " ativo" : "") + '"><span>' + esc(rotulo) + "</span>" +
+        '<select id="filtro-' + alvo + '" data-alvo="' + alvo + '" aria-label="Filtrar por ' + esc(rotulo) + '">' +
         itens.map(function(par){
-          return '<button type="button" data-' + atributo + '="' + esc(par[0]) + '" aria-pressed="' +
-            (atual === par[0]) + '">' + esc(par[1]) + "</button>";
-        }).join("") + "</span>";
+          return '<option value="' + esc(par[0]) + '"' + (atual === par[0] ? " selected" : "") + ">" +
+            esc(par[1]) + "</option>";
+        }).join("") + "</select></label>";
     }
 
     var caixaFiltros = document.getElementById("filtros");
@@ -2257,12 +2250,15 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       // a atividade é sua.
       var deQuem = [["todas", "todos"], ["minhas", "Eu"]];
       pessoas.forEach(function(p){ deQuem.push([p, p]); });
-      barras += grupoFiltro("responsável", "quem", estado.quem, deQuem);
+      barras += seletorFiltro("responsável", "quem", estado.quem, deQuem);
     }
     if (categorias.length) {
       var deCat = [["todas", "todas"]];
       categorias.forEach(function(c){ deCat.push([c, c]); });
-      barras += grupoFiltro("categoria", "filtro", estado.filtro, deCat);
+      barras += seletorFiltro("categoria", "filtro", estado.filtro, deCat);
+    }
+    if (barras && (estado.quem !== "todas" || estado.filtro !== "todas")) {
+      barras += '<button type="button" class="mini" data-limpar="1">limpar</button>';
     }
 
     caixaFiltros.innerHTML = barras;
@@ -2480,11 +2476,19 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   campoPrazoNovo.value = isoHoje();
   sincronizarPrazoNovo();
 
+  document.getElementById("filtros").addEventListener("change", function(e){
+    var s = e.target.closest("select[data-alvo]");
+    if (!s) return;
+    if (s.getAttribute("data-alvo") === "quem") estado.quem = s.value;
+    else estado.filtro = s.value;
+    gravarPreferencias();
+    desenhar();
+  });
+
   document.getElementById("filtros").addEventListener("click", function(e){
-    var b = e.target.closest("button[data-filtro], button[data-quem]");
-    if (!b) return;
-    if (b.hasAttribute("data-quem")) estado.quem = b.getAttribute("data-quem");
-    else estado.filtro = b.getAttribute("data-filtro");
+    if (!e.target.closest("button[data-limpar]")) return;
+    estado.quem = "todas";
+    estado.filtro = "todas";
     gravarPreferencias();
     desenhar();
   });
