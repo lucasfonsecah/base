@@ -957,7 +957,8 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       <input type="text" class="campo-cat" id="campoResponsavel" list="listaPessoas"
              placeholder="quem faz" aria-label="Responsável" maxlength="40">
       <label class="par marca" id="marcaRetorno" hidden>
-        <input type="checkbox" id="campoRetorno"><span>volta p/ mim</span></label>
+        <input type="checkbox" id="campoRetorno" aria-label="Também é minha: volta para mim depois">
+        <span>Eu</span></label>
       <input type="text" class="campo-cat" id="campoCategoria" list="listaCategorias"
              placeholder="categoria" aria-label="Categoria" maxlength="40">
       <select id="campoRepete" class="ciclo" aria-label="Repetição"></select>
@@ -1580,7 +1581,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     var faixa = faixaHoraria(t);
     if (faixa) partes.push('<span class="hora' + (vencido ? " vencido" : "") + '">' + esc(faixa) + "</span>");
     if (t.responsavel) partes.push('<span class="selo pessoa">→ ' + esc(t.responsavel) + "</span>");
-    if (t.responsavel && t.retorno) partes.push('<span class="selo volta">volta p/ mim</span>');
+    if (t.responsavel && t.retorno) partes.push('<span class="selo volta" title="Volta para mim">Eu</span>');
     if (t.categoria) partes.push('<span class="selo">' + esc(t.categoria) + "</span>");
     if (t.repete) partes.push('<span class="selo ciclo">⟳ ' + esc(rotuloCiclo(t.repete, t.prazo)) + "</span>");
     return partes.join("");
@@ -1693,7 +1694,8 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     if (t.responsavel) {
       html += '<label class="chip marca' + (t.retorno ? " preenchido" : "") + '">' +
         '<input type="checkbox" id="retorno-' + esc(t.id) + '" data-campo="retorno"' +
-        (t.retorno ? " checked" : "") + "><span>volta p/ mim</span></label>";
+        (t.retorno ? " checked" : "") + ' aria-label="Também é minha: volta para mim depois">' +
+        "<span>Eu</span></label>";
     }
 
     html += '<input type="text" class="chip categoria' + (t.categoria ? " preenchido" : "") + '" id="categoria-' + esc(t.id) + '" ' +
@@ -2016,7 +2018,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     var faixa = faixaHoraria(t);
     var linhas = [];
     linhas.push(["prazo", t.prazo ? dataCurta(t.prazo) + (faixa ? " · " + faixa : "") : "sem prazo"]);
-    if (t.responsavel) linhas.push(["quem fez", t.responsavel + (t.retorno ? " (com retorno p/ mim)" : "")]);
+    if (t.responsavel) linhas.push(["quem fez", t.responsavel + (t.retorno ? " + Eu" : "")]);
     if (t.categoria) linhas.push(["categoria", t.categoria]);
     if (t.repete) linhas.push(["repete", rotuloCiclo(t.repete, t.prazo)]);
     linhas.push(["criada", carimboLegivel(t.criadaEm)]);
@@ -2201,7 +2203,9 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
     var visiveis = todas.filter(function(t){
       if (estado.filtro !== "todas" && t.categoria !== estado.filtro) return false;
-      if (estado.quem === "minhas") return !t.responsavel;
+      // "Eu" é tudo que depende de você: o que não foi delegado, mais o que
+      // foi mas volta para as suas mãos.
+      if (estado.quem === "minhas") return !t.responsavel || t.retorno;
       if (estado.quem !== "todas") return t.responsavel === estado.quem;
       return true;
     });
