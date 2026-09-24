@@ -816,7 +816,34 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   cursor:pointer;
 }
 .celula-dia:hover{background:var(--recuo)}
-.celula-dia.agora{border-color:var(--acento)}
+.celula-dia.agora{border-color:var(--linha-forte)}
+.celula-dia.escolhida{background:var(--acento-fundo);border-color:var(--acento)}
+.celula-dia.escolhida .numero-dia,
+.celula-dia.escolhida .sigla,
+.celula-dia.escolhida .qtd-dia{color:var(--acento-tinta)}
+.faixa-foco{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:space-between;
+  gap:6px 14px;
+  margin-top:16px;
+  padding:9px 13px;
+  border-radius:8px;
+  background:var(--acento-fundo);
+  color:var(--acento-tinta);
+  font-size:13.5px;
+}
+.faixa-foco button{
+  border:0;
+  background:transparent;
+  color:inherit;
+  font:inherit;
+  font-weight:600;
+  text-decoration:underline;
+  cursor:pointer;
+  padding:0;
+}
 .celula-dia .sigla{
   font-family:"IBM Plex Mono",ui-monospace,monospace;
   font-size:9.5px;
@@ -969,6 +996,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   var JANELA_IMINENTE = 15;  // minutos: a partir daqui ela é iminente
   var AVISO_ANTECEDENCIA = 15;
   var HORIZONTE_DIAS = 35;   // até onde a agenda desenha as voltas futuras
+  var MAX_PROJECOES = 4;     // quantas voltas de cada série a agenda adianta
   var DIAS_PARADO = 3;       // a partir daqui a atividade é cobrada de parada
 
   var estado = {
@@ -981,6 +1009,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     pendentes: new Set(),
     filtro: "todas",
     quem: "todas",
+    diaFoco: null,      // quando um dia da faixa é escolhido, a agenda mostra só ele
     desfazer: null,     // a última atividade excluída, enquanto dá para voltar
     verTudo: false,
     modo: "carregando",
@@ -1600,11 +1629,12 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
   // As ocorrências que ainda vão acontecer depois da atual. São previsões:
   // existem na tela para a agenda ficar completa, não no armazenamento.
-  function projetar(t, horizonte){
+  function projetar(t, horizonte, maximo){
     var regra = REPETICOES[t.repete];
     if (!regra || t.status === "concluida" || !t.prazo) return [];
+    var teto = maximo || 60;
     var lista = [], data = t.prazo, guarda = 0;
-    while (guarda++ < 60) {
+    while (guarda++ < 60 && lista.length < teto) {
       data = regra.proxima(data);
       if (data > horizonte) break;
       lista.push(Object.assign({}, t, {
@@ -1755,8 +1785,9 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
         if (diaDoCarimbo(t.concluidaEm) === hoje) concluidasHoje.push(t);
         return;
       }
-      // As próximas voltas de uma recorrente aparecem nos dias delas.
-      if (t.repete) projetar(t, horizonte).forEach(noDia);
+      // As próximas voltas aparecem nos dias delas, mas poucas: uma rotina
+      // diária projetada por 35 dias vira uma agenda de trinta seções.
+      if (t.repete) projetar(t, horizonte, MAX_PROJECOES).forEach(noDia);
       if (estaAtrasada(t, hoje)) { atrasadas.push(t); return; }
       if (!t.prazo) { semData.push(t); return; }
       noDia(t);
@@ -1767,6 +1798,27 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       if (ka !== kb) return ka < kb ? -1 : 1;
       return a.criadaEm < b.criadaEm ? -1 : 1;
     });
+
+    // Dia escolhido na faixa: a agenda mostra só ele, e nada mais atrapalha.
+    if (estado.diaFoco) {
+      var foco = estado.diaFoco;
+      var rf = rotuloDia(foco);
+      var itensFoco = (porDia.get(foco) || []).slice().sort(porHorario);
+      if (foco === hoje) itensFoco = itensFoco.concat(concluidasHoje);
+
+      html += '<div class="faixa-foco"><span>Só ' + esc(rf.nome.toLowerCase()) +
+        (rf.detalhe ? " · " + esc(rf.detalhe) : "") + "</span>" +
+        '<button type="button" data-acao="verTodosDias">ver todos os dias</button></div>';
+
+      html += '<section class="secao" id="dia-' + esc(foco) + '">' +
+        cabecaHtml(rf.nome, rf.detalhe, itensFoco.length ? String(itensFoco.length) : "");
+      html += itensFoco.length
+        ? '<div class="painel">' + itensFoco.map(function(t){
+            return t.previsto ? previstoHtml(t) : itemHtml(t, hoje, false);
+          }).join("") + "</div>"
+        : '<p class="dia-vazio">Nada marcado para este dia.</p>';
+      return html + "</section>";
+    }
 
     if (atrasadas.length) {
       html += '<section class="secao urgente">' +
@@ -1886,7 +1938,8 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     var html = '<div class="semana"><span class="titulo-aviso">Próximos 7 dias</span><div class="grade">';
     dias.forEach(function(x){
       var altura = x.n ? Math.max(12, Math.round((x.n / teto) * 100)) : 0;
-      html += '<button type="button" class="celula-dia' + (x.dia === hoje ? " agora" : "") + '" ' +
+      html += '<button type="button" class="celula-dia' + (x.dia === hoje ? " agora" : "") +
+        (x.dia === estado.diaFoco ? " escolhida" : "") + '" aria-pressed="' + (x.dia === estado.diaFoco) + '" ' +
         'data-ir="' + esc(x.dia) + '" aria-label="' + esc(dataLonga(x.dia) + ": " + plural(x.n, "compromisso", "compromissos")) + '">' +
         '<span class="sigla">' + esc(nomeDia(x.dia).slice(0, 3)) + "</span>" +
         '<span class="numero-dia">' + dataDeIso(x.dia).getDate() + "</span>" +
@@ -2380,6 +2433,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     estado.vista = b.getAttribute("data-vista");
     estado.aberto = null;
     estado.verTudo = false;
+    estado.diaFoco = null;
     gravarPreferencias();
     desenhar();
   });
@@ -2427,8 +2481,10 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   document.getElementById("faixaSemana").addEventListener("click", function(e){
     var b = e.target.closest("button[data-ir]");
     if (!b) return;
-    var secao = document.getElementById("dia-" + b.getAttribute("data-ir"));
-    if (secao) secao.scrollIntoView({ behavior: "smooth", block: "start" });
+    var dia = b.getAttribute("data-ir");
+    estado.diaFoco = estado.diaFoco === dia ? null : dia;
+    estado.aberto = null;
+    desenhar();
   });
 
   var campoRespNovo = document.getElementById("campoResponsavel");
@@ -2474,6 +2530,12 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
     if (acao === "verTudo") {
       estado.verTudo = !estado.verTudo;
+      desenhar();
+      return;
+    }
+
+    if (acao === "verTodosDias") {
+      estado.diaFoco = null;
       desenhar();
       return;
     }
