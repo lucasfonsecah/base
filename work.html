@@ -254,6 +254,19 @@ select.chip{-webkit-appearance:none;appearance:none;padding-right:9px}
 :root:not([data-theme="light"]) .botao-principal{color:var(--papel)}
 @media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .botao-principal{color:#fff}}
 .botao-principal:hover{background:var(--acento-tinta)}
+.botao-secundario{
+  flex:0 0 auto;
+  border:1px solid var(--acento);
+  border-radius:6px;
+  background:transparent;
+  color:var(--acento-tinta);
+  font:inherit;
+  font-weight:500;
+  font-size:13px;
+  padding:7px 13px;
+  cursor:pointer;
+}
+.botao-secundario:hover{background:var(--acento-fundo)}
 
 /* ---------- filtros ---------- */
 /* Seletores, não pastilhas: uma fileira de pastilhas cresce com a equipe e
@@ -944,7 +957,6 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     <div class="controles">
       <label class="par"><span>prazo</span><input type="date" id="campoPrazo" aria-label="Dia do prazo"></label>
       <label class="par"><span>de</span><input type="time" id="campoInicio" aria-label="Hora de início"></label>
-      <button type="button" class="mini" id="agoraInicio">agora</button>
       <label class="par"><span>até</span><input type="time" id="campoLimite" aria-label="Prazo limite"></label>
       <input type="text" class="campo-cat" id="campoResponsavel" list="listaPessoas"
              placeholder="quem faz" aria-label="Responsável" maxlength="40">
@@ -955,6 +967,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
              placeholder="categoria" aria-label="Categoria" maxlength="40">
       <select id="campoRepete" class="ciclo" aria-label="Repetição"></select>
       <button type="submit" class="botao-principal">Adicionar</button>
+      <button type="button" class="botao-secundario" id="addComecar">Adicionar e começar</button>
     </div>
     <p class="recado" id="recado" hidden></p>
   </form>
@@ -1264,6 +1277,27 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     return candidatos[0] || null;
   }
 
+  // Tempo corrido em linguagem de relógio: minutos até uma hora, horas até um
+  // dia, dias depois disso.
+  function duracaoTexto(ms){
+    var min = Math.floor(ms / 60000);
+    if (min < 1) return "menos de 1 min";
+    if (min < 60) return min + " min";
+    var horas = Math.floor(min / 60), resto = min % 60;
+    if (horas < 24) return horas + "h" + (resto ? doisDigitos(resto) : "");
+    return plural(Math.floor(horas / 24), "dia", "dias");
+  }
+
+  function duracaoDesde(carimbo){
+    var ini = new Date(carimbo).getTime();
+    return isNaN(ini) ? "" : duracaoTexto(Math.max(0, Date.now() - ini));
+  }
+
+  function duracaoEntre(inicio, fim){
+    var a = new Date(inicio).getTime(), b = new Date(fim).getTime();
+    return isNaN(a) || isNaN(b) || b < a ? "" : duracaoTexto(b - a);
+  }
+
   function emQuanto(min){
     if (min <= 0) return "agora";
     if (min < 60) return "em " + min + " min";
@@ -1550,7 +1584,11 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
   function metaHtml(t, hoje, comData){
     var partes = [];
-    if (t.status === "andamento") partes.push('<span class="selo andamento">em andamento</span>');
+    if (t.status === "andamento") {
+      var corrido = t.iniciadaEm ? duracaoDesde(t.iniciadaEm) : "";
+      partes.push('<span class="selo andamento">em andamento' +
+        (corrido ? " há " + esc(corrido) : "") + "</span>");
+    }
     if (t.progresso > 0 && t.status !== "concluida") partes.push('<span class="selo avanco">' + t.progresso + "%</span>");
     var parado = diasParado(t);
     if (parado) partes.push('<span class="selo parado">parada há ' + parado + " dias</span>");
@@ -1673,7 +1711,6 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     if (t.prazo) {
       html += '<label class="chip par' + (t.inicio ? " preenchido" : "") + '"><span>de</span>' +
         '<input type="time" id="inicio-' + esc(t.id) + '" data-campo="inicio" aria-label="Hora de início" value="' + esc(t.inicio) + '"></label>' +
-        (t.inicio || t.status === "concluida" ? "" : '<button type="button" class="chip mini" data-acao="agora">agora</button>') +
         '<label class="chip par' + (t.limite ? " preenchido" : "") + '"><span>até</span>' +
         '<input type="time" id="limite-' + esc(t.id) + '" data-campo="limite" aria-label="Prazo limite" value="' + esc(t.limite) + '"></label>';
     }
@@ -2016,6 +2053,8 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     linhas.push(["criada", carimboLegivel(t.criadaEm)]);
     if (t.iniciadaEm) linhas.push(["iniciada", carimboLegivel(t.iniciadaEm)]);
     linhas.push(["concluída", carimboLegivel(t.concluidaEm)]);
+    var levou = t.iniciadaEm ? duracaoEntre(t.iniciadaEm, t.concluidaEm) : "";
+    if (levou) linhas.push(["levou", levou]);
 
     var html = '<div class="detalhe-hist"><dl>';
     linhas.forEach(function(l){
@@ -2164,6 +2203,9 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     var hoje = isoHoje(), partes = [];
     estado.tarefas.forEach(function(t){
       if (estaAtrasada(t, hoje)) partes.push("a:" + t.id);
+      // O tempo corrido está na tela, então precisa entrar na assinatura para
+      // a linha se atualizar sozinha enquanto a atividade roda.
+      if (t.status === "andamento" && t.iniciadaEm) partes.push("r:" + t.id + ":" + duracaoDesde(t.iniciadaEm));
       marcos(t, hoje).forEach(function(m){
         if (m.min >= 0 && m.min <= JANELA_ALERTA) partes.push("p:" + t.id + ":" + m.tipo + ":" + m.min);
       });
@@ -2399,7 +2441,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     desenhar();
   }
 
-  function adicionar(){
+  function adicionar(jaComecou){
     var campo = document.getElementById("campoNova");
     var campoData = document.getElementById("campoPrazo");
     var recado = document.getElementById("recado");
@@ -2428,6 +2470,12 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       categoria: canonizar(campoCat.value, "categoria") || (estado.filtro === "todas" ? "" : estado.filtro),
       criadaEm: new Date().toISOString()
     });
+
+    if (jaComecou) {
+      t.status = "andamento";
+      t.iniciadaEm = t.criadaEm;
+      t.atualizadaEm = t.criadaEm;
+    }
     gravar(t);
 
     // Some o que é próprio desta atividade; o resto fica para a seguinte.
@@ -2515,13 +2563,10 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   campoRespNovo.addEventListener("input", sincronizarRetorno);
   campoRespNovo.addEventListener("change", sincronizarRetorno);
 
-  // Demanda que já começa no instante em que é anotada.
-  document.getElementById("agoraInicio").addEventListener("click", function(){
-    document.getElementById("campoInicio").value = horaDe(new Date());
-    // "agora" é hoje: com o prazo noutro dia a atividade nunca começaria já.
-    campoPrazoNovo.value = isoHoje();
-    sincronizarPrazoNovo();
-    document.getElementById("campoNova").focus();
+  // Demanda que já nasce em andamento. Começar é um fato de agora e não tem
+  // relação com o dia do prazo: dá para começar hoje algo que vence sexta.
+  document.getElementById("addComecar").addEventListener("click", function(){
+    adicionar(true);
   });
 
   document.getElementById("faixaResgate").addEventListener("click", function(e){
@@ -2595,17 +2640,6 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       if (acao === "excluir") { excluirComVolta(t); desenhar(); return; }
 
       if (acao === "atualizar") { abrir(t.id); return; }
-
-      // "agora": carimba o começo neste minuto. Com o prazo em hoje, o
-      // arranque automático pega a atividade já na próxima passada.
-      if (acao === "agora") {
-        t.inicio = horaDe(new Date());
-        t.prazo = isoHoje();   // "agora" é hoje: prazo noutro dia contradiz isso
-        gravar(t);
-        estado.protegerAberto = true;
-        desenhar();
-        return;
-      }
 
       if (acao === "registrar") {
         var entrada = document.getElementById("avanco-" + t.id);
