@@ -4,8 +4,13 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getSpendingByCategory, getSummary, listTransactions } from "@/lib/finance/queries";
 
-const anthropic = new Anthropic();
 const MODEL = "claude-opus-5";
+
+let anthropic: Anthropic | undefined;
+function getAnthropicClient(): Anthropic {
+  if (!anthropic) anthropic = new Anthropic();
+  return anthropic;
+}
 
 const tools: Anthropic.Tool[] = [
   {
@@ -109,6 +114,30 @@ valores como R$ 1.234,56. Se não houver lançamentos no período, diga isso cla
 }
 
 export async function POST(request: Request) {
+  try {
+    return await handleChat(request);
+  } catch (err) {
+    console.error("chat route error", err);
+    if (err instanceof Anthropic.AuthenticationError) {
+      return NextResponse.json(
+        { error: "Chave da Anthropic inválida ou ausente (ANTHROPIC_API_KEY)." },
+        { status: 500 },
+      );
+    }
+    if (err instanceof Anthropic.APIError) {
+      return NextResponse.json(
+        { error: `Erro na API da Anthropic: ${err.message}` },
+        { status: 500 },
+      );
+    }
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Erro inesperado." },
+      { status: 500 },
+    );
+  }
+}
+
+async function handleChat(request: Request): Promise<NextResponse> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -139,7 +168,7 @@ export async function POST(request: Request) {
 
   const MAX_ITERATIONS = 6;
   for (let i = 0; i < MAX_ITERATIONS; i++) {
-    const response = await anthropic.messages.create({
+    const response = await getAnthropicClient().messages.create({
       model: MODEL,
       max_tokens: 4096,
       system: systemPrompt(),
