@@ -30,6 +30,36 @@ export async function listTransactions(
   return data ?? [];
 }
 
+export type NewTransaction = {
+  type: TransactionType;
+  amount: number;
+  category: string;
+  description?: string | null;
+  occurred_on: string;
+};
+
+export async function insertTransaction(
+  supabase: SupabaseClient,
+  userId: string,
+  input: NewTransaction,
+): Promise<Transaction> {
+  const { data, error } = await supabase
+    .from("transactions")
+    .insert({
+      user_id: userId,
+      type: input.type,
+      amount: input.amount,
+      category: input.category,
+      description: input.description || null,
+      occurred_on: input.occurred_on,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
 export async function getSummary(
   supabase: SupabaseClient,
   range: DateRange = {},

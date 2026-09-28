@@ -2,7 +2,12 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { getSpendingByCategory, getSummary, listTransactions } from "@/lib/finance/queries";
+import {
+  getSpendingByCategory,
+  getSummary,
+  insertTransaction,
+  listTransactions,
+} from "@/lib/finance/queries";
 
 const MODEL = "claude-opus-5";
 
@@ -56,6 +61,26 @@ const tools: Anthropic.Tool[] = [
       required: ["from", "to"],
     },
   },
+  {
+    name: "add_transaction",
+    description:
+      "Register a new expense or income for the user. Use this whenever they report spending, paying, buying, receiving or earning money (e.g. 'gastei 50 no mercado', 'recebi 200 de freelance', or a pasted bank/SMS notification). Infer a sensible category and the date (default to today) instead of asking, unless the amount itself is missing or truly ambiguous.",
+    input_schema: {
+      type: "object",
+      properties: {
+        type: { type: "string", enum: ["expense", "income"] },
+        amount: { type: "number", description: "Positive amount in BRL" },
+        category: {
+          type: "string",
+          description:
+            "e.g. Alimentação, Transporte, Moradia, Lazer, Saúde, Educação, Compras, Salário, Freelance, Investimentos, Outros",
+        },
+        description: { type: "string" },
+        occurred_on: { type: "string", description: "YYYY-MM-DD, default to today" },
+      },
+      required: ["type", "amount", "category", "occurred_on"],
+    },
+  },
 ];
 
 const DateRangeInput = z.object({ from: z.string(), to: z.string() });
@@ -67,11 +92,19 @@ const ListInput = DateRangeInput.extend({
   type: z.enum(["expense", "income"]).optional(),
   limit: z.number().int().positive().max(200).optional(),
 });
+const NewTransactionInput = z.object({
+  type: z.enum(["expense", "income"]),
+  amount: z.number().positive(),
+  category: z.string().trim().min(1),
+  description: z.string().trim().optional(),
+  occurred_on: z.string().min(1),
+});
 
 async function runTool(
   name: string,
   rawInput: unknown,
   supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
 ): Promise<string> {
   switch (name) {
     case "get_summary": {
@@ -92,6 +125,12 @@ async function runTool(
       if (!parsed.success) return JSON.stringify({ error: "invalid input" });
       return JSON.stringify(await listTransactions(supabase, parsed.data));
     }
+    case "add_transaction": {
+      const parsed = NewTransactionInput.safeParse(rawInput);
+      if (!parsed.success) return JSON.stringify({ error: "invalid input" });
+      const transaction = await insertTransaction(supabase, userId, parsed.data);
+      return JSON.stringify({ ok: true, transaction });
+    }
     default:
       return JSON.stringify({ error: `unknown tool ${name}` });
   }
@@ -109,8 +148,18 @@ Use as ferramentas disponíveis para consultar os dados reais do usuário antes 
 perguntas sobre gastos, entradas, saldo ou categorias — nunca invente números.
 Ao calcular períodos relativos (\"essa semana\", \"esse mês\", \"últimos 7 dias\"), calcule as
 datas você mesmo a partir de hoje (semana começa na segunda-feira).
-Responda sempre em português do Brasil, de forma direta e breve (1-3 frases), formatando
-valores como R$ 1.234,56. Se não houver lançamentos no período, diga isso claramente.`;
+
+Você também pode REGISTRAR lançamentos com a ferramenta add_transaction. Use sempre que o
+usuário disser que gastou, pagou, comprou, recebeu ou ganhou algo, ou colar o texto de um
+SMS/notificação de banco. Infira categoria e data (padrão hoje) em vez de perguntar, a não
+ser que o valor esteja realmente ausente ou ambíguo. Depois de registrar, confirme com um
+resumo curto (valor, categoria, data).
+
+Responda sempre em português do Brasil. Para perguntas simples (um número, uma categoria),
+seja direto e breve (1-3 frases). Se o usuário pedir um relatório, resumo completo ou plano
+de ação para economizar, pode ser mais longo e estruturado (use tópicos e traga números
+concretos das ferramentas). Formate valores como R$ 1.234,56. Se não houver lançamentos no
+período, diga isso claramente.`;
 }
 
 export async function POST(request: Request) {
@@ -170,10 +219,10 @@ async function handleChat(request: Request): Promise<NextResponse> {
   for (let i = 0; i < MAX_ITERATIONS; i++) {
     const response = await getAnthropicClient().messages.create({
       model: MODEL,
-      max_tokens: 4096,
+      max_tokens: 8192,
       system: systemPrompt(),
       tools,
-      output_config: { effort: "low" },
+      output_config: { effort: "medium" },
       messages,
     });
 
@@ -201,7 +250,7 @@ async function handleChat(request: Request): Promise<NextResponse> {
 
     const toolResults: Anthropic.ToolResultBlockParam[] = [];
     for (const block of toolUseBlocks) {
-      const result = await runTool(block.name, block.input, supabase);
+      const result = await runTool(block.name, block.input, supabase, user.id);
       toolResults.push({
         type: "tool_result",
         tool_use_id: block.id,

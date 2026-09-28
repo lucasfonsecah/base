@@ -6,8 +6,9 @@ type Message = { role: "user" | "assistant"; content: string };
 
 const SUGGESTIONS = [
   "Qual categoria eu mais gastei essa semana?",
-  "Qual meu saldo esse mês?",
-  "Quanto eu gastei com Alimentação esse mês?",
+  "Gastei 45 no Uber hoje",
+  "Me dá um relatório completo desse mês",
+  "Monte um plano de ação pra eu economizar",
 ];
 
 export function ChatPanel() {
@@ -74,7 +75,7 @@ export function ChatPanel() {
             className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
           >
             <div
-              className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
+              className={`max-w-[80%] whitespace-pre-wrap rounded-lg px-3 py-2 text-sm ${
                 m.role === "user"
                   ? "bg-[var(--series-1)] text-white"
                   : "bg-[var(--background)] text-[var(--text-primary)]"
