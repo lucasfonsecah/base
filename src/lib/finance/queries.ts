@@ -11,11 +11,13 @@ type ListFilters = DateRange & {
 
 export async function listTransactions(
   supabase: SupabaseClient,
+  userId: string,
   filters: ListFilters = {},
 ): Promise<Transaction[]> {
   let query = supabase
     .from("transactions")
     .select("*")
+    .eq("user_id", userId)
     .order("occurred_on", { ascending: false })
     .order("created_at", { ascending: false });
 
@@ -62,9 +64,10 @@ export async function insertTransaction(
 
 export async function getSummary(
   supabase: SupabaseClient,
+  userId: string,
   range: DateRange = {},
 ): Promise<Summary> {
-  let query = supabase.from("transactions").select("type, amount");
+  let query = supabase.from("transactions").select("type, amount").eq("user_id", userId);
   if (range.from) query = query.gte("occurred_on", range.from);
   if (range.to) query = query.lte("occurred_on", range.to);
 
@@ -83,12 +86,14 @@ export async function getSummary(
 
 export async function getSpendingByCategory(
   supabase: SupabaseClient,
+  userId: string,
   range: DateRange = {},
   type: TransactionType = "expense",
 ): Promise<CategoryTotal[]> {
   let query = supabase
     .from("transactions")
     .select("category, amount")
+    .eq("user_id", userId)
     .eq("type", type);
   if (range.from) query = query.gte("occurred_on", range.from);
   if (range.to) query = query.lte("occurred_on", range.to);
@@ -109,9 +114,13 @@ export async function getSpendingByCategory(
 /** Daily net (income - expense) for each day in the range, oldest first. */
 export async function getDailyTrend(
   supabase: SupabaseClient,
+  userId: string,
   range: DateRange = {},
 ): Promise<{ date: string; net: number }[]> {
-  let query = supabase.from("transactions").select("occurred_on, type, amount");
+  let query = supabase
+    .from("transactions")
+    .select("occurred_on, type, amount")
+    .eq("user_id", userId);
   if (range.from) query = query.gte("occurred_on", range.from);
   if (range.to) query = query.lte("occurred_on", range.to);
 

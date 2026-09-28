@@ -25,6 +25,9 @@ export default function DashboardLayout({
           <Link href="/dashboard/chat" className="hover:text-[var(--text-primary)]">
             Chat
           </Link>
+          <Link href="/dashboard/discord" className="hover:text-[var(--text-primary)]">
+            Discord
+          </Link>
           <form action={signOut}>
             <button type="submit" className="hover:text-[var(--text-primary)]">
               Sair

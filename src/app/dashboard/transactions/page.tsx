@@ -29,7 +29,10 @@ export default async function TransactionsPage({
   const { from, to, label } = monthRange(month);
 
   const supabase = await createClient();
-  const transactions = await listTransactions(supabase, { from, to, limit: 200 });
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const transactions = await listTransactions(supabase, user!.id, { from, to, limit: 200 });
 
   const prevMonth = new Date(from);
   prevMonth.setMonth(prevMonth.getMonth() - 1);
