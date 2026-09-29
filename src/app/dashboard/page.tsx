@@ -22,6 +22,10 @@ function foldTopCategories(
 
 export default async function DashboardPage() {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const userId = user!.id;
 
   const today = todayISO();
   const weekStart = startOfWeekISO();
@@ -29,10 +33,10 @@ export default async function DashboardPage() {
   const trendStart = daysAgoISO(29);
 
   const [weekSummary, monthSummary, weekByCategory, trend] = await Promise.all([
-    getSummary(supabase, { from: weekStart, to: today }),
-    getSummary(supabase, { from: monthStart, to: today }),
-    getSpendingByCategory(supabase, { from: weekStart, to: today }),
-    getDailyTrend(supabase, { from: trendStart, to: today }),
+    getSummary(supabase, userId, { from: weekStart, to: today }),
+    getSummary(supabase, userId, { from: monthStart, to: today }),
+    getSpendingByCategory(supabase, userId, { from: weekStart, to: today }),
+    getDailyTrend(supabase, userId, { from: trendStart, to: today }),
   ]);
 
   return (

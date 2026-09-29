@@ -11,11 +11,13 @@ type ListFilters = DateRange & {
 
 export async function listTransactions(
   supabase: SupabaseClient,
+  userId: string,
   filters: ListFilters = {},
 ): Promise<Transaction[]> {
   let query = supabase
     .from("transactions")
     .select("*")
+    .eq("user_id", userId)
     .order("occurred_on", { ascending: false })
     .order("created_at", { ascending: false });
 
@@ -30,11 +32,42 @@ export async function listTransactions(
   return data ?? [];
 }
 
+export type NewTransaction = {
+  type: TransactionType;
+  amount: number;
+  category: string;
+  description?: string | null;
+  occurred_on: string;
+};
+
+export async function insertTransaction(
+  supabase: SupabaseClient,
+  userId: string,
+  input: NewTransaction,
+): Promise<Transaction> {
+  const { data, error } = await supabase
+    .from("transactions")
+    .insert({
+      user_id: userId,
+      type: input.type,
+      amount: input.amount,
+      category: input.category,
+      description: input.description || null,
+      occurred_on: input.occurred_on,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
 export async function getSummary(
   supabase: SupabaseClient,
+  userId: string,
   range: DateRange = {},
 ): Promise<Summary> {
-  let query = supabase.from("transactions").select("type, amount");
+  let query = supabase.from("transactions").select("type, amount").eq("user_id", userId);
   if (range.from) query = query.gte("occurred_on", range.from);
   if (range.to) query = query.lte("occurred_on", range.to);
 
@@ -53,12 +86,14 @@ export async function getSummary(
 
 export async function getSpendingByCategory(
   supabase: SupabaseClient,
+  userId: string,
   range: DateRange = {},
   type: TransactionType = "expense",
 ): Promise<CategoryTotal[]> {
   let query = supabase
     .from("transactions")
     .select("category, amount")
+    .eq("user_id", userId)
     .eq("type", type);
   if (range.from) query = query.gte("occurred_on", range.from);
   if (range.to) query = query.lte("occurred_on", range.to);
@@ -79,9 +114,13 @@ export async function getSpendingByCategory(
 /** Daily net (income - expense) for each day in the range, oldest first. */
 export async function getDailyTrend(
   supabase: SupabaseClient,
+  userId: string,
   range: DateRange = {},
 ): Promise<{ date: string; net: number }[]> {
-  let query = supabase.from("transactions").select("occurred_on, type, amount");
+  let query = supabase
+    .from("transactions")
+    .select("occurred_on, type, amount")
+    .eq("user_id", userId);
   if (range.from) query = query.gte("occurred_on", range.from);
   if (range.to) query = query.lte("occurred_on", range.to);
 
