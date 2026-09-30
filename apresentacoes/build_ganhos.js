@@ -73,6 +73,21 @@ async function build() {
     fontFace: B, fontSize: 11.5, bold: true, color: AMBER, charSpacing: 2.8,
   });
 
+  // selo de status dos acessos
+  {
+    const pw = 2.95, ph = 0.46, px = M + W - pw, py = 0.45;
+    s.addShape(pres.ShapeType.roundRect, {
+      x: px, y: py, w: pw, h: ph, rectRadius: 0.23,
+      fill: { color: AMBER, transparency: 86 }, line: { color: AMBER, width: 1 },
+    });
+    s.addShape(pres.ShapeType.ellipse, { x: px + 0.2, y: py + 0.11, w: 0.24, h: 0.24, fill: { color: AMBER } });
+    s.addImage({ data: await iconData(Fi.FiCheck, NAVY), x: px + 0.26, y: py + 0.17, w: 0.12, h: 0.12 });
+    s.addText("ACESSOS LIBERADOS", {
+      x: px + 0.52, y: py, w: pw - 0.7, h: ph, isTextBox: true, margin: 0, valign: "middle",
+      fontFace: B, fontSize: 9.5, bold: true, color: AMBER, charSpacing: 1.0,
+    });
+  }
+
   s.addText(
     [
       { text: "O dado deixa de ser relatório\n", options: { color: WHITE } },
@@ -89,8 +104,8 @@ async function build() {
   );
 
   /* -------------------------------------------------------- duas visões */
-  const CY = 2.84;
-  const CH = 2.92;
+  const CY = 2.80;
+  const CH = 2.76;
   const CGAP = 0.35;
   const CW = (W - CGAP) / 2;
 
@@ -125,62 +140,76 @@ async function build() {
     });
 
     s.addText(c.tag, {
-      x: x + 0.44, y: CY + 0.36, w: CW - 0.88, h: 0.26, isTextBox: true, margin: 0, valign: "top",
+      x: x + 0.44, y: CY + 0.32, w: CW - 0.88, h: 0.26, isTextBox: true, margin: 0, valign: "top",
       fontFace: B, fontSize: 10.5, bold: true, color: c.warm ? AMBER : MUTED, charSpacing: 1.8,
     });
 
     s.addShape(pres.ShapeType.ellipse, {
-      x: x + 0.44, y: CY + 0.78, w: 1.0, h: 1.0,
+      x: x + 0.44, y: CY + 0.70, w: 0.95, h: 0.95,
       fill: { color: c.warm ? AMBER : WHITE },
     });
     s.addImage({
       data: await iconData(c.icon, NAVY),
-      x: x + 0.44 + 0.27, y: CY + 0.78 + 0.27, w: 0.46, h: 0.46,
+      x: x + 0.44 + 0.255, y: CY + 0.70 + 0.255, w: 0.44, h: 0.44,
     });
 
     s.addText(c.gain, {
-      x: x + 1.66, y: CY + 0.96, w: CW - 2.1, h: 0.64, isTextBox: true, margin: 0, valign: "middle",
+      x: x + 1.60, y: CY + 0.86, w: CW - 2.04, h: 0.62, isTextBox: true, margin: 0, valign: "middle",
       fontFace: H, fontSize: 30, bold: true, color: WHITE,
     });
 
     s.addText(c.text, {
-      x: x + 0.44, y: CY + 1.96, w: CW - 0.88, h: 0.62, isTextBox: true, margin: 0, valign: "top",
+      x: x + 0.44, y: CY + 1.84, w: CW - 0.88, h: 0.6, isTextBox: true, margin: 0, valign: "top",
       fontFace: B, fontSize: 13.5, color: ICE, lineSpacingMultiple: 1.16,
     });
 
     s.addText(c.status, {
-      x: x + 0.44, y: CY + 2.56, w: CW - 0.88, h: 0.26, isTextBox: true, margin: 0, valign: "top",
+      x: x + 0.44, y: CY + 2.44, w: CW - 0.88, h: 0.26, isTextBox: true, margin: 0, valign: "top",
       fontFace: B, fontSize: 10.5, color: MUTED,
     });
   }
 
-  /* ------------------------------------------------------------- rodapé */
-  const FY = 6.06;
-  const FH = 0.78;
+  /* ------------------------------------------------- frente de atuação */
+  const FY = 5.86;
+  const FH = 1.14;
   s.addShape(pres.ShapeType.roundRect, {
     x: M, y: FY, w: W, h: FH, rectRadius: 0.1,
     fill: { color: WHITE, transparency: 94 }, line: { color: STROKE, width: 1 },
   });
 
-  const wins = ["Sem extração manual", "Uma única fonte de número", "Alinhado às metas do cliente"];
-  const IW = (W - 0.9) / 3;
-  for (let i = 0; i < wins.length; i++) {
-    const x = M + 0.45 + i * IW;
-    s.addShape(pres.ShapeType.ellipse, { x, y: FY + FH / 2 - 0.13, w: 0.26, h: 0.26, fill: { color: AMBER } });
-    s.addImage({
-      data: await iconData(Fi.FiCheck, NAVY),
-      x: x + 0.06, y: FY + FH / 2 - 0.07, w: 0.14, h: 0.14,
+  s.addText("POR TRÁS\nDISSO", {
+    x: M + 0.36, y: FY, w: 1.2, h: FH, isTextBox: true, margin: 0, valign: "middle",
+    fontFace: B, fontSize: 10, bold: true, color: AMBER, charSpacing: 1.3, lineSpacingMultiple: 1.05,
+  });
+
+  const frentes = [
+    [Fi.FiTool, "Desenvolvimento", "Constrói e evolui processos"],
+    [Fi.FiZap, "Automação", "Relatórios e rotinas operacionais"],
+    [Fi.FiSearch, "Oportunidades", "Identifica gargalos e ganhos"],
+    [Fi.FiPieChart, "Estudos", "Dado pronto para a reunião"],
+  ];
+  const BX = M + 1.55;
+  const BGAP = 0.2;
+  const BW = (W - 1.55 - 3 * BGAP) / 4;
+  for (let i = 0; i < frentes.length; i++) {
+    const [Icon, label, note] = frentes[i];
+    const x = BX + i * (BW + BGAP);
+    s.addShape(pres.ShapeType.ellipse, { x, y: FY + 0.26, w: 0.28, h: 0.28, fill: { color: AMBER } });
+    s.addImage({ data: await iconData(Icon, NAVY), x: x + 0.07, y: FY + 0.33, w: 0.14, h: 0.14 });
+    s.addText(label, {
+      x: x + 0.38, y: FY + 0.24, w: BW - 0.4, h: 0.3, isTextBox: true, margin: 0, valign: "middle",
+      fontFace: B, fontSize: 11.5, bold: true, color: WHITE,
     });
-    s.addText(wins[i], {
-      x: x + 0.4, y: FY, w: IW - 0.55, h: FH, isTextBox: true, margin: 0, valign: "middle",
-      fontFace: B, fontSize: 12.5, color: WHITE,
+    s.addText(note, {
+      x: x + 0.38, y: FY + 0.56, w: BW - 0.4, h: 0.44, isTextBox: true, margin: 0, valign: "top",
+      fontFace: B, fontSize: 9, color: ICE, lineSpacingMultiple: 1.1,
     });
   }
 
   s.addNotes(
     "Mensagem central: o Planejamento (Willyan) assume o processo e todo o tratamento dos dados; a operação recebe a visão pronta e foca na ação. " +
       "Hora a Hora: a operação passa a enxergar em tempo real o que está acontecendo e corrige a rota dentro do próprio turno, em vez de descobrir no dia seguinte. " +
-      "Dashboard D-1: N4 e N5 passam a ler o dia anterior na mesma régua — um só número, sem planilha paralela. O D-1 da N5 já foi entregue em 29/set; as demais visões saem em 05 e 09/out."
+      "Dashboard D-1: N4 e N5 passam a ler o dia anterior na mesma régua — um só número, sem planilha paralela. O D-1 da N5 já foi entregue em 29/set; as demais visões saem em 05 e 09/out. " + "Por trás das visões, o Willyan atua no desenvolvimento e na evolução dos processos, na automação dos relatórios e das rotinas operacionais, na identificação de oportunidades e gargalos, e nos estudos que levam dado — e não percepção — para as reuniões."
   );
 
   const out = process.argv[2] || "Planejamento_Ganhos.pptx";
