@@ -69,13 +69,12 @@ async function build() {
 
   /* ---------------------------------------------------------- cabeçalho */
   s.addText("PLANEJAMENTO   ·   WILLYAN", {
-    x: M, y: 0.55, w: W, h: 0.26, isTextBox: true, margin: 0, valign: "top",
+    x: M, y: 0.5, w: 7.5, h: 0.26, isTextBox: true, margin: 0, valign: "top",
     fontFace: B, fontSize: 11.5, bold: true, color: AMBER, charSpacing: 2.8,
   });
 
-  // selo de status dos acessos
   {
-    const pw = 2.95, ph = 0.46, px = M + W - pw, py = 0.45;
+    const pw = 2.95, ph = 0.46, px = M + W - pw, py = 0.4;
     s.addShape(pres.ShapeType.roundRect, {
       x: px, y: py, w: pw, h: ph, rectRadius: 0.23,
       fill: { color: AMBER, transparency: 86 }, line: { color: AMBER, width: 1 },
@@ -90,41 +89,46 @@ async function build() {
 
   s.addText(
     [
-      { text: "O dado deixa de ser relatório\n", options: { color: WHITE } },
+      { text: "O dado deixa de ser relatório ", options: { color: WHITE } },
       { text: "e vira decisão", options: { color: AMBER } },
     ],
-    { x: M, y: 0.92, w: 9.5, h: 1.15, isTextBox: true, margin: 0, valign: "top",
-      fontFace: H, fontSize: 34, bold: true, lineSpacingMultiple: 1.04 }
+    { x: M, y: 0.85, w: 11.9, h: 0.62, isTextBox: true, margin: 0, valign: "top",
+      fontFace: H, fontSize: 29, bold: true }
   );
 
   s.addText(
-    "Willyan assume o processo e todo o tratamento dos dados. A operação recebe a visão pronta — e age.",
-    { x: M, y: 2.24, w: 10.5, h: 0.32, isTextBox: true, margin: 0, valign: "top",
-      fontFace: B, fontSize: 14, color: ICE }
+    "Willyan assume o processo, o tratamento dos dados e a construção das visões — agora com a meta dentro do relatório.",
+    { x: M, y: 1.5, w: 11.9, h: 0.3, isTextBox: true, margin: 0, valign: "top",
+      fontFace: B, fontSize: 13.5, color: ICE }
   );
 
-  /* -------------------------------------------------------- duas visões */
-  const CY = 2.80;
-  const CH = 2.76;
-  const CGAP = 0.35;
-  const CW = (W - CGAP) / 2;
+  /* -------------------------------------------------------- três ganhos */
+  const CY = 2.0;
+  const CH = 2.56;
+  const CGAP = 0.3;
+  const CW = (W - 2 * CGAP) / 3; // 3.83
 
   const cards = [
     {
       icon: Fi.FiActivity,
       tag: "HORA A HORA",
       gain: "Tempo real",
-      text: "A operação enxerga o que está acontecendo agora e corrige a rota no mesmo turno.",
-      status: "Em desenvolvimento  ·  N5 e N4  ·  05 e 09/out",
-      warm: true,
+      text: "Acompanhamento contra a meta do dia: aponta onde o ritmo cai e em qual carteira, a tempo de reagir.",
+      status: "Em desenvolvimento  ·  05 e 09/out",
     },
     {
       icon: Fi.FiBarChart2,
       tag: "DASHBOARD D-1",
       gain: "Um só número",
-      text: "N4 e N5 na mesma régua: o dia anterior fechado e comparável, sem planilha paralela.",
-      status: "N5 entregue em 29/set  ·  mais 2 em 05 e 09/out",
-      warm: false,
+      text: "Dia anterior fechado com N4 e N5 na mesma régua: comparação direta entre carteiras, sem planilha paralela.",
+      status: "N5 entregue em 29/set  ·  mais 2 em out",
+    },
+    {
+      icon: Fi.FiTarget,
+      tag: "METAS E COMPARATIVOS",
+      gain: "Atingimento",
+      text: "Mês a mês e contra o mês corrente: mostra a tendência e a distância da meta, não só a foto do dia.",
+      status: "Aplicado ao Hora a Hora e ao D-1",
     },
   ];
 
@@ -134,82 +138,84 @@ async function build() {
 
     s.addShape(pres.ShapeType.roundRect, {
       x, y: CY, w: CW, h: CH, rectRadius: 0.12,
-      fill: { color: WHITE, transparency: c.warm ? 89 : 92 },
-      line: { color: c.warm ? AMBER : STROKE, width: c.warm ? 1.5 : 1 },
-      shadow: { type: "outer", color: "030913", opacity: 0.4, blur: 16, offset: 4, angle: 90 },
+      fill: { color: WHITE, transparency: 91 },
+      line: { color: STROKE, width: 1 },
+      shadow: { type: "outer", color: "030913", opacity: 0.35, blur: 14, offset: 3, angle: 90 },
     });
 
     s.addText(c.tag, {
-      x: x + 0.44, y: CY + 0.32, w: CW - 0.88, h: 0.26, isTextBox: true, margin: 0, valign: "top",
-      fontFace: B, fontSize: 10.5, bold: true, color: c.warm ? AMBER : MUTED, charSpacing: 1.8,
+      x: x + 0.34, y: CY + 0.26, w: CW - 0.68, h: 0.24, isTextBox: true, margin: 0, valign: "top",
+      fontFace: B, fontSize: 9.5, bold: true, color: AMBER, charSpacing: 1.5,
     });
 
-    s.addShape(pres.ShapeType.ellipse, {
-      x: x + 0.44, y: CY + 0.70, w: 0.95, h: 0.95,
-      fill: { color: c.warm ? AMBER : WHITE },
-    });
+    s.addShape(pres.ShapeType.ellipse, { x: x + 0.34, y: CY + 0.56, w: 0.72, h: 0.72, fill: { color: AMBER } });
     s.addImage({
       data: await iconData(c.icon, NAVY),
-      x: x + 0.44 + 0.255, y: CY + 0.70 + 0.255, w: 0.44, h: 0.44,
+      x: x + 0.34 + 0.2, y: CY + 0.56 + 0.2, w: 0.32, h: 0.32,
     });
 
     s.addText(c.gain, {
-      x: x + 1.60, y: CY + 0.86, w: CW - 2.04, h: 0.62, isTextBox: true, margin: 0, valign: "middle",
-      fontFace: H, fontSize: 30, bold: true, color: WHITE,
+      x: x + 1.2, y: CY + 0.56, w: CW - 1.52, h: 0.72, isTextBox: true, margin: 0, valign: "middle",
+      fontFace: H, fontSize: 20, bold: true, color: WHITE,
     });
 
     s.addText(c.text, {
-      x: x + 0.44, y: CY + 1.84, w: CW - 0.88, h: 0.6, isTextBox: true, margin: 0, valign: "top",
-      fontFace: B, fontSize: 13.5, color: ICE, lineSpacingMultiple: 1.16,
+      x: x + 0.34, y: CY + 1.38, w: CW - 0.68, h: 0.6, isTextBox: true, margin: 0, valign: "top",
+      fontFace: B, fontSize: 10.5, color: ICE, lineSpacingMultiple: 1.14,
     });
 
     s.addText(c.status, {
-      x: x + 0.44, y: CY + 2.44, w: CW - 0.88, h: 0.26, isTextBox: true, margin: 0, valign: "top",
-      fontFace: B, fontSize: 10.5, color: MUTED,
+      x: x + 0.34, y: CY + 2.14, w: CW - 0.68, h: 0.22, isTextBox: true, margin: 0, valign: "top",
+      fontFace: B, fontSize: 9, color: MUTED,
     });
   }
 
-  /* ------------------------------------------------- frente de atuação */
-  const FY = 5.86;
-  const FH = 1.14;
+  /* -------------------------------------------- o que o Will entrega */
+  const FY = 4.78;
+  const FH = 2.18;
   s.addShape(pres.ShapeType.roundRect, {
-    x: M, y: FY, w: W, h: FH, rectRadius: 0.1,
-    fill: { color: WHITE, transparency: 94 }, line: { color: STROKE, width: 1 },
+    x: M, y: FY, w: W, h: FH, rectRadius: 0.12,
+    fill: { color: AMBER, transparency: 88 },
+    line: { color: AMBER, width: 1.75 },
+    shadow: { type: "outer", color: "030913", opacity: 0.4, blur: 18, offset: 4, angle: 90 },
   });
 
-  s.addText("POR TRÁS\nDISSO", {
-    x: M + 0.36, y: FY, w: 1.2, h: FH, isTextBox: true, margin: 0, valign: "middle",
-    fontFace: B, fontSize: 10, bold: true, color: AMBER, charSpacing: 1.3, lineSpacingMultiple: 1.05,
+  s.addText("O QUE O WILL ENTREGA POR TRÁS DAS VISÕES", {
+    x: M + 0.42, y: FY + 0.26, w: 7.5, h: 0.3, isTextBox: true, margin: 0, valign: "top",
+    fontFace: B, fontSize: 11.5, bold: true, color: AMBER, charSpacing: 2.2,
   });
 
   const frentes = [
-    [Fi.FiTool, "Desenvolvimento", "Constrói e evolui processos"],
-    [Fi.FiZap, "Automação", "Relatórios e rotinas operacionais"],
-    [Fi.FiSearch, "Oportunidades", "Identifica gargalos e ganhos"],
-    [Fi.FiPieChart, "Estudos", "Dado pronto para a reunião"],
+    [Fi.FiTool, "Desenvolvimento", "Constrói e evolui as visões junto com a operação"],
+    [Fi.FiZap, "Automação", "Elimina o trabalho manual de relatórios e rotinas"],
+    [Fi.FiSearch, "Oportunidades", "Lê o processo e aponta onde está o ganho"],
+    [Fi.FiPieChart, "Estudos", "Leva análise e recomendação para a reunião"],
   ];
-  const BX = M + 1.55;
-  const BGAP = 0.2;
-  const BW = (W - 1.55 - 3 * BGAP) / 4;
+  const BGAP = 0.26;
+  const BX = M + 0.42;
+  const BW = (W - 0.84 - 3 * BGAP) / 4; // 2.61
   for (let i = 0; i < frentes.length; i++) {
     const [Icon, label, note] = frentes[i];
     const x = BX + i * (BW + BGAP);
-    s.addShape(pres.ShapeType.ellipse, { x, y: FY + 0.26, w: 0.28, h: 0.28, fill: { color: AMBER } });
-    s.addImage({ data: await iconData(Icon, NAVY), x: x + 0.07, y: FY + 0.33, w: 0.14, h: 0.14 });
+    s.addShape(pres.ShapeType.ellipse, { x, y: FY + 0.74, w: 0.46, h: 0.46, fill: { color: AMBER } });
+    s.addImage({ data: await iconData(Icon, NAVY), x: x + 0.125, y: FY + 0.865, w: 0.21, h: 0.21 });
     s.addText(label, {
-      x: x + 0.38, y: FY + 0.24, w: BW - 0.4, h: 0.3, isTextBox: true, margin: 0, valign: "middle",
-      fontFace: B, fontSize: 11.5, bold: true, color: WHITE,
+      x, y: FY + 1.32, w: BW, h: 0.3, isTextBox: true, margin: 0, valign: "top",
+      fontFace: B, fontSize: 13, bold: true, color: WHITE,
     });
     s.addText(note, {
-      x: x + 0.38, y: FY + 0.56, w: BW - 0.4, h: 0.44, isTextBox: true, margin: 0, valign: "top",
-      fontFace: B, fontSize: 9, color: ICE, lineSpacingMultiple: 1.1,
+      x, y: FY + 1.64, w: BW, h: 0.44, isTextBox: true, margin: 0, valign: "top",
+      fontFace: B, fontSize: 10.5, color: ICE, lineSpacingMultiple: 1.1,
     });
   }
 
   s.addNotes(
-    "Mensagem central: o Planejamento (Willyan) assume o processo e todo o tratamento dos dados; a operação recebe a visão pronta e foca na ação. " +
-      "Hora a Hora: a operação passa a enxergar em tempo real o que está acontecendo e corrige a rota dentro do próprio turno, em vez de descobrir no dia seguinte. " +
-      "Dashboard D-1: N4 e N5 passam a ler o dia anterior na mesma régua — um só número, sem planilha paralela. O D-1 da N5 já foi entregue em 29/set; as demais visões saem em 05 e 09/out. " + "Por trás das visões, o Willyan atua no desenvolvimento e na evolução dos processos, na automação dos relatórios e das rotinas operacionais, na identificação de oportunidades e gargalos, e nos estudos que levam dado — e não percepção — para as reuniões."
+    "Mensagem central: o Willyan assume o processo, o tratamento dos dados e a construção das visões. A operação recebe a leitura pronta e decide. " +
+      "Hora a Hora: acompanhamento intradiário contra a meta do dia — dá para ver onde o ritmo cai, em qual carteira, e reagir no mesmo turno em vez de descobrir no dia seguinte. " +
+      "Dashboard D-1: dia anterior fechado com N4 e N5 na mesma régua, permitindo comparação direta entre carteiras sem planilha paralela. O D-1 da N5 foi entregue em 29/set; as demais saem em 05 e 09/out. " +
+      "Metas e comparativos: como os relatórios passam a carregar a meta, ganhamos visão mês a mês e atingimento contra o mês corrente — o que mostra tendência e distância da meta, não apenas a foto do dia. " +
+      "Por trás das visões, o Will atua no desenvolvimento e na evolução dos processos, na automação de relatórios e rotinas operacionais, na identificação de oportunidades e nos estudos que levam análise e recomendação para as reuniões. " +
+      "Os acessos às ferramentas já estão todos liberados — nada bloqueando o desenvolvimento."
   );
 
   const out = process.argv[2] || "Planejamento_Ganhos.pptx";
