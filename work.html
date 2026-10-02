@@ -17,6 +17,7 @@
   --acento-tinta:#255A4C;
   --acento-fundo:#E3EFE9;
   --atraso:#A63B28;
+  --atraso-fundo:#F7E7E3;
   --andamento:#8C6110;
   --andamento-fundo:#F6EEDC;
   --sombra:0 1px 1px rgba(27,31,42,.04), 0 10px 26px -20px rgba(27,31,42,.45);
@@ -36,6 +37,7 @@
     --acento-tinta:#8FCBB3;
     --acento-fundo:#1B2E29;
     --atraso:#E9925A;
+    --atraso-fundo:#33211D;
     --andamento:#D6AC61;
     --andamento-fundo:#2E2617;
     --sombra:0 1px 1px rgba(0,0,0,.3), 0 10px 26px -20px rgba(0,0,0,.8);
@@ -54,6 +56,7 @@
   --acento-tinta:#8FCBB3;
   --acento-fundo:#1B2E29;
   --atraso:#E9925A;
+  --atraso-fundo:#33211D;
   --andamento:#D6AC61;
   --andamento-fundo:#2E2617;
   --sombra:0 1px 1px rgba(0,0,0,.3), 0 10px 26px -20px rgba(0,0,0,.8);
@@ -136,14 +139,17 @@ body{
 .abas button[aria-selected="true"]{color:var(--tinta);border-bottom-color:var(--acento)}
 
 /* ---------- compor ---------- */
+/* Em repouso é uma linha só: escrever e dar Enter resolve o caso comum. Os
+   outros campos aparecem ao focar o título, para quem precisa deles. */
 .compor{
-  margin-top:16px;
-  padding:12px 14px 11px;
+  margin-top:14px;
+  padding:9px 12px;
   background:var(--superficie);
   border:1px solid var(--linha);
   border-radius:var(--raio);
   box-shadow:var(--sombra);
 }
+.linha-rapida{display:flex;align-items:center;gap:10px}
 .compor input{
   border:0;
   background:transparent;
@@ -153,23 +159,26 @@ body{
   padding:0;
 }
 .compor .campo-titulo{
-  font-size:17px;
+  flex:1 1 auto;
+  min-width:0;
+  font-size:16px;
   line-height:1.3;
-  padding:2px 0;
+  padding:4px 0;
 }
 .compor .campo-nota{
   font-size:13.5px;
   color:var(--tinta-suave);
-  padding:3px 0 1px;
+  padding:6px 0 1px;
 }
 .compor input::placeholder{color:var(--tinta-fraca)}
+.linha-rapida .botao-principal{flex:0 0 auto;padding:7px 15px}
 .controles{
   display:flex;
   flex-wrap:wrap;
   align-items:center;
   gap:6px;
-  margin-top:10px;
-  padding-top:10px;
+  margin-top:9px;
+  padding-top:9px;
   border-top:1px solid var(--linha);
 }
 .controles > *{flex:0 0 auto}
@@ -231,11 +240,6 @@ select.chip{-webkit-appearance:none;appearance:none;padding-right:9px}
      do idioma (24h, ou 12h com AM/PM) e cortá-lo esconde os dígitos */
   width:auto;
   min-width:0;
-}
-.recado{
-  margin:8px 0 0;
-  font-size:12.5px;
-  color:var(--atraso);
 }
 .botao-principal{
   flex:0 0 auto;
@@ -786,7 +790,49 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 .atalho[data-acao="excluir"]:hover{color:var(--atraso)}
 .item.andando .atalho[data-acao="pausar"]{opacity:1;color:var(--andamento)}
 
+/* ---------- alertas ---------- */
+.alerta{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:baseline;
+  gap:3px 10px;
+  width:100%;
+  margin-top:10px;
+  padding:9px 13px;
+  border:0;
+  border-left:3px solid var(--atraso);
+  border-radius:0 7px 7px 0;
+  background:var(--atraso-fundo, var(--recuo));
+  font:inherit;
+  text-align:left;
+}
+.alerta.vencido{cursor:pointer}
+.alerta.vencido:hover{filter:brightness(.97)}
+.alerta.iminente{border-left-color:var(--andamento);background:var(--andamento-fundo)}
+.alerta .sinal{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:13px;
+  font-weight:600;
+  color:var(--atraso);
+}
+.alerta.iminente .sinal{color:var(--andamento)}
+.alerta .frase{font-size:14px;font-weight:600;color:var(--atraso)}
+.alerta.iminente .frase{color:var(--andamento)}
+.alerta .detalhe-alerta{
+  flex:1 1 auto;
+  font-size:13px;
+  color:var(--tinta-suave);
+}
+
 /* ---------- semana ---------- */
+.cabeca-semana{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px 16px;
+}
+.cabeca-semana .filtros{margin-top:0}
 .semana{
   margin-top:14px;
   padding:12px 14px 10px;
@@ -949,34 +995,37 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     <button type="button" role="tab" data-vista="historico" aria-selected="false">Histórico</button>
   </nav>
 
-  <form class="compor" id="formAdd" autocomplete="off" novalidate>
-    <input type="text" class="campo-titulo" id="campoNova" placeholder="O que precisa ser feito?"
-           aria-label="Nova atividade" maxlength="300">
-    <input type="text" class="campo-nota" id="campoNota" placeholder="Detalhes, link, próximo passo…"
-           aria-label="Descrição" maxlength="500">
-    <div class="controles">
-      <label class="par"><span>prazo</span><input type="date" id="campoPrazo" aria-label="Dia do prazo"></label>
-      <label class="par"><span>de</span><input type="time" id="campoInicio" aria-label="Hora de início"></label>
-      <label class="par"><span>até</span><input type="time" id="campoLimite" aria-label="Prazo limite"></label>
-      <input type="text" class="campo-cat" id="campoResponsavel" list="listaPessoas"
-             placeholder="quem faz" aria-label="Responsável" maxlength="40">
-      <label class="par marca" id="marcaRetorno" hidden>
-        <input type="checkbox" id="campoRetorno" aria-label="Também é minha: volta para mim depois">
-        <span>Eu</span></label>
-      <input type="text" class="campo-cat" id="campoCategoria" list="listaCategorias"
-             placeholder="categoria" aria-label="Categoria" maxlength="40">
-      <select id="campoRepete" class="ciclo" aria-label="Repetição"></select>
-      <button type="submit" class="botao-principal">Adicionar</button>
-      <button type="button" class="botao-secundario" id="addComecar">Adicionar e começar</button>
-    </div>
-    <p class="recado" id="recado" hidden></p>
-  </form>
-
-  <div class="filtros" id="filtros" hidden></div>
+  <div id="faixaAlertas"></div>
   <div id="faixaResgate"></div>
   <div id="faixaDesfazer"></div>
+
+  <form class="compor" id="formAdd" autocomplete="off" novalidate>
+    <div class="linha-rapida">
+      <input type="text" class="campo-titulo" id="campoNova" placeholder="O que precisa ser feito?"
+             aria-label="Nova atividade" maxlength="300">
+      <button type="submit" class="botao-principal">Adicionar</button>
+    </div>
+    <div class="detalhes-compor" id="detalhesCompor" hidden>
+      <input type="text" class="campo-nota" id="campoNota" placeholder="Detalhes, link, próximo passo…"
+             aria-label="Descrição" maxlength="500">
+      <div class="controles">
+        <label class="par"><span>prazo</span><input type="date" id="campoPrazo" aria-label="Dia do prazo"></label>
+        <label class="par"><span>de</span><input type="time" id="campoInicio" aria-label="Hora de início"></label>
+        <label class="par"><span>até</span><input type="time" id="campoLimite" aria-label="Prazo limite"></label>
+        <input type="text" class="campo-cat" id="campoResponsavel" list="listaPessoas"
+               placeholder="quem faz" aria-label="Responsável" maxlength="40">
+        <label class="par marca" id="marcaRetorno" hidden>
+          <input type="checkbox" id="campoRetorno" aria-label="Também é minha: volta para mim depois">
+          <span>Eu</span></label>
+        <input type="text" class="campo-cat" id="campoCategoria" list="listaCategorias"
+               placeholder="categoria" aria-label="Categoria" maxlength="40">
+        <select id="campoRepete" class="ciclo" aria-label="Repetição"></select>
+        <button type="button" class="botao-secundario" id="addComecar">Adicionar e começar</button>
+      </div>
+    </div>
+  </form>
+
   <div id="faixaSemana"></div>
-  <div id="faixaAlertas"></div>
 
   <main id="listas"></main>
 
@@ -1145,8 +1194,9 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   // Dias sem qualquer avanço registrado; null quando não faz sentido cobrar.
   function diasParado(t){
     if (t.status === "concluida") return null;
-    // Marcada para frente não está parada: ainda não é a vez dela.
-    if (t.prazo && t.prazo > isoHoje()) return null;
+    // Marcada para hoje ou para frente não está parada: ainda é a vez dela.
+    // Só cobra o que já passou do dia ou corre sem data nenhuma.
+    if (t.prazo && t.prazo >= isoHoje()) return null;
     var quando = diaDoCarimbo(ultimoSinal(t));
     if (!quando) return null;
     var dias = Math.round((dataDeIso(isoHoje()) - dataDeIso(quando)) / 86400000);
@@ -1914,40 +1964,40 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     var alvo = document.getElementById("faixaAlertas");
     if (estado.vista !== "agenda") { alvo.innerHTML = ""; return; }
 
-    var proximas = [];
+    // Um alerta só existe quando há o que alertar. A faixa que anunciava
+    // "nada nas próximas duas horas" ocupava a tela para dizer que estava tudo
+    // calmo, que é justamente quando ela não devia aparecer.
+    var vencidas = [], proximas = [];
     visiveis.forEach(function(t){
+      if (t.status === "concluida") return;
+      if (estaAtrasada(t, hoje)) vencidas.push(t);
       marcos(t, hoje).forEach(function(m){
         if (m.min >= 0 && m.min <= JANELA_ALERTA) proximas.push({ t: t, m: m });
       });
     });
+    vencidas.sort(function(a, b){ return a.prazo < b.prazo ? -1 : 1; });
     proximas.sort(function(a, b){ return a.m.min - b.m.min; });
 
-    var podePedir = estado.avisosNavegador === "default";
-    if (!proximas.length && !podePedir) { alvo.innerHTML = ""; return; }
+    var html = "";
 
-    var html = '<div class="faixa-aviso">';
+    if (vencidas.length) {
+      html += '<button type="button" class="alerta vencido" data-alerta="vencidas">' +
+        '<span class="sinal">!</span>' +
+        '<span class="frase">' + plural(vencidas.length, "atividade passou do prazo", "atividades passaram do prazo") + "</span>" +
+        '<span class="detalhe-alerta">' + (vencidas[0].titulo ? esc(vencidas[0].titulo) : "sem título") +
+        " · " + esc(rotuloPrazo(vencidas[0].prazo)) + "</span></button>";
+    }
+
     if (proximas.length) {
-      html += '<span class="titulo-aviso">Daqui a pouco</span><ul>';
-      proximas.slice(0, 4).forEach(function(p){
-        html += '<li' + (p.m.tipo === "limite" ? ' class="limite"' : "") + ">" +
-          '<span class="quando">' + esc(p.m.hora) + "</span>" +
-          "<span>" + (p.t.titulo ? esc(p.t.titulo) : "<em>sem título</em>") + "</span>" +
-          '<span class="restante">' + (p.m.tipo === "limite" ? "limite " : "começa ") + esc(emQuanto(p.m.min)) + "</span></li>";
-      });
-      html += "</ul>";
-    } else {
-      html += '<span class="titulo-aviso">Avisos</span>' +
-        "<span>Nada nas próximas duas horas.</span>";
+      var p = proximas[0];
+      html += '<div class="alerta iminente">' +
+        '<span class="sinal">◷</span>' +
+        '<span class="frase">' + (p.m.tipo === "limite" ? "Limite " : "Começa ") + esc(emQuanto(p.m.min)) + "</span>" +
+        '<span class="detalhe-alerta">' + (p.t.titulo ? esc(p.t.titulo) : "sem título") + " · " + esc(p.m.hora) +
+        (proximas.length > 1 ? " · +" + (proximas.length - 1) + " logo depois" : "") + "</span></div>";
     }
 
-    if (podePedir) {
-      html += '<div class="acoes-aviso"><button type="button" data-aviso="pedir">Avisar no navegador</button>' +
-        '<button type="button" class="discreto" data-aviso="dispensar">agora não</button></div>';
-    } else if (estado.avisosNavegador === "denied") {
-      html += '<div class="acoes-aviso"><span style="font-size:12.5px;opacity:.8">O navegador bloqueou avisos nesta página — os alertas ficam só aqui.</span></div>';
-    }
-
-    alvo.innerHTML = html + "</div>";
+    alvo.innerHTML = html;
   }
 
   function desenharDesfazer(){
@@ -1960,7 +2010,36 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   }
 
   // Como a semana está: quantos compromissos em cada dia, na mesma escala.
-  function desenharSemana(visiveis, hoje){
+  function seletorFiltro(rotulo, alvo, atual, itens){
+    return '<label class="par' + (atual !== "todas" ? " ativo" : "") + '"><span>' + esc(rotulo) + "</span>" +
+      '<select id="filtro-' + alvo + '" data-alvo="' + alvo + '" aria-label="Filtrar por ' + esc(rotulo) + '">' +
+      itens.map(function(par){
+        return '<option value="' + esc(par[0]) + '"' + (atual === par[0] ? " selected" : "") + ">" +
+          esc(par[1]) + "</option>";
+      }).join("") + "</select></label>";
+  }
+
+  // A semana e os filtros são a mesma coisa — como a agenda está e que recorte
+  // dela se vê — então moram no mesmo painel em vez de em duas faixas.
+  function filtrosHtml(pessoas, categorias){
+    var html = "";
+    if (pessoas.length) {
+      var deQuem = [["todas", "todos"], ["minhas", "Eu"]];
+      pessoas.forEach(function(p){ deQuem.push([p, p]); });
+      html += seletorFiltro("responsável", "quem", estado.quem, deQuem);
+    }
+    if (categorias.length) {
+      var deCat = [["todas", "todas"]];
+      categorias.forEach(function(c){ deCat.push([c, c]); });
+      html += seletorFiltro("categoria", "filtro", estado.filtro, deCat);
+    }
+    if (html && (estado.quem !== "todas" || estado.filtro !== "todas")) {
+      html += '<button type="button" class="mini" data-limpar="1">limpar</button>';
+    }
+    return html ? '<div class="filtros">' + html + "</div>" : "";
+  }
+
+  function desenharSemana(visiveis, hoje, pessoas, categorias){
     var alvo = document.getElementById("faixaSemana");
     if (estado.vista !== "agenda") { alvo.innerHTML = ""; return; }
 
@@ -1981,9 +2060,9 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       if (n > teto) teto = n;
       dias.push({ dia: d, n: n });
     }
-    if (!dias.some(function(x){ return x.n; })) { alvo.innerHTML = ""; return; }
-
-    var html = '<div class="semana"><span class="titulo-aviso">Próximos 7 dias</span><div class="grade">';
+    var html = '<div class="semana"><div class="cabeca-semana">' +
+      '<span class="titulo-aviso">Próximos 7 dias</span>' + filtrosHtml(pessoas, categorias) +
+      '</div><div class="grade">';
     dias.forEach(function(x){
       var altura = x.n ? Math.max(12, Math.round((x.n / teto) * 100)) : 0;
       html += '<button type="button" class="celula-dia' + (x.dia === hoje ? " agora" : "") +
@@ -2275,37 +2354,6 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     // Os dois filtros vivem na mesma barra, cada um com o nome do que filtra.
     // Sem isso, um nome de pessoa usado também como categoria aparecia duas
     // vezes em linhas idênticas, sem nada dizendo o que era o quê.
-    function seletorFiltro(rotulo, alvo, atual, itens){
-      return '<label class="par' + (atual !== "todas" ? " ativo" : "") + '"><span>' + esc(rotulo) + "</span>" +
-        '<select id="filtro-' + alvo + '" data-alvo="' + alvo + '" aria-label="Filtrar por ' + esc(rotulo) + '">' +
-        itens.map(function(par){
-          return '<option value="' + esc(par[0]) + '"' + (atual === par[0] ? " selected" : "") + ">" +
-            esc(par[1]) + "</option>";
-        }).join("") + "</select></label>";
-    }
-
-    var caixaFiltros = document.getElementById("filtros");
-    var barras = "";
-
-    if (pessoas.length) {
-      // "Eu" entra na mesma lista dos outros nomes; sem responsável marcado,
-      // a atividade é sua.
-      var deQuem = [["todas", "todos"], ["minhas", "Eu"]];
-      pessoas.forEach(function(p){ deQuem.push([p, p]); });
-      barras += seletorFiltro("responsável", "quem", estado.quem, deQuem);
-    }
-    if (categorias.length) {
-      var deCat = [["todas", "todas"]];
-      categorias.forEach(function(c){ deCat.push([c, c]); });
-      barras += seletorFiltro("categoria", "filtro", estado.filtro, deCat);
-    }
-    if (barras && (estado.quem !== "todas" || estado.filtro !== "todas")) {
-      barras += '<button type="button" class="mini" data-limpar="1">limpar</button>';
-    }
-
-    caixaFiltros.innerHTML = barras;
-    caixaFiltros.hidden = !barras;
-
     document.getElementById("listaCategorias").innerHTML =
       categorias.map(function(c){ return '<option value="' + esc(c) + '"></option>'; }).join("");
     document.getElementById("listaPessoas").innerHTML =
@@ -2313,7 +2361,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
     desenharResgate();
     desenharDesfazer();
-    desenharSemana(visiveis, hoje);
+    desenharSemana(visiveis, hoje, pessoas, categorias);
     desenharAlertas(visiveis, hoje);
 
     // Corpo
@@ -2345,8 +2393,16 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     } else {
       modo.textContent = "Preparando…";
     }
-    document.getElementById("totalGeral").textContent =
-      todas.length ? plural(todas.length, "atividade no total", "atividades no total") : "";
+    // A oferta de avisos do navegador vive no rodapé: é configuração, não
+    // alerta, e no topo roubava o lugar de quem tinha algo a dizer.
+    var canto = document.getElementById("totalGeral");
+    if (estado.avisosNavegador === "default") {
+      canto.innerHTML = '<button type="button" id="pedirAvisos">avisar no navegador</button>';
+    } else if (estado.avisosNavegador === "denied") {
+      canto.textContent = "avisos bloqueados pelo navegador";
+    } else {
+      canto.textContent = todas.length ? plural(todas.length, "atividade no total", "atividades no total") : "";
+    }
 
     estado.assinatura = assinaturaTempo();
     dispararAvisos(hoje);
@@ -2444,14 +2500,12 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   function adicionar(jaComecou){
     var campo = document.getElementById("campoNova");
     var campoData = document.getElementById("campoPrazo");
-    var recado = document.getElementById("recado");
     var titulo = campo.value.trim();
-    if (!titulo) { recado.hidden = true; campo.focus(); return; }
+    if (!titulo) { campo.focus(); return; }
 
     // O prazo vem preenchido com hoje, mas pode ser apagado: há atividade que
     // corre sem data e é acompanhada pelo avanço, não pelo calendário.
     var prazo = campoData.value || "";
-    recado.hidden = true;
 
     var campoNota = document.getElementById("campoNota");
     var campoCat = document.getElementById("campoCategoria");
@@ -2511,7 +2565,6 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
   var campoPrazoNovo = document.getElementById("campoPrazo");
   function sincronizarPrazoNovo(){
-    if (campoPrazoNovo.value) document.getElementById("recado").hidden = true;
     // O ciclo é nomeado pela data escolhida: numa terça, lê-se "toda terça".
     var sel = document.getElementById("campoRepete");
     var escolhido = sel.value;
@@ -2520,23 +2573,27 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   }
   campoPrazoNovo.addEventListener("change", sincronizarPrazoNovo);
   campoPrazoNovo.addEventListener("input", sincronizarPrazoNovo);
+
+  // O painel abre ao tocar no título e fecha ao sair sem nada escrito: em
+  // repouso a criação é uma linha, e continua inteira para quem precisa.
+  var detalhesCompor = document.getElementById("detalhesCompor");
+  var formAdd = document.getElementById("formAdd");
+  formAdd.addEventListener("focusin", function(){ detalhesCompor.hidden = false; });
+  document.addEventListener("click", function(e){
+    if (detalhesCompor.hidden || e.target.closest("#formAdd")) return;
+    if (document.getElementById("campoNova").value.trim()) return;
+    if (document.getElementById("campoNota").value.trim()) return;
+    detalhesCompor.hidden = true;
+  });
   // O dia já entra preenchido com hoje: nunca se cria uma atividade sem ele.
   campoPrazoNovo.value = isoHoje();
   sincronizarPrazoNovo();
 
-  document.getElementById("filtros").addEventListener("change", function(e){
+  document.getElementById("faixaSemana").addEventListener("change", function(e){
     var s = e.target.closest("select[data-alvo]");
     if (!s) return;
     if (s.getAttribute("data-alvo") === "quem") estado.quem = s.value;
     else estado.filtro = s.value;
-    gravarPreferencias();
-    desenhar();
-  });
-
-  document.getElementById("filtros").addEventListener("click", function(e){
-    if (!e.target.closest("button[data-limpar]")) return;
-    estado.quem = "todas";
-    estado.filtro = "todas";
     gravarPreferencias();
     desenhar();
   });
@@ -2546,6 +2603,13 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   });
 
   document.getElementById("faixaSemana").addEventListener("click", function(e){
+    if (e.target.closest("button[data-limpar]")) {
+      estado.quem = "todas";
+      estado.filtro = "todas";
+      gravarPreferencias();
+      desenhar();
+      return;
+    }
     var b = e.target.closest("button[data-ir]");
     if (!b) return;
     var dia = b.getAttribute("data-ir");
@@ -2576,15 +2640,18 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     else descartarPresos();
   });
 
+  // O alerta de vencidas leva direto para a seção delas.
   document.getElementById("faixaAlertas").addEventListener("click", function(e){
-    var b = e.target.closest("button[data-aviso]");
-    if (!b) return;
-    if (b.getAttribute("data-aviso") === "pedir") pedirAvisos();
-    else { estado.avisosNavegador = "dispensado"; desenhar(); }
+    if (!e.target.closest('button[data-alerta="vencidas"]')) return;
+    estado.diaFoco = null;
+    desenhar();
+    var secao = document.querySelector(".secao.urgente");
+    if (secao) secao.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 
   document.querySelector(".rodape").addEventListener("click", function(e){
     if (e.target.id === "tentarNuvem") tentarNuvemDeNovo();
+    if (e.target.id === "pedirAvisos") pedirAvisos();
   });
 
   document.getElementById("listas").addEventListener("click", function(e){
