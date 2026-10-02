@@ -737,6 +737,14 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   color:var(--tinta-fraca);
 }
 .detalhe-hist dd{margin:0;color:var(--tinta-suave)}
+.detalhe-hist .ajuste{
+  border:1px solid var(--linha-forte);
+  border-radius:5px;
+  background:var(--superficie);
+  color:var(--tinta);
+  font:inherit;
+  padding:1px 5px;
+}
 .nota-hist{
   margin:9px 0 0;
   padding-left:9px;
@@ -2114,6 +2122,18 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     return Array.from(mapa.values()).sort(function(a, b){ return a.dia > b.dia ? -1 : 1; });
   }
 
+  // Conversões para o campo de data e hora do navegador.
+  function paraLocalInput(iso){
+    var d = new Date(iso);
+    return isNaN(d.getTime()) ? "" : isoDe(d) + "T" + horaDe(d);
+  }
+
+  function deLocalInput(v){
+    var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(String(v || ""));
+    if (!m) return "";
+    return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], 0, 0).toISOString();
+  }
+
   function carimboLegivel(iso){
     var d = new Date(iso);
     if (isNaN(d.getTime())) return "—";
@@ -2131,14 +2151,19 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     if (t.repete) linhas.push(["repete", rotuloCiclo(t.repete, t.prazo)]);
     linhas.push(["criada", carimboLegivel(t.criadaEm)]);
     if (t.iniciadaEm) linhas.push(["iniciada", carimboLegivel(t.iniciadaEm)]);
-    linhas.push(["concluída", carimboLegivel(t.concluidaEm)]);
     var levou = t.iniciadaEm ? duracaoEntre(t.iniciadaEm, t.concluidaEm) : "";
-    if (levou) linhas.push(["levou", levou]);
 
     var html = '<div class="detalhe-hist"><dl>';
     linhas.forEach(function(l){
       html += "<dt>" + esc(l[0]) + "</dt><dd>" + esc(l[1]) + "</dd>";
     });
+
+    // A hora de conclusão é editável: o que vale é quando a entrega aconteceu,
+    // não quando sobrou tempo de vir aqui marcar.
+    html += "<dt>concluída</dt><dd>" +
+      '<input type="datetime-local" class="ajuste" id="fim-' + esc(t.id) + '" data-fim="' + esc(t.id) + '" ' +
+      'aria-label="Quando foi concluída" value="' + esc(paraLocalInput(t.concluidaEm)) + '"></dd>';
+    if (levou) html += "<dt>levou</dt><dd>" + esc(levou) + "</dd>";
     html += "</dl>";
     if (t.notas) html += '<p class="nota-hist">' + esc(t.notas) + "</p>";
 
@@ -2155,6 +2180,9 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
     html += '<div class="acoes-hist">' +
       '<button type="button" class="chip" data-acao="reabrir" data-id="' + esc(t.id) + '">reabrir na agenda</button>' +
+      (veredito(t) === false
+        ? '<button type="button" class="chip" data-acao="noPrazo" data-id="' + esc(t.id) + '">entreguei no prazo</button>'
+        : "") +
     "</div>";
     return html + "</div>";
   }
@@ -2678,6 +2706,22 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       return;
     }
 
+    // Atalho para o caso mais comum da correção: entreguei a tempo, só vim
+    // marcar depois. Leva a conclusão para o instante do prazo.
+    if (acao === "noPrazo") {
+      var alvoPrazo = estado.tarefas.get(botao.getAttribute("data-id"));
+      if (alvoPrazo) {
+        var lim = instanteLimite(alvoPrazo);
+        if (lim) {
+          var corrigida = Object.assign({}, alvoPrazo);
+          corrigida.concluidaEm = lim.toISOString();
+          gravar(corrigida);
+        }
+      }
+      desenhar();
+      return;
+    }
+
     if (acao === "reabrir") {
       var origem = estado.tarefas.get(botao.getAttribute("data-id"));
       if (origem) {
@@ -2796,6 +2840,19 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   });
 
   document.getElementById("listas").addEventListener("change", function(e){
+    var fim = e.target.closest("[data-fim]");
+    if (fim) {
+      var alvoFim = estado.tarefas.get(fim.getAttribute("data-fim"));
+      var quando = deLocalInput(fim.value);
+      if (alvoFim && quando) {
+        var ajustada = Object.assign({}, alvoFim);
+        ajustada.concluidaEm = quando;
+        gravar(ajustada);
+      }
+      desenhar();
+      return;
+    }
+
     var campo = e.target.closest("[data-campo]");
     if (!campo) return;
     var nome = campo.getAttribute("data-campo");
