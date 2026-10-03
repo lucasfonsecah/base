@@ -73,7 +73,24 @@ body{
   padding-inline:16px;
   -webkit-font-smoothing:antialiased;
 }
-.folha{max-width:680px;margin:0 auto}
+.folha{max-width:1120px;margin:0 auto}
+
+/* Duas colunas: a agenda à esquerda, o que ela está dizendo à direita. Numa
+   coluna só, a tela larga virava margem vazia dos dois lados. */
+.app{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 300px;
+  gap:22px;
+  align-items:start;
+  margin-top:18px;
+}
+.coluna-principal{min-width:0}
+.coluna-lado{display:flex;flex-direction:column;gap:14px;position:sticky;top:12px}
+@media (max-width:980px){
+  .app{grid-template-columns:minmax(0,1fr);gap:16px}
+  /* No telefone o resumo vem antes da lista: é o que se olha primeiro. */
+  .coluna-lado{order:-1;position:static;flex-direction:column}
+}
 
 :is(button,input,textarea,select):focus-visible{
   outline:2px solid var(--acento);
@@ -832,109 +849,104 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   color:var(--tinta-suave);
 }
 
-/* ---------- semana ---------- */
-.cabeca-semana{
-  display:flex;
-  flex-wrap:wrap;
-  align-items:center;
-  justify-content:space-between;
-  gap:8px 16px;
-}
-.cabeca-semana .filtros{margin-top:0}
-.semana{
-  margin-top:14px;
-  padding:12px 14px 10px;
+/* ---------- painéis do lado ---------- */
+.painel-lado{
+  padding:12px 14px 13px;
   background:var(--superficie);
   border:1px solid var(--linha);
   border-radius:var(--raio);
   box-shadow:var(--sombra);
 }
-.semana .titulo-aviso{
-  display:block;
+.painel-lado > h2{
+  margin:0 0 10px;
   font-family:"IBM Plex Mono",ui-monospace,monospace;
   font-size:10.5px;
-  letter-spacing:.1em;
+  font-weight:500;
+  letter-spacing:.11em;
   text-transform:uppercase;
   color:var(--tinta-fraca);
 }
-.semana .grade{
-  display:grid;
-  grid-template-columns:repeat(7,minmax(0,1fr));
-  gap:4px;
-  margin-top:8px;
+
+/* os quatro números do dia */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--linha);border-radius:8px;overflow:hidden}
+.tile{display:flex;flex-direction:column;gap:1px;padding:9px 10px;background:var(--superficie)}
+.tile .valor{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:22px;
+  font-weight:500;
+  line-height:1.05;
+  font-variant-numeric:tabular-nums;
+  color:var(--tinta);
 }
-.celula-dia{
-  display:grid;
-  gap:2px;
-  justify-items:center;
-  padding:6px 2px 5px;
-  border:1px solid transparent;
-  border-radius:7px;
-  background:transparent;
-  font:inherit;
-  color:var(--tinta-fraca);
-  cursor:pointer;
-}
-.celula-dia:hover{background:var(--recuo)}
-.celula-dia.agora{border-color:var(--linha-forte)}
-.celula-dia.escolhida{background:var(--acento-fundo);border-color:var(--acento)}
-.celula-dia.escolhida .numero-dia,
-.celula-dia.escolhida .sigla,
-.celula-dia.escolhida .qtd-dia{color:var(--acento-tinta)}
-.faixa-foco{
-  display:flex;
-  flex-wrap:wrap;
-  align-items:center;
-  justify-content:space-between;
-  gap:6px 14px;
-  margin-top:16px;
-  padding:9px 13px;
-  border-radius:8px;
-  background:var(--acento-fundo);
-  color:var(--acento-tinta);
-  font-size:13.5px;
-}
-.faixa-foco button{
-  border:0;
-  background:transparent;
-  color:inherit;
-  font:inherit;
-  font-weight:600;
-  text-decoration:underline;
-  cursor:pointer;
-  padding:0;
-}
-.celula-dia .sigla{
+.tile .chave{
   font-family:"IBM Plex Mono",ui-monospace,monospace;
   font-size:9.5px;
   letter-spacing:.08em;
   text-transform:uppercase;
+  color:var(--tinta-fraca);
 }
-.celula-dia .numero-dia{
+.tile.alerta-tile .valor{color:var(--atraso)}
+.tile.boa-tile .valor{color:var(--acento-tinta)}
+.tile.anda-tile .valor{color:var(--andamento)}
+
+/* a semana como lista vertical: cabe na coluna e lê-se de cima a baixo */
+.semana-lista,.equipe{display:flex;flex-direction:column;gap:1px}
+.dia-linha{
+  display:grid;
+  grid-template-columns:64px minmax(0,1fr) 24px;
+  align-items:center;
+  gap:8px;
+  padding:5px 6px;
+  border:1px solid transparent;
+  border-radius:6px;
+  background:transparent;
+  font:inherit;
+  text-align:left;
+  cursor:pointer;
+}
+.dia-linha:hover,.pessoa-linha:hover{background:var(--recuo)}
+.dia-linha.agora{border-color:var(--linha-forte)}
+.dia-linha.escolhida,.pessoa-linha.escolhida{background:var(--acento-fundo);border-color:var(--acento)}
+.dia-linha .quando-dia{
   font-family:"IBM Plex Mono",ui-monospace,monospace;
-  font-size:14px;
-  color:var(--tinta);
-  font-variant-numeric:tabular-nums;
-}
-.celula-dia .coluna{
-  display:flex;
-  align-items:flex-end;
-  justify-content:center;
-  width:100%;
-  height:24px;
-}
-.celula-dia .coluna i{
-  display:block;
-  width:13px;
-  border-radius:3px 3px 0 0;
-  background:var(--acento);
-}
-.celula-dia .qtd-dia{
-  font-family:"IBM Plex Mono",ui-monospace,monospace;
-  font-size:10.5px;
+  font-size:11px;
+  letter-spacing:.03em;
   color:var(--tinta-suave);
   font-variant-numeric:tabular-nums;
 }
+.dia-linha.agora .quando-dia,.dia-linha.escolhida .quando-dia{color:var(--acento-tinta);font-weight:500}
+.trilho-dia{height:7px;border-radius:4px;background:var(--recuo);overflow:hidden}
+.trilho-dia i{display:block;height:100%;border-radius:4px;background:var(--acento)}
+.dia-linha .n-dia,.pessoa-linha .n-pessoa{
+  text-align:right;
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11px;
+  color:var(--tinta-suave);
+  font-variant-numeric:tabular-nums;
+}
+
+/* carga por pessoa */
+.pessoa-linha{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 52px 22px;
+  align-items:center;
+  gap:8px;
+  padding:5px 6px;
+  border:1px solid transparent;
+  border-radius:6px;
+  background:transparent;
+  font:inherit;
+  text-align:left;
+  cursor:pointer;
+}
+.pessoa-linha .nome-pessoa{
+  font-size:13px;
+  color:var(--tinta);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.pessoa-linha .trilho-dia i.vencendo{background:var(--atraso)}
 
 /* ---------- vazio / rodapé ---------- */
 .vazio{
@@ -1033,9 +1045,13 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     </div>
   </form>
 
-  <div id="faixaSemana"></div>
-
-  <main id="listas"></main>
+  <div class="app">
+    <div class="coluna-principal">
+      <div class="filtros" id="filtros" hidden></div>
+      <main id="listas"></main>
+    </div>
+    <aside class="coluna-lado" id="painel" aria-label="Resumo"></aside>
+  </div>
 
   <p class="rodape">
     <span id="modoArmazenamento">Preparando…</span>
@@ -1059,7 +1075,9 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   var JANELA_IMINENTE = 15;  // minutos: a partir daqui ela é iminente
   var AVISO_ANTECEDENCIA = 15;
   var HORIZONTE_DIAS = 35;   // até onde a agenda desenha as voltas futuras
-  var MAX_PROJECOES = 4;     // quantas voltas de cada série a agenda adianta
+  // Duas voltas bastam para saber que a coisa se repete e quando volta; o
+  // resto da semana já está contado no painel do lado.
+  var MAX_PROJECOES = 2;
   var DIAS_PARADO = 3;       // a partir daqui a atividade é cobrada de parada
 
   var estado = {
@@ -2044,23 +2062,53 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     if (html && (estado.quem !== "todas" || estado.filtro !== "todas")) {
       html += '<button type="button" class="mini" data-limpar="1">limpar</button>';
     }
-    return html ? '<div class="filtros">' + html + "</div>" : "";
+    return html;
   }
 
-  function desenharSemana(visiveis, hoje, pessoas, categorias){
-    var alvo = document.getElementById("faixaSemana");
+  function desenharFiltros(pessoas, categorias){
+    var alvo = document.getElementById("filtros");
+    var html = estado.vista === "agenda" ? filtrosHtml(pessoas, categorias) : "";
+    alvo.innerHTML = html;
+    alvo.hidden = !html;
+  }
+
+  // O painel do lado responde três perguntas de uma olhada: como está o dia,
+  // como está a semana, e como está a carga de cada pessoa.
+  function desenharPainel(visiveis, hoje, pessoas){
+    var alvo = document.getElementById("painel");
     if (estado.vista !== "agenda") { alvo.innerHTML = ""; return; }
 
     var horizonte = somarDias(hoje, HORIZONTE_DIAS);
-    var porDia = {};
+    var porDia = {}, carga = {};
+    var atrasadas = 0, deHoje = 0, andando = 0, feitasHoje = 0;
+
     function conta(d){ porDia[d] = (porDia[d] || 0) + 1; }
+    function daPessoa(nome){
+      if (!carga[nome]) carga[nome] = { abertas: 0, atrasadas: 0 };
+      return carga[nome];
+    }
+
     visiveis.forEach(function(t){
-      if (t.status === "concluida") return;
+      if (t.status === "concluida") {
+        if (diaDoCarimbo(t.concluidaEm) === hoje) feitasHoje++;
+        return;
+      }
+      var chave = t.responsavel || "Eu";
+      var linha = daPessoa(chave);
+      linha.abertas++;
+      if (estaAtrasada(t, hoje)) { atrasadas++; linha.atrasadas++; }
+      else if (t.prazo === hoje) deHoje++;
+      if (t.status === "andamento") andando++;
       if (t.repete) projetar(t, horizonte).forEach(function(v){ conta(v.prazo); });
-      // Conta pela data: o que vence hoje continua sendo compromisso de hoje,
-      // mesmo que a hora já tenha passado. Dias anteriores caem fora da janela.
       if (t.prazo) conta(t.prazo);
     });
+
+    var html = '<section class="painel-lado"><h2>Hoje</h2><div class="tiles">' +
+      tileHtml(atrasadas, "passaram do prazo", atrasadas ? "alerta-tile" : "") +
+      tileHtml(deHoje, "para hoje", "") +
+      tileHtml(andando, "em andamento", andando ? "anda-tile" : "") +
+      tileHtml(feitasHoje, "concluídas hoje", feitasHoje ? "boa-tile" : "") +
+      "</div></section>";
 
     var dias = [], teto = 1;
     for (var i = 0; i < 7; i++) {
@@ -2068,20 +2116,55 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       if (n > teto) teto = n;
       dias.push({ dia: d, n: n });
     }
-    var html = '<div class="semana"><div class="cabeca-semana">' +
-      '<span class="titulo-aviso">Próximos 7 dias</span>' + filtrosHtml(pessoas, categorias) +
-      '</div><div class="grade">';
+    html += '<section class="painel-lado"><h2>Próximos 7 dias</h2><div class="semana-lista">';
     dias.forEach(function(x){
-      var altura = x.n ? Math.max(12, Math.round((x.n / teto) * 100)) : 0;
-      html += '<button type="button" class="celula-dia' + (x.dia === hoje ? " agora" : "") +
+      var larg = x.n ? Math.max(8, Math.round((x.n / teto) * 100)) : 0;
+      var r = rotuloDia(x.dia);
+      var nome = x.dia === hoje ? "hoje" : (diasAte(x.dia) === 1 ? "amanhã" : nomeDia(x.dia).slice(0, 3) + " " + dataDeIso(x.dia).getDate());
+      html += '<button type="button" class="dia-linha' + (x.dia === hoje ? " agora" : "") +
         (x.dia === estado.diaFoco ? " escolhida" : "") + '" aria-pressed="' + (x.dia === estado.diaFoco) + '" ' +
-        'data-ir="' + esc(x.dia) + '" aria-label="' + esc(dataLonga(x.dia) + ": " + plural(x.n, "compromisso", "compromissos")) + '">' +
-        '<span class="sigla">' + esc(nomeDia(x.dia).slice(0, 3)) + "</span>" +
-        '<span class="numero-dia">' + dataDeIso(x.dia).getDate() + "</span>" +
-        '<span class="coluna"><i style="height:' + altura + '%"></i></span>' +
-        '<span class="qtd-dia">' + (x.n || "—") + "</span></button>";
+        'data-ir="' + esc(x.dia) + '" aria-label="' + esc(r.detalhe || dataLonga(x.dia)) + ": " +
+        esc(plural(x.n, "compromisso", "compromissos")) + '">' +
+        '<span class="quando-dia">' + esc(nome) + "</span>" +
+        '<span class="trilho-dia"><i style="width:' + larg + '%"></i></span>' +
+        '<span class="n-dia">' + (x.n || "—") + "</span></button>";
     });
-    alvo.innerHTML = html + "</div></div>";
+    html += "</div></section>";
+
+    if (pessoas.length) {
+      var nomes = Object.keys(carga).sort(function(a, b){
+        if (a === "Eu") return -1;
+        if (b === "Eu") return 1;
+        return carga[b].abertas - carga[a].abertas;
+      });
+      var maior = 1;
+      nomes.forEach(function(n){ if (carga[n].abertas > maior) maior = carga[n].abertas; });
+
+      html += '<section class="painel-lado"><h2>Equipe</h2><div class="equipe">';
+      nomes.forEach(function(n){
+        var c = carga[n];
+        var larg = Math.max(8, Math.round((c.abertas / maior) * 100));
+        var valor = n === "Eu" ? "minhas" : n;
+        var legenda = plural(c.abertas, "atividade aberta", "atividades abertas") +
+          (c.atrasadas ? " · " + plural(c.atrasadas, "passou do prazo", "passaram do prazo") : "");
+        html += '<button type="button" class="pessoa-linha' + (estado.quem === valor ? " escolhida" : "") +
+          '" data-pessoa="' + esc(valor) + '" aria-pressed="' + (estado.quem === valor) + '" ' +
+          'title="' + esc(legenda) + '" aria-label="' + esc(n + ": " + legenda) + '">' +
+          '<span class="nome-pessoa">' + esc(n) + "</span>" +
+          '<span class="trilho-dia"><i class="' + (c.atrasadas ? "vencendo" : "") +
+          '" style="width:' + larg + '%"></i></span>' +
+          '<span class="n-pessoa' + (c.atrasadas ? " atrasada-pessoa" : "") + '">' + c.abertas + "</span></button>";
+      });
+      html += "</div></section>";
+    }
+
+    alvo.innerHTML = html;
+  }
+
+  function tileHtml(valor, chave, tom){
+    return '<div class="tile' + (tom ? " " + tom : "") + '">' +
+      '<span class="valor">' + valor + "</span>" +
+      '<span class="chave">' + esc(chave) + "</span></div>";
   }
 
   function desenharResgate(){
@@ -2389,7 +2472,8 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
     desenharResgate();
     desenharDesfazer();
-    desenharSemana(visiveis, hoje, pessoas, categorias);
+    desenharFiltros(pessoas, categorias);
+    desenharPainel(visiveis, hoje, pessoas);
     desenharAlertas(visiveis, hoje);
 
     // Corpo
@@ -2617,7 +2701,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   campoPrazoNovo.value = isoHoje();
   sincronizarPrazoNovo();
 
-  document.getElementById("faixaSemana").addEventListener("change", function(e){
+  document.getElementById("filtros").addEventListener("change", function(e){
     var s = e.target.closest("select[data-alvo]");
     if (!s) return;
     if (s.getAttribute("data-alvo") === "quem") estado.quem = s.value;
@@ -2630,20 +2714,30 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     if (e.target.closest("button[data-desfazer]")) desfazerExclusao();
   });
 
-  document.getElementById("faixaSemana").addEventListener("click", function(e){
-    if (e.target.closest("button[data-limpar]")) {
-      estado.quem = "todas";
-      estado.filtro = "todas";
-      gravarPreferencias();
+  document.getElementById("filtros").addEventListener("click", function(e){
+    if (!e.target.closest("button[data-limpar]")) return;
+    estado.quem = "todas";
+    estado.filtro = "todas";
+    gravarPreferencias();
+    desenhar();
+  });
+
+  document.getElementById("painel").addEventListener("click", function(e){
+    var dia = e.target.closest("button[data-ir]");
+    if (dia) {
+      var alvoDia = dia.getAttribute("data-ir");
+      estado.diaFoco = estado.diaFoco === alvoDia ? null : alvoDia;
+      estado.aberto = null;
       desenhar();
       return;
     }
-    var b = e.target.closest("button[data-ir]");
-    if (!b) return;
-    var dia = b.getAttribute("data-ir");
-    estado.diaFoco = estado.diaFoco === dia ? null : dia;
-    estado.aberto = null;
-    desenhar();
+    var pessoa = e.target.closest("button[data-pessoa]");
+    if (pessoa) {
+      var quem = pessoa.getAttribute("data-pessoa");
+      estado.quem = estado.quem === quem ? "todas" : quem;
+      gravarPreferencias();
+      desenhar();
+    }
   });
 
   var campoRespNovo = document.getElementById("campoResponsavel");
