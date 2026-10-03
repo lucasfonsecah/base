@@ -20,6 +20,9 @@
   --atraso-fundo:#F7E7E3;
   --andamento:#8C6110;
   --andamento-fundo:#F6EEDC;
+  --barra-fundo:#1B1F2A;
+  --barra-tinta:#F2F4F0;
+  --barra-fraca:#8D96A3;
   --sombra:0 1px 1px rgba(27,31,42,.04), 0 10px 26px -20px rgba(27,31,42,.45);
   --raio:10px;
 }
@@ -40,6 +43,9 @@
     --atraso-fundo:#33211D;
     --andamento:#D6AC61;
     --andamento-fundo:#2E2617;
+    --barra-fundo:#1A1E24;
+    --barra-tinta:#E9ECE6;
+    --barra-fraca:#79818D;
     --sombra:0 1px 1px rgba(0,0,0,.3), 0 10px 26px -20px rgba(0,0,0,.8);
   }
 }
@@ -59,6 +65,9 @@
   --atraso-fundo:#33211D;
   --andamento:#D6AC61;
   --andamento-fundo:#2E2617;
+  --barra-fundo:#1A1E24;
+  --barra-tinta:#E9ECE6;
+  --barra-fraca:#79818D;
   --sombra:0 1px 1px rgba(0,0,0,.3), 0 10px 26px -20px rgba(0,0,0,.8);
 }
 
@@ -69,11 +78,11 @@ body{
   font-family:"Public Sans","Helvetica Neue",Arial,sans-serif;
   font-size:15px;
   line-height:1.5;
-  padding-block:28px 64px;
+  padding-block:0 56px;
   padding-inline:16px;
   -webkit-font-smoothing:antialiased;
 }
-.folha{max-width:1120px;margin:0 auto}
+.folha{max-width:1120px;margin:0 auto;padding-top:22px}
 
 /* Duas colunas: a agenda à esquerda, o que ela está dizendo à direita. Numa
    coluna só, a tela larga virava margem vazia dos dois lados. */
@@ -98,62 +107,64 @@ body{
   border-radius:4px;
 }
 
-/* ---------- cabeçalho ---------- */
-.topo{
+/* ---------- barra ---------- */
+/* A página ganha uma barra escura no topo: dá à tela um eixo e faz ela se ler
+   como aplicação, não como documento solto. */
+.barra{
   display:flex;
   flex-wrap:wrap;
   align-items:flex-end;
-  justify-content:space-between;
-  gap:10px 20px;
+  gap:10px 24px;
+  padding:18px 20px 0;
+  background:var(--barra-fundo);
+  border-radius:var(--raio) var(--raio) 0 0;
 }
-.topo h1{
+.barra .marca{flex:1 1 240px;min-width:0}
+.barra h1{
   font-family:"Newsreader",Georgia,"Times New Roman",serif;
   font-weight:600;
-  font-size:34px;
-  line-height:1.1;
+  font-size:30px;
+  line-height:1.05;
   letter-spacing:-.015em;
   margin:0;
-  text-wrap:balance;
+  color:var(--barra-tinta);
 }
 .resumo{
-  margin:6px 0 0;
-  font-size:13.5px;
-  color:var(--tinta-suave);
+  margin:5px 0 0;
+  font-size:13px;
+  color:var(--barra-fraca);
   font-variant-numeric:tabular-nums;
 }
-.resumo b{font-weight:600;color:var(--tinta)}
-.resumo .vermelho{color:var(--atraso)}
+.resumo b{font-weight:600;color:var(--barra-tinta)}
+.resumo .vermelho{color:#E99A84}
 .data-hoje{
   font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
-  font-size:11px;
+  font-size:10.5px;
   letter-spacing:.09em;
   text-transform:uppercase;
-  color:var(--tinta-fraca);
-  padding-bottom:3px;
+  color:var(--barra-fraca);
+  padding-bottom:12px;
 }
-
-/* ---------- abas ---------- */
 .abas{
   display:flex;
   gap:18px;
-  margin-top:14px;
-  border-bottom:1px solid var(--linha);
+  flex:1 1 100%;
+  margin-top:12px;
 }
 .abas button{
   border:0;
   background:transparent;
-  color:var(--tinta-fraca);
+  color:var(--barra-fraca);
   font-family:"IBM Plex Mono",ui-monospace,monospace;
   font-size:11.5px;
   letter-spacing:.1em;
   text-transform:uppercase;
-  padding:0 0 9px;
-  margin-bottom:-1px;
+  padding:0 0 10px;
   border-bottom:2px solid transparent;
   cursor:pointer;
 }
-.abas button:hover{color:var(--tinta-suave)}
-.abas button[aria-selected="true"]{color:var(--tinta);border-bottom-color:var(--acento)}
+.abas button:hover{color:var(--barra-tinta)}
+.abas button[aria-selected="true"]{color:var(--barra-tinta);border-bottom-color:var(--acento)}
 
 /* ---------- compor ---------- */
 /* Em repouso é uma linha só: escrever e dar Enter resolve o caso comum. Os
@@ -988,6 +999,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   text-decoration:underline;cursor:pointer;padding:0;
 }
 .rodape button:hover{color:var(--tinta)}
+.acoes-rodape{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px}
 
 @media (max-width:520px){
   .topo h1{font-size:28px}
@@ -1002,18 +1014,17 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 </style>
 
 <div class="folha">
-  <header class="topo">
-    <div>
+  <header class="barra">
+    <div class="marca">
       <h1>Work</h1>
       <p class="resumo" id="resumo">Carregando suas atividades…</p>
     </div>
     <div class="data-hoje" id="dataHoje"></div>
+    <nav class="abas" id="abas" role="tablist" aria-label="Seções">
+      <button type="button" role="tab" data-vista="agenda" aria-selected="true">Agenda</button>
+      <button type="button" role="tab" data-vista="historico" aria-selected="false">Histórico</button>
+    </nav>
   </header>
-
-  <nav class="abas" id="abas" role="tablist" aria-label="Seções">
-    <button type="button" role="tab" data-vista="agenda" aria-selected="true">Agenda</button>
-    <button type="button" role="tab" data-vista="historico" aria-selected="false">Histórico</button>
-  </nav>
 
   <div id="faixaAlertas"></div>
   <div id="faixaResgate"></div>
@@ -1055,8 +1066,13 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
   <p class="rodape">
     <span id="modoArmazenamento">Preparando…</span>
-    <span id="totalGeral"></span>
+    <span class="acoes-rodape">
+      <button type="button" id="btExportar">exportar</button>
+      <button type="button" id="btImportar">importar</button>
+      <span id="totalGeral"></span>
+    </span>
   </p>
+  <input type="file" id="arquivoImport" accept=".json,application/json" hidden>
 </div>
 
 <datalist id="listaCategorias"></datalist>
@@ -1092,6 +1108,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     quem: "todas",
     diaFoco: null,      // quando um dia da faixa é escolhido, a agenda mostra só ele
     desfazer: null,     // a última atividade excluída, enquanto dá para voltar
+    aviso: "",          // recado curto do rodapé (exportou, importou, falhou)
     verTudo: false,
     modo: "carregando",
     pronto: false,
@@ -1484,10 +1501,10 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     desenhar();
   }
 
-  function descartarPresos(){
+  // Adiar não pode destruir: o espelho local continua trancado, então o que
+  // está guardado no navegador segue lá, intacto, para a próxima sessão.
+  function adiarResgate(){
     estado.resgate = null;
-    estado.espelhoLiberado = true;
-    gravarLocal();
     desenhar();
   }
 
@@ -1585,6 +1602,82 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       temporizadores.delete(id);
       fn();
     }, 700));
+  }
+
+  /* ---------------- levar e trazer ---------------- */
+
+  // O arquivo baixado abre noutra origem e não enxerga o armazenamento desta
+  // página. Exportar e importar é o que faz os dados atravessarem — entre o
+  // artifact, o arquivo solto e outro navegador.
+  function exportar(){
+    var lista = [];
+    estado.tarefas.forEach(function(t){ lista.push(Object.assign({ id: t.id }, corpo(t))); });
+    var texto = JSON.stringify({ app: "work", versao: 1, exportadoEm: new Date().toISOString(), atividades: lista }, null, 2);
+    var nome = "work-" + isoHoje() + ".json";
+
+    var pedido = null;
+    try { pedido = window.claude && window.claude.use ? window.claude.use("downloads") : null; }
+    catch (e) { pedido = null; }
+
+    if (pedido && typeof pedido.then === "function") {
+      pedido.then(function(ns){
+        if (!ns) { baixarDireto(nome, texto); return; }
+        return ns.save({ filename: nome, data: texto }).then(function(){
+          anunciar(plural(lista.length, "atividade exportada", "atividades exportadas") + ".");
+        }, function(erro){
+          if (erro && erro.code === "declined") return;
+          baixarDireto(nome, texto);
+        });
+      }, function(){ baixarDireto(nome, texto); });
+    } else {
+      baixarDireto(nome, texto);
+    }
+  }
+
+  function baixarDireto(nome, texto){
+    try {
+      var url = URL.createObjectURL(new Blob([texto], { type: "application/json" }));
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = nome;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+      anunciar("Arquivo gerado.");
+    } catch (e) {
+      anunciar("Não consegui gerar o arquivo neste navegador.");
+    }
+  }
+
+  function importarArquivo(arquivo){
+    var leitor = new FileReader();
+    leitor.onload = function(){
+      var dados = null;
+      try { dados = JSON.parse(String(leitor.result)); } catch (e) { dados = null; }
+      var lista = dados && Array.isArray(dados.atividades) ? dados.atividades
+                : (Array.isArray(dados) ? dados : null);
+      if (!lista) { anunciar("Esse arquivo não parece um export do Work."); return; }
+      var novas = 0, atualizadas = 0;
+      lista.forEach(function(item){
+        if (!item || !item.id) return;
+        if (estado.tarefas.has(item.id)) atualizadas++; else novas++;
+        gravar(normalizar(item.id, item));
+      });
+      anunciar(plural(novas, "atividade nova", "atividades novas") +
+        (atualizadas ? " · " + plural(atualizadas, "atualizada", "atualizadas") : "") + ".");
+      desenhar();
+    };
+    leitor.onerror = function(){ anunciar("Não consegui ler o arquivo."); };
+    leitor.readAsText(arquivo);
+  }
+
+  var relogioAviso = null;
+  function anunciar(texto){
+    estado.aviso = texto;
+    if (relogioAviso) window.clearTimeout(relogioAviso);
+    relogioAviso = window.setTimeout(function(){ estado.aviso = ""; desenhar(); }, 7000);
+    desenhar();
   }
 
   /* ---------------- avisos do navegador ---------------- */
@@ -2177,7 +2270,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       "Trazer para a sua conta faz " + (estado.resgate.length === 1 ? "ela aparecer" : "elas aparecerem") + " nos outros dispositivos.</span>" +
       '<div class="acoes-aviso">' +
         '<button type="button" data-resgate="importar">Trazer para a conta</button>' +
-        '<button type="button" class="discreto" data-resgate="descartar">manter só aqui</button>' +
+        '<button type="button" class="discreto" data-resgate="adiar">agora não</button>' +
       "</div></div>";
   }
 
@@ -2497,7 +2590,9 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
     // Rodapé
     var modo = document.getElementById("modoArmazenamento");
-    if (estado.modo === "nuvem") {
+    if (estado.aviso) {
+      modo.textContent = estado.aviso;
+    } else if (estado.modo === "nuvem") {
       modo.textContent = "Salvo na sua conta · sincroniza entre dispositivos";
     } else if (estado.modo === "local") {
       modo.innerHTML = "Salvo apenas neste navegador · " +
@@ -2759,7 +2854,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     var b = e.target.closest("button[data-resgate]");
     if (!b) return;
     if (b.getAttribute("data-resgate") === "importar") importarPresos();
-    else descartarPresos();
+    else adiarResgate();
   });
 
   // O alerta de vencidas leva direto para a seção delas.
@@ -2774,6 +2869,14 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   document.querySelector(".rodape").addEventListener("click", function(e){
     if (e.target.id === "tentarNuvem") tentarNuvemDeNovo();
     if (e.target.id === "pedirAvisos") pedirAvisos();
+    if (e.target.id === "btExportar") exportar();
+    if (e.target.id === "btImportar") document.getElementById("arquivoImport").click();
+  });
+
+  document.getElementById("arquivoImport").addEventListener("change", function(e){
+    var arquivo = e.target.files && e.target.files[0];
+    if (arquivo) importarArquivo(arquivo);
+    e.target.value = "";
   });
 
   document.getElementById("listas").addEventListener("click", function(e){
