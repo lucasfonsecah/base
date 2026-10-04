@@ -1028,6 +1028,74 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 }
 .pessoa-linha .n-pessoa.atrasada-pessoa{color:#F09A7E}
 
+/* ---------- quadro ---------- */
+.quadro{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  overflow-x:auto;
+  padding:4px 0 10px;
+}
+.coluna-quadro{
+  flex:0 0 288px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  padding:10px;
+  border-radius:10px;
+  background:var(--recuo);
+  min-height:120px;
+}
+.coluna-quadro.alvo{outline:2px dashed var(--acento);outline-offset:-3px}
+.cabeca-coluna{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:8px;
+  padding:0 2px;
+}
+.cabeca-coluna .nome-coluna{
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  color:var(--tinta-suave);
+}
+.cabeca-coluna.urgente .nome-coluna{color:var(--atraso)}
+.cabeca-coluna .n-coluna{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11px;
+  color:var(--tinta-fraca);
+  font-variant-numeric:tabular-nums;
+}
+.cartao{
+  display:block;
+  width:100%;
+  text-align:left;
+  padding:9px 10px;
+  border:1px solid var(--linha);
+  border-left:3px solid transparent;
+  border-radius:8px;
+  background:var(--superficie);
+  box-shadow:var(--sombra);
+  font:inherit;
+  cursor:grab;
+}
+.cartao:active{cursor:grabbing}
+.cartao.atrasada{border-left-color:var(--atraso)}
+.cartao.andando{border-left-color:var(--andamento)}
+.cartao.arrastando{opacity:.45}
+.cartao .titulo-cartao{display:block;font-size:14px;line-height:1.35;color:var(--tinta)}
+.cartao.feita .titulo-cartao{color:var(--tinta-fraca);text-decoration:line-through}
+.cartao .meta{margin-top:5px}
+.cartao .acoes-cartao{display:flex;gap:2px;margin-top:6px;justify-content:flex-end}
+.coluna-quadro .vazio-coluna{
+  padding:14px 6px;
+  font-size:12.5px;
+  color:var(--tinta-fraca);
+  text-align:center;
+}
+
 /* ---------- vazio / rodapé ---------- */
 .vazio{
   margin-top:26px;
@@ -1067,6 +1135,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
       <div class="marca"><span class="logo" aria-hidden="true">W</span><h1>Work</h1></div>
       <nav class="nav" id="abas" role="tablist" aria-label="Seções">
         <button type="button" role="tab" data-vista="agenda" aria-selected="true">Agenda</button>
+        <button type="button" role="tab" data-vista="quadro" aria-selected="false">Quadro</button>
         <button type="button" role="tab" data-vista="historico" aria-selected="false">Histórico</button>
       </nav>
     </div>
@@ -2178,7 +2247,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
   function desenharAlertas(visiveis, hoje){
     var alvo = document.getElementById("faixaAlertas");
-    if (estado.vista !== "agenda") { alvo.innerHTML = ""; return; }
+    if (estado.vista === "historico") { alvo.innerHTML = ""; return; }
 
     // Um alerta só existe quando há o que alertar. A faixa que anunciava
     // "nada nas próximas duas horas" ocupava a tela para dizer que estava tudo
@@ -2257,7 +2326,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
   function desenharFiltros(pessoas, categorias){
     var alvo = document.getElementById("filtros");
-    var html = estado.vista === "agenda" ? filtrosHtml(pessoas, categorias) : "";
+    var html = estado.vista === "historico" ? "" : filtrosHtml(pessoas, categorias);
     alvo.innerHTML = html;
     alvo.hidden = !html;
   }
@@ -2266,7 +2335,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   // como está a semana, e como está a carga de cada pessoa.
   function desenharPainel(visiveis, hoje, pessoas){
     var alvo = document.getElementById("painel");
-    if (estado.vista !== "agenda") { alvo.innerHTML = ""; return; }
+    if (estado.vista === "historico") { alvo.innerHTML = ""; return; }
 
     var horizonte = somarDias(hoje, HORIZONTE_DIAS);
     var porDia = {}, carga = {};
@@ -2369,6 +2438,101 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
         '<button type="button" data-resgate="importar">Trazer para a conta</button>' +
         '<button type="button" class="discreto" data-resgate="adiar">agora não</button>' +
       "</div></div>";
+  }
+
+  /* ---------------- quadro ---------------- */
+
+  var COLUNAS = [
+    { chave: "aberta",    nome: "A fazer" },
+    { chave: "andamento", nome: "Em andamento" },
+    { chave: "concluida", nome: "Concluídas" }
+  ];
+
+  function cartaoHtml(t, hoje){
+    var feita = t.status === "concluida";
+    var classes = ["cartao"];
+    if (feita) classes.push("feita");
+    else if (t.status === "andamento") classes.push("andando");
+    else if (estaAtrasada(t, hoje)) classes.push("atrasada");
+
+    var atalhos = feita ? "" :
+      '<div class="acoes-cartao">' +
+        atalhoHtml(t.status === "andamento" ? "pausar" : "comecar",
+                   t.status === "andamento" ? "Pausar" : "Começar") +
+        atalhoHtml("atualizar", "Registrar avanço") +
+        atalhoHtml("excluir", "Excluir") +
+      "</div>";
+
+    return '<article class="' + classes.join(" ") + '" data-id="' + esc(t.id) + '" draggable="true">' +
+      '<button type="button" class="marcar" data-acao="alternar" aria-pressed="' + feita + '" ' +
+        'aria-label="' + esc((feita ? "Reabrir" : "Concluir") + ": " + (t.titulo || "atividade")) + '">' +
+        '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 8.4l3.2 3.2 6.4-7.2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+      "</button>" +
+      '<span class="titulo-cartao">' + (t.titulo ? esc(t.titulo) : "<em>sem título</em>") + "</span>" +
+      '<span class="meta">' + metaHtml(t, hoje, true) + "</span>" +
+      (t.progresso > 0 && !feita ? '<span class="barra-avanco"><i style="width:' + t.progresso + '%"></i></span>' : "") +
+      atalhos + "</article>";
+  }
+
+  function desenharQuadro(visiveis, hoje){
+    var corte = somarDias(hoje, -7);
+    var baldes = { aberta: [], andamento: [], concluida: [] };
+    visiveis.forEach(function(t){
+      if (t.status === "concluida") {
+        var dia = diaDoCarimbo(t.concluidaEm);
+        if (dia && dia >= corte) baldes.concluida.push(t);
+        return;
+      }
+      baldes[t.status === "andamento" ? "andamento" : "aberta"].push(t);
+    });
+
+    function porPrazo(a, b){
+      var ka = (a.prazo || "9999-99-99") + horaDeOrdem(a);
+      var kb = (b.prazo || "9999-99-99") + horaDeOrdem(b);
+      if (ka !== kb) return ka < kb ? -1 : 1;
+      return a.criadaEm < b.criadaEm ? -1 : 1;
+    }
+    baldes.aberta.sort(porPrazo);
+    baldes.andamento.sort(porPrazo);
+    baldes.concluida.sort(function(a, b){ return a.concluidaEm > b.concluidaEm ? -1 : 1; });
+
+    return '<div class="quadro">' + COLUNAS.map(function(col){
+      var itens = baldes[col.chave];
+      var vencidas = col.chave !== "concluida" && itens.some(function(t){ return estaAtrasada(t, hoje); });
+      return '<section class="coluna-quadro" data-coluna="' + col.chave + '">' +
+        '<div class="cabeca-coluna' + (vencidas ? " urgente" : "") + '">' +
+          '<span class="nome-coluna">' + esc(col.nome) + "</span>" +
+          '<span class="n-coluna">' + itens.length + "</span></div>" +
+        (itens.length
+          ? itens.map(function(t){ return cartaoHtml(t, hoje); }).join("")
+          : '<p class="vazio-coluna">' + (col.chave === "concluida" ? "nada concluído na semana" : "arraste algo para cá") + "</p>") +
+      "</section>";
+    }).join("") + "</div>";
+  }
+
+  // Soltar um cartão numa coluna é mudar o estado da atividade.
+  function moverPara(t, coluna){
+    var agora = new Date().toISOString();
+    if (coluna === "concluida") {
+      if (t.status === "concluida") return false;
+      if (marcarConcluida(t)) return true;
+      gravar(t);
+      return false;
+    }
+    if (coluna === "andamento") {
+      if (t.status === "andamento") return false;
+      t.status = "andamento";
+      t.concluidaEm = "";
+      if (!t.iniciadaEm) t.iniciadaEm = agora;
+      t.atualizadaEm = agora;
+      gravar(t);
+      return false;
+    }
+    if (t.status === "aberta") return false;
+    t.status = "aberta";
+    t.concluidaEm = "";
+    gravar(t);
+    return false;
   }
 
   /* ---------------- histórico ---------------- */
@@ -2625,11 +2789,12 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     });
 
     var naAgenda = estado.vista === "agenda";
+    var noQuadro = estado.vista === "quadro";
 
     Array.prototype.forEach.call(document.querySelectorAll("#abas button"), function(b){
       b.setAttribute("aria-selected", String(b.getAttribute("data-vista") === estado.vista));
     });
-    document.getElementById("formAdd").hidden = !naAgenda;
+    document.getElementById("formAdd").hidden = !naAgenda && !noQuadro;
 
     // Resumo
     var abertas = 0, atrasadas = 0, deHoje = 0;
@@ -2670,6 +2835,8 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     var html;
     if (!estado.pronto) {
       html = '<div class="vazio"><p class="serif">Abrindo sua agenda…</p></div>';
+    } else if (noQuadro) {
+      html = desenharQuadro(visiveis, hoje);
     } else if (naAgenda) {
       html = desenharAgenda(visiveis, hoje);
       if (!html) {
@@ -2698,7 +2865,8 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     if (todas.length) linhas.push(plural(todas.length, "atividade", "atividades"));
     modo.innerHTML = linhas.join("<br>");
 
-    document.getElementById("tituloVista").textContent = naAgenda ? "Agenda" : "Histórico";
+    document.getElementById("tituloVista").textContent =
+      naAgenda ? "Agenda" : (noQuadro ? "Quadro" : "Histórico");
     if (!document.getElementById("cortina").hidden) desenharDados();
 
     estado.assinatura = assinaturaTempo();
@@ -2771,6 +2939,17 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     estado.desfazer = null;
     if (relogioDesfazer) window.clearTimeout(relogioDesfazer);
     desenhar();
+  }
+
+  // Conclui no lugar. Devolve true quando já gravou e desenhou por conta
+  // própria (recorrente, que arquiva a volta e avança a série).
+  function marcarConcluida(t){
+    t.status = "concluida";
+    t.concluidaEm = new Date().toISOString();
+    if (!t.iniciadaEm) t.iniciadaEm = t.concluidaEm;
+    if (estado.aberto === t.id) { estado.aberto = null; estado.mostrarNota = false; }
+    if (t.repete) { concluirVolta(t, new Date()); return true; }
+    return false;
   }
 
   function abrir(id){
@@ -3096,16 +3275,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
           t.status = "aberta";
           t.concluidaEm = "";
         } else {
-          t.status = "concluida";
-          t.concluidaEm = new Date().toISOString();
-          // Concluir sem nunca ter começado ainda conta como trabalho do dia.
-          if (!t.iniciadaEm) t.iniciadaEm = t.concluidaEm;
-          if (estado.aberto === t.id) { estado.aberto = null; estado.mostrarNota = false; }
-          if (t.repete) {
-            concluirVolta(t, new Date());
-            desenhar();
-            return;
-          }
+          if (marcarConcluida(t)) { desenhar(); return; }
         }
       } else if (acao === "andamento") {
         if (t.status === "andamento") {
@@ -3181,6 +3351,48 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     if (!campo) return;
     e.preventDefault();
     fechar();
+  });
+
+  // Arrastar um cartão de uma coluna para outra muda o estado da atividade.
+  // No telefone não há arrasto: os mesmos botões do cartão fazem o caminho.
+  var arrastando = null;
+  var listas = document.getElementById("listas");
+
+  listas.addEventListener("dragstart", function(e){
+    var cartao = e.target.closest(".cartao");
+    if (!cartao) return;
+    arrastando = cartao.getAttribute("data-id");
+    cartao.classList.add("arrastando");
+    try { e.dataTransfer.setData("text/plain", arrastando); e.dataTransfer.effectAllowed = "move"; } catch (err) {}
+  });
+
+  listas.addEventListener("dragend", function(){
+    arrastando = null;
+    Array.prototype.forEach.call(document.querySelectorAll(".arrastando"), function(x){ x.classList.remove("arrastando"); });
+    Array.prototype.forEach.call(document.querySelectorAll(".coluna-quadro.alvo"), function(x){ x.classList.remove("alvo"); });
+  });
+
+  listas.addEventListener("dragover", function(e){
+    var col = e.target.closest(".coluna-quadro");
+    if (!col || !arrastando) return;
+    e.preventDefault();
+    try { e.dataTransfer.dropEffect = "move"; } catch (err) {}
+    Array.prototype.forEach.call(document.querySelectorAll(".coluna-quadro.alvo"), function(x){ x.classList.remove("alvo"); });
+    col.classList.add("alvo");
+  });
+
+  listas.addEventListener("drop", function(e){
+    var col = e.target.closest(".coluna-quadro");
+    if (!col) return;
+    e.preventDefault();
+    var id = arrastando;
+    try { id = e.dataTransfer.getData("text/plain") || arrastando; } catch (err) {}
+    arrastando = null;
+    col.classList.remove("alvo");
+    var t = estado.tarefas.get(id);
+    if (!t) return;
+    moverPara(Object.assign({}, t), col.getAttribute("data-coluna"));
+    desenhar();
   });
 
   // Clicar fora fecha o rascunho aberto.
