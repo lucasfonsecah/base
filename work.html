@@ -20,9 +20,11 @@
   --atraso-fundo:#F7E7E3;
   --andamento:#8C6110;
   --andamento-fundo:#F6EEDC;
-  --barra-fundo:#1B1F2A;
-  --barra-tinta:#F2F4F0;
-  --barra-fraca:#8D96A3;
+  --rail:#161A21;
+  --rail-alto:#1E232C;
+  --rail-linha:#2A313C;
+  --rail-tinta:#EEF1EC;
+  --rail-fraca:#8B95A3;
   --sombra:0 1px 1px rgba(27,31,42,.04), 0 10px 26px -20px rgba(27,31,42,.45);
   --raio:10px;
 }
@@ -43,9 +45,7 @@
     --atraso-fundo:#33211D;
     --andamento:#D6AC61;
     --andamento-fundo:#2E2617;
-    --barra-fundo:#1A1E24;
-    --barra-tinta:#E9ECE6;
-    --barra-fraca:#79818D;
+
     --sombra:0 1px 1px rgba(0,0,0,.3), 0 10px 26px -20px rgba(0,0,0,.8);
   }
 }
@@ -65,9 +65,7 @@
   --atraso-fundo:#33211D;
   --andamento:#D6AC61;
   --andamento-fundo:#2E2617;
-  --barra-fundo:#1A1E24;
-  --barra-tinta:#E9ECE6;
-  --barra-fraca:#79818D;
+
   --sombra:0 1px 1px rgba(0,0,0,.3), 0 10px 26px -20px rgba(0,0,0,.8);
 }
 
@@ -82,24 +80,9 @@ body{
   padding-inline:16px;
   -webkit-font-smoothing:antialiased;
 }
-.folha{max-width:1120px;margin:0 auto;padding-top:22px}
 
-/* Duas colunas: a agenda à esquerda, o que ela está dizendo à direita. Numa
-   coluna só, a tela larga virava margem vazia dos dois lados. */
-.app{
-  display:grid;
-  grid-template-columns:minmax(0,1fr) 300px;
-  gap:22px;
-  align-items:start;
-  margin-top:18px;
-}
-.coluna-principal{min-width:0}
-.coluna-lado{display:flex;flex-direction:column;gap:14px;position:sticky;top:12px}
-@media (max-width:980px){
-  .app{grid-template-columns:minmax(0,1fr);gap:16px}
-  /* No telefone o resumo vem antes da lista: é o que se olha primeiro. */
-  .coluna-lado{order:-1;position:static;flex-direction:column}
-}
+
+
 
 :is(button,input,textarea,select):focus-visible{
   outline:2px solid var(--acento);
@@ -107,64 +90,174 @@ body{
   border-radius:4px;
 }
 
-/* ---------- barra ---------- */
-/* A página ganha uma barra escura no topo: dá à tela um eixo e faz ela se ler
-   como aplicação, não como documento solto. */
-.barra{
+/* ---------- shell ---------- */
+/* Trilho escuro à esquerda com marca, navegação e os números; conteúdo claro à
+   direita. É o que separa uma aplicação de uma folha de texto empilhada. */
+body{padding:0}
+.shell{
+  display:grid;
+  grid-template-columns:236px minmax(0,1fr);
+  min-height:100vh;
+  min-height:100dvh;
+}
+.rail{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  padding:20px 16px 16px;
+  background:var(--rail);
+  color:var(--rail-tinta);
+  position:sticky;
+  top:0;
+  height:100vh;
+  height:100dvh;
+  overflow-y:auto;
+}
+.marca{display:flex;align-items:center;gap:9px}
+.marca .logo{
+  display:grid;
+  place-items:center;
+  width:28px;
+  height:28px;
+  border-radius:8px;
+  background:var(--acento);
+  color:#0E1216;
+  font-family:"Newsreader",Georgia,serif;
+  font-weight:600;
+  font-size:17px;
+}
+.marca h1{
+  margin:0;
+  font-family:"Newsreader",Georgia,"Times New Roman",serif;
+  font-weight:600;
+  font-size:22px;
+  letter-spacing:-.01em;
+  color:var(--rail-tinta);
+}
+.nav{display:flex;flex-direction:column;gap:2px;margin-top:16px}
+.nav button{
+  text-align:left;
+  border:0;
+  border-radius:7px;
+  background:transparent;
+  color:var(--rail-fraca);
+  font:inherit;
+  font-size:14px;
+  padding:7px 10px;
+  cursor:pointer;
+}
+.nav button:hover{background:var(--rail-alto);color:var(--rail-tinta)}
+.nav button[aria-selected="true"]{background:var(--rail-alto);color:var(--rail-tinta);font-weight:600}
+.rail-paineis{display:flex;flex-direction:column;gap:16px;flex:1 1 auto}
+.rail-pe{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  padding-top:12px;
+  border-top:1px solid var(--rail-linha);
+}
+.rail-link{
+  text-align:left;
+  border:0;
+  background:transparent;
+  color:var(--rail-fraca);
+  font:inherit;
+  font-size:12.5px;
+  padding:0;
+  cursor:pointer;
+  text-decoration:underline;
+}
+.rail-link:hover{color:var(--rail-tinta)}
+.rail-modo{margin:0;font-size:11px;line-height:1.45;color:var(--rail-fraca)}
+.rail-modo button{
+  border:0;background:transparent;color:inherit;font:inherit;
+  text-decoration:underline;cursor:pointer;padding:0;
+}
+
+.conteudo{
+  min-width:0;
+  padding:22px 26px 60px;
+  background:var(--papel);
+}
+.cabeca-conteudo{
   display:flex;
   flex-wrap:wrap;
   align-items:flex-end;
-  gap:10px 24px;
-  padding:18px 20px 0;
-  background:var(--barra-fundo);
-  border-radius:var(--raio) var(--raio) 0 0;
+  justify-content:space-between;
+  gap:8px 20px;
+  padding-bottom:14px;
+  border-bottom:1px solid var(--linha);
 }
-.barra .marca{flex:1 1 240px;min-width:0}
-.barra h1{
-  font-family:"Newsreader",Georgia,"Times New Roman",serif;
-  font-weight:600;
-  font-size:30px;
-  line-height:1.05;
-  letter-spacing:-.015em;
+.titulo-vista h2{
   margin:0;
-  color:var(--barra-tinta);
+  font-family:"Newsreader",Georgia,serif;
+  font-weight:600;
+  font-size:26px;
+  letter-spacing:-.01em;
+  color:var(--tinta);
 }
 .resumo{
-  margin:5px 0 0;
-  font-size:13px;
-  color:var(--barra-fraca);
+  margin:4px 0 0;
+  font-size:13.5px;
+  color:var(--tinta-suave);
   font-variant-numeric:tabular-nums;
 }
-.resumo b{font-weight:600;color:var(--barra-tinta)}
-.resumo .vermelho{color:#E99A84}
+.resumo b{font-weight:600;color:var(--tinta)}
+.resumo .vermelho{color:var(--atraso)}
 .data-hoje{
-  font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
-  font-size:10.5px;
-  letter-spacing:.09em;
-  text-transform:uppercase;
-  color:var(--barra-fraca);
-  padding-bottom:12px;
-}
-.abas{
-  display:flex;
-  gap:18px;
-  flex:1 1 100%;
-  margin-top:12px;
-}
-.abas button{
-  border:0;
-  background:transparent;
-  color:var(--barra-fraca);
-  font-family:"IBM Plex Mono",ui-monospace,monospace;
   font-size:11.5px;
-  letter-spacing:.1em;
-  text-transform:uppercase;
-  padding:0 0 10px;
-  border-bottom:2px solid transparent;
-  cursor:pointer;
+  letter-spacing:.04em;
+  color:var(--tinta-fraca);
+  padding-bottom:3px;
 }
-.abas button:hover{color:var(--barra-tinta)}
-.abas button[aria-selected="true"]{color:var(--barra-tinta);border-bottom-color:var(--acento)}
+
+@media (max-width:860px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  .rail{position:static;height:auto;flex-direction:column;padding:16px}
+  .rail-topo{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+  .nav{flex-direction:row;margin-top:0}
+  .conteudo{padding:18px 16px 56px}
+}
+
+/* ---------- janela de dados ---------- */
+.cortina{
+  position:fixed;
+  inset:0;
+  z-index:40;
+  display:grid;
+  place-items:center;
+  padding:16px;
+  background:rgba(12,15,20,.55);
+}
+.caixa{
+  width:100%;
+  max-width:460px;
+  max-height:86vh;
+  overflow-y:auto;
+  padding:20px;
+  background:var(--superficie);
+  border-radius:12px;
+  box-shadow:0 24px 60px -20px rgba(0,0,0,.5);
+}
+.caixa h2{
+  margin:0 0 12px;
+  font-family:"Newsreader",Georgia,serif;
+  font-weight:600;
+  font-size:21px;
+  color:var(--tinta);
+}
+.caixa dl{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  gap:6px 14px;
+  margin:0 0 14px;
+  font-size:13.5px;
+}
+.caixa dt{color:var(--tinta-fraca)}
+.caixa dd{margin:0;color:var(--tinta);font-variant-numeric:tabular-nums}
+.caixa p{margin:0 0 12px;font-size:13.5px;color:var(--tinta-suave);line-height:1.5}
+.acoes-caixa{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.acoes-caixa .botao-principal{margin-left:auto}
 
 /* ---------- compor ---------- */
 /* Em repouso é uma linha só: escrever e dar Enter resolve o caso comum. Os
@@ -860,104 +953,80 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   color:var(--tinta-suave);
 }
 
-/* ---------- painéis do lado ---------- */
-.painel-lado{
-  padding:12px 14px 13px;
-  background:var(--superficie);
-  border:1px solid var(--linha);
-  border-radius:var(--raio);
-  box-shadow:var(--sombra);
-}
+/* ---------- painéis do trilho ---------- */
 .painel-lado > h2{
-  margin:0 0 10px;
-  font-family:"IBM Plex Mono",ui-monospace,monospace;
-  font-size:10.5px;
-  font-weight:500;
-  letter-spacing:.11em;
+  margin:0 0 9px;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.07em;
   text-transform:uppercase;
-  color:var(--tinta-fraca);
+  color:var(--rail-fraca);
 }
 
-/* os quatro números do dia */
-.tiles{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--linha);border-radius:8px;overflow:hidden}
-.tile{display:flex;flex-direction:column;gap:1px;padding:9px 10px;background:var(--superficie)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.tile{
+  display:flex;
+  flex-direction:column;
+  gap:1px;
+  padding:9px 10px;
+  border-radius:8px;
+  background:var(--rail-alto);
+}
 .tile .valor{
   font-family:"IBM Plex Mono",ui-monospace,monospace;
-  font-size:22px;
+  font-size:21px;
   font-weight:500;
   line-height:1.05;
   font-variant-numeric:tabular-nums;
-  color:var(--tinta);
+  color:var(--rail-tinta);
 }
-.tile .chave{
-  font-family:"IBM Plex Mono",ui-monospace,monospace;
-  font-size:9.5px;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  color:var(--tinta-fraca);
-}
-.tile.alerta-tile .valor{color:var(--atraso)}
-.tile.boa-tile .valor{color:var(--acento-tinta)}
-.tile.anda-tile .valor{color:var(--andamento)}
+.tile .chave{font-size:10px;line-height:1.3;color:var(--rail-fraca)}
+.tile.alerta-tile .valor{color:#F09A7E}
+.tile.boa-tile .valor{color:#7CC4A8}
+.tile.anda-tile .valor{color:#E3B268}
 
-/* a semana como lista vertical: cabe na coluna e lê-se de cima a baixo */
 .semana-lista,.equipe{display:flex;flex-direction:column;gap:1px}
-.dia-linha{
+.dia-linha,.pessoa-linha{
   display:grid;
-  grid-template-columns:64px minmax(0,1fr) 24px;
   align-items:center;
   gap:8px;
-  padding:5px 6px;
-  border:1px solid transparent;
+  padding:5px 7px;
+  border:0;
   border-radius:6px;
   background:transparent;
   font:inherit;
   text-align:left;
   cursor:pointer;
 }
-.dia-linha:hover,.pessoa-linha:hover{background:var(--recuo)}
-.dia-linha.agora{border-color:var(--linha-forte)}
-.dia-linha.escolhida,.pessoa-linha.escolhida{background:var(--acento-fundo);border-color:var(--acento)}
-.dia-linha .quando-dia{
-  font-family:"IBM Plex Mono",ui-monospace,monospace;
-  font-size:11px;
-  letter-spacing:.03em;
-  color:var(--tinta-suave);
-  font-variant-numeric:tabular-nums;
-}
-.dia-linha.agora .quando-dia,.dia-linha.escolhida .quando-dia{color:var(--acento-tinta);font-weight:500}
-.trilho-dia{height:7px;border-radius:4px;background:var(--recuo);overflow:hidden}
-.trilho-dia i{display:block;height:100%;border-radius:4px;background:var(--acento)}
+.dia-linha{grid-template-columns:54px minmax(0,1fr) 22px}
+.pessoa-linha{grid-template-columns:minmax(0,1fr) 44px 20px}
+.dia-linha:hover,.pessoa-linha:hover{background:var(--rail-alto)}
+.dia-linha.agora{background:var(--rail-alto)}
+.dia-linha.escolhida,.pessoa-linha.escolhida{background:var(--acento);color:#0E1216}
+.dia-linha .quando-dia{font-size:12px;color:var(--rail-fraca)}
+.dia-linha.agora .quando-dia{color:var(--rail-tinta);font-weight:600}
+.dia-linha.escolhida .quando-dia,.dia-linha.escolhida .n-dia,
+.pessoa-linha.escolhida .nome-pessoa,.pessoa-linha.escolhida .n-pessoa{color:#0E1216}
+.trilho-dia{height:6px;border-radius:3px;background:var(--rail-linha);overflow:hidden}
+.trilho-dia i{display:block;height:100%;border-radius:3px;background:#5FA98F}
+.trilho-dia i.vencendo{background:#D97A5C}
+.dia-linha.escolhida .trilho-dia,.pessoa-linha.escolhida .trilho-dia{background:rgba(14,18,22,.25)}
+.dia-linha.escolhida .trilho-dia i,.pessoa-linha.escolhida .trilho-dia i{background:#0E1216}
 .dia-linha .n-dia,.pessoa-linha .n-pessoa{
   text-align:right;
   font-family:"IBM Plex Mono",ui-monospace,monospace;
   font-size:11px;
-  color:var(--tinta-suave);
+  color:var(--rail-fraca);
   font-variant-numeric:tabular-nums;
-}
-
-/* carga por pessoa */
-.pessoa-linha{
-  display:grid;
-  grid-template-columns:minmax(0,1fr) 52px 22px;
-  align-items:center;
-  gap:8px;
-  padding:5px 6px;
-  border:1px solid transparent;
-  border-radius:6px;
-  background:transparent;
-  font:inherit;
-  text-align:left;
-  cursor:pointer;
 }
 .pessoa-linha .nome-pessoa{
   font-size:13px;
-  color:var(--tinta);
+  color:var(--rail-tinta);
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
 }
-.pessoa-linha .trilho-dia i.vencendo{background:var(--atraso)}
+.pessoa-linha .n-pessoa.atrasada-pessoa{color:#F09A7E}
 
 /* ---------- vazio / rodapé ---------- */
 .vazio{
@@ -979,27 +1048,6 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   color:var(--tinta-fraca);cursor:pointer;padding:0;
 }
 .mais:hover{color:var(--tinta)}
-.rodape{
-  margin-top:34px;
-  padding-top:12px;
-  border-top:1px solid var(--linha);
-  font-family:"IBM Plex Mono",ui-monospace,monospace;
-  font-size:10.5px;
-  letter-spacing:.06em;
-  color:var(--tinta-fraca);
-  display:flex;
-  flex-wrap:wrap;
-  gap:4px 14px;
-  justify-content:space-between;
-  align-items:baseline;
-}
-.rodape button{
-  border:0;background:transparent;
-  font:inherit;color:var(--tinta-suave);
-  text-decoration:underline;cursor:pointer;padding:0;
-}
-.rodape button:hover{color:var(--tinta)}
-.acoes-rodape{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px}
 
 @media (max-width:520px){
   .topo h1{font-size:28px}
@@ -1013,67 +1061,78 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 }
 </style>
 
-<div class="folha">
-  <header class="barra">
-    <div class="marca">
-      <h1>Work</h1>
-      <p class="resumo" id="resumo">Carregando suas atividades…</p>
+<div class="shell">
+  <aside class="rail">
+    <div class="rail-topo">
+      <div class="marca"><span class="logo" aria-hidden="true">W</span><h1>Work</h1></div>
+      <nav class="nav" id="abas" role="tablist" aria-label="Seções">
+        <button type="button" role="tab" data-vista="agenda" aria-selected="true">Agenda</button>
+        <button type="button" role="tab" data-vista="historico" aria-selected="false">Histórico</button>
+      </nav>
     </div>
-    <div class="data-hoje" id="dataHoje"></div>
-    <nav class="abas" id="abas" role="tablist" aria-label="Seções">
-      <button type="button" role="tab" data-vista="agenda" aria-selected="true">Agenda</button>
-      <button type="button" role="tab" data-vista="historico" aria-selected="false">Histórico</button>
-    </nav>
-  </header>
-
-  <div id="faixaAlertas"></div>
-  <div id="faixaResgate"></div>
-  <div id="faixaDesfazer"></div>
-
-  <form class="compor" id="formAdd" autocomplete="off" novalidate>
-    <div class="linha-rapida">
-      <input type="text" class="campo-titulo" id="campoNova" placeholder="O que precisa ser feito?"
-             aria-label="Nova atividade" maxlength="300">
-      <button type="submit" class="botao-principal">Adicionar</button>
+    <div class="rail-paineis" id="painel" aria-label="Resumo"></div>
+    <div class="rail-pe">
+      <button type="button" class="rail-link" id="btDados">Dados e backup</button>
+      <p class="rail-modo" id="modoArmazenamento">Preparando…</p>
     </div>
-    <div class="detalhes-compor" id="detalhesCompor" hidden>
-      <input type="text" class="campo-nota" id="campoNota" placeholder="Detalhes, link, próximo passo…"
-             aria-label="Descrição" maxlength="500">
-      <div class="controles">
-        <label class="par"><span>prazo</span><input type="date" id="campoPrazo" aria-label="Dia do prazo"></label>
-        <label class="par"><span>de</span><input type="time" id="campoInicio" aria-label="Hora de início"></label>
-        <label class="par"><span>até</span><input type="time" id="campoLimite" aria-label="Prazo limite"></label>
-        <input type="text" class="campo-cat" id="campoResponsavel" list="listaPessoas"
-               placeholder="quem faz" aria-label="Responsável" maxlength="40">
-        <label class="par marca" id="marcaRetorno" hidden>
-          <input type="checkbox" id="campoRetorno" aria-label="Também é minha: volta para mim depois">
-          <span>Eu</span></label>
-        <input type="text" class="campo-cat" id="campoCategoria" list="listaCategorias"
-               placeholder="categoria" aria-label="Categoria" maxlength="40">
-        <select id="campoRepete" class="ciclo" aria-label="Repetição"></select>
-        <button type="button" class="botao-secundario" id="addComecar">Adicionar e começar</button>
+  </aside>
+
+  <main class="conteudo">
+    <header class="cabeca-conteudo">
+      <div class="titulo-vista">
+        <h2 id="tituloVista">Agenda</h2>
+        <p class="resumo" id="resumo">Carregando suas atividades…</p>
       </div>
-    </div>
-  </form>
+      <div class="data-hoje" id="dataHoje"></div>
+    </header>
 
-  <div class="app">
-    <div class="coluna-principal">
-      <div class="filtros" id="filtros" hidden></div>
-      <main id="listas"></main>
-    </div>
-    <aside class="coluna-lado" id="painel" aria-label="Resumo"></aside>
-  </div>
+    <div id="faixaAlertas"></div>
+    <div id="faixaResgate"></div>
+    <div id="faixaDesfazer"></div>
 
-  <p class="rodape">
-    <span id="modoArmazenamento">Preparando…</span>
-    <span class="acoes-rodape">
-      <button type="button" id="btExportar">exportar</button>
-      <button type="button" id="btImportar">importar</button>
-      <span id="totalGeral"></span>
-    </span>
-  </p>
-  <input type="file" id="arquivoImport" accept=".json,application/json" hidden>
+    <form class="compor" id="formAdd" autocomplete="off" novalidate>
+      <div class="linha-rapida">
+        <input type="text" class="campo-titulo" id="campoNova" placeholder="O que precisa ser feito?"
+               aria-label="Nova atividade" maxlength="300">
+        <button type="submit" class="botao-principal">Adicionar</button>
+      </div>
+      <div class="detalhes-compor" id="detalhesCompor" hidden>
+        <input type="text" class="campo-nota" id="campoNota" placeholder="Detalhes, link, próximo passo…"
+               aria-label="Descrição" maxlength="500">
+        <div class="controles">
+          <label class="par"><span>prazo</span><input type="date" id="campoPrazo" aria-label="Dia do prazo"></label>
+          <label class="par"><span>de</span><input type="time" id="campoInicio" aria-label="Hora de início"></label>
+          <label class="par"><span>até</span><input type="time" id="campoLimite" aria-label="Prazo limite"></label>
+          <input type="text" class="campo-cat" id="campoResponsavel" list="listaPessoas"
+                 placeholder="quem faz" aria-label="Responsável" maxlength="40">
+          <label class="par marca" id="marcaRetorno" hidden>
+            <input type="checkbox" id="campoRetorno" aria-label="Também é minha: volta para mim depois">
+            <span>Eu</span></label>
+          <input type="text" class="campo-cat" id="campoCategoria" list="listaCategorias"
+                 placeholder="categoria" aria-label="Categoria" maxlength="40">
+          <select id="campoRepete" class="ciclo" aria-label="Repetição"></select>
+          <button type="button" class="botao-secundario" id="addComecar">Adicionar e começar</button>
+        </div>
+      </div>
+    </form>
+
+    <div class="filtros" id="filtros" hidden></div>
+    <div id="listas"></div>
+  </main>
 </div>
+
+<div class="cortina" id="cortina" hidden>
+  <div class="caixa" role="dialog" aria-modal="true" aria-labelledby="tituloDados">
+    <h2 id="tituloDados">Dados e backup</h2>
+    <div id="corpoDados"></div>
+    <div class="acoes-caixa">
+      <button type="button" class="botao-secundario" id="btExportar">Exportar tudo</button>
+      <button type="button" class="botao-secundario" id="btImportar">Importar arquivo</button>
+      <button type="button" class="botao-principal" id="btFecharDados">Fechar</button>
+    </div>
+  </div>
+</div>
+<input type="file" id="arquivoImport" accept=".json,application/json" hidden>
 
 <datalist id="listaCategorias"></datalist>
 <datalist id="listaPessoas"></datalist>
@@ -1670,6 +1729,44 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     };
     leitor.onerror = function(){ anunciar("Não consegui ler o arquivo."); };
     leitor.readAsText(arquivo);
+  }
+
+  // Uma janela que mostra o que existe em cada lugar, em vez de a pessoa ter
+  // de adivinhar por que a tela está vazia.
+  function desenharDados(){
+    var alvo = document.getElementById("corpoDados");
+    var guardadas = lerLocal();
+    var fora = guardadas.filter(function(i){ return !estado.tarefas.has(i.id); });
+
+    var html = "<dl>" +
+      "<dt>Salvando em</dt><dd>" + (estado.modo === "nuvem" ? "sua conta" : "só neste navegador") + "</dd>" +
+      "<dt>Na tela agora</dt><dd>" + plural(estado.tarefas.size, "atividade", "atividades") + "</dd>" +
+      "<dt>Neste navegador</dt><dd>" + plural(guardadas.length, "atividade", "atividades") + "</dd>" +
+    "</dl>";
+
+    if (fora.length) {
+      html += "<p><b>" + plural(fora.length, "atividade está guardada", "atividades estão guardadas") +
+        " neste navegador e não " + (fora.length === 1 ? "aparece" : "aparecem") + " na tela.</b> " +
+        "Acontece quando a página passou a salvar na conta e esses registros ficaram para trás.</p>" +
+        '<p><button type="button" class="botao-secundario" data-dados="recuperar">Trazer ' +
+        fora.length + " para a tela</button></p>";
+    } else if (guardadas.length) {
+      html += "<p>Tudo o que está guardado neste navegador já aparece na tela.</p>";
+    } else {
+      html += "<p>Não há nada guardado neste navegador. Se suas atividades foram criadas em " +
+        "outro navegador ou noutro computador, elas estão lá — exporte de lá e importe aqui.</p>";
+    }
+
+    html += "<p>O arquivo HTML baixado abre com armazenamento próprio e não enxerga estes dados. " +
+      "Para levá-los, exporte aqui e importe lá.</p>";
+    alvo.innerHTML = html;
+  }
+
+  function recuperarGuardadas(){
+    var fora = lerLocal().filter(function(i){ return !estado.tarefas.has(i.id); });
+    fora.forEach(function(item){ gravar(normalizar(item.id, item)); });
+    anunciar(plural(fora.length, "atividade recuperada", "atividades recuperadas") + ".");
+    desenhar();
   }
 
   var relogioAviso = null;
@@ -2588,28 +2685,21 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
     Array.prototype.forEach.call(document.querySelectorAll(".escrita"), crescer);
 
-    // Rodapé
+    // Pé do trilho: onde a atividade está sendo guardada, e os avisos.
     var modo = document.getElementById("modoArmazenamento");
-    if (estado.aviso) {
-      modo.textContent = estado.aviso;
-    } else if (estado.modo === "nuvem") {
-      modo.textContent = "Salvo na sua conta · sincroniza entre dispositivos";
-    } else if (estado.modo === "local") {
-      modo.innerHTML = "Salvo apenas neste navegador · " +
-        '<button type="button" id="tentarNuvem">tentar salvar na conta</button>';
-    } else {
-      modo.textContent = "Preparando…";
-    }
-    // A oferta de avisos do navegador vive no rodapé: é configuração, não
-    // alerta, e no topo roubava o lugar de quem tinha algo a dizer.
-    var canto = document.getElementById("totalGeral");
-    if (estado.avisosNavegador === "default") {
-      canto.innerHTML = '<button type="button" id="pedirAvisos">avisar no navegador</button>';
-    } else if (estado.avisosNavegador === "denied") {
-      canto.textContent = "avisos bloqueados pelo navegador";
-    } else {
-      canto.textContent = todas.length ? plural(todas.length, "atividade no total", "atividades no total") : "";
-    }
+    var linhas = [];
+    if (estado.aviso) linhas.push(esc(estado.aviso));
+    else if (estado.modo === "nuvem") linhas.push("Salvo na sua conta");
+    else if (estado.modo === "local") linhas.push('Salvo só neste navegador · <button type="button" id="tentarNuvem">tentar a conta</button>');
+    else linhas.push("Preparando…");
+
+    if (estado.avisosNavegador === "default") linhas.push('<button type="button" id="pedirAvisos">avisar no navegador</button>');
+    else if (estado.avisosNavegador === "denied") linhas.push("avisos bloqueados");
+    if (todas.length) linhas.push(plural(todas.length, "atividade", "atividades"));
+    modo.innerHTML = linhas.join("<br>");
+
+    document.getElementById("tituloVista").textContent = naAgenda ? "Agenda" : "Histórico";
+    if (!document.getElementById("cortina").hidden) desenharDados();
 
     estado.assinatura = assinaturaTempo();
     dispararAvisos(hoje);
@@ -2866,11 +2956,19 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     if (secao) secao.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 
-  document.querySelector(".rodape").addEventListener("click", function(e){
+  document.querySelector(".rail-pe").addEventListener("click", function(e){
+    if (e.target.id === "btDados") { document.getElementById("cortina").hidden = false; desenharDados(); }
     if (e.target.id === "tentarNuvem") tentarNuvemDeNovo();
     if (e.target.id === "pedirAvisos") pedirAvisos();
+  });
+
+  document.getElementById("cortina").addEventListener("click", function(e){
     if (e.target.id === "btExportar") exportar();
     if (e.target.id === "btImportar") document.getElementById("arquivoImport").click();
+    if (e.target.closest('[data-dados="recuperar"]')) recuperarGuardadas();
+    if (e.target.id === "btFecharDados" || e.target.id === "cortina") {
+      document.getElementById("cortina").hidden = true;
+    }
   });
 
   document.getElementById("arquivoImport").addEventListener("change", function(e){
