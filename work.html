@@ -121,6 +121,11 @@
 }
 
 *{box-sizing:border-box}
+/* O [hidden] do navegador é regra de folha de agente: qualquer `display` que a
+   gente escreva numa classe ganha dele. Sem esta linha, a janela de dados
+   (.cortina, display:grid) nascia aberta por cima de tudo e não fechava, e a
+   página inteira ficava atrás do véu, sem responder a clique nenhum. */
+[hidden]{display:none !important}
 body{
   background:var(--papel);
   color:var(--tinta);
