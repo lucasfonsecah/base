@@ -5,68 +5,119 @@
 
 <style>
 :root{
-  --papel:#F4F5F2;
+  --papel:#EFF1F6;
   --superficie:#FFFFFF;
-  --recuo:#EDEFE9;
-  --tinta:#1B1F2A;
-  --tinta-suave:#5E6673;
-  --tinta-fraca:#8A919C;
-  --linha:#E1E4DD;
-  --linha-forte:#C7CCC2;
-  --acento:#2F6F5E;
-  --acento-tinta:#255A4C;
-  --acento-fundo:#E3EFE9;
-  --atraso:#A63B28;
-  --atraso-fundo:#F7E7E3;
-  --andamento:#8C6110;
-  --andamento-fundo:#F6EEDC;
-  --rail:#161A21;
-  --rail-alto:#1E232C;
-  --rail-linha:#2A313C;
-  --rail-tinta:#EEF1EC;
-  --rail-fraca:#8B95A3;
-  --sombra:0 1px 1px rgba(27,31,42,.04), 0 10px 26px -20px rgba(27,31,42,.45);
-  --raio:10px;
+  --recuo:#E4E8F0;
+  --tinta:#151A26;
+  --tinta-suave:#55607A;
+  --tinta-fraca:#697287;
+  --linha:#E0E5EF;
+  --linha-forte:#C3CAD9;
+  /* marca = o que se clica; acento = o que está pronto */
+  --marca:#3647C4;
+  --marca-tinta:#2E3FB8;
+  --marca-fundo:#E7EAFB;
+  --acento:#0F7A55;
+  --acento-tinta:#0C6A49;
+  --acento-fundo:#E2F3EC;
+  --atraso:#C62828;
+  --atraso-fundo:#FCEAE8;
+  --andamento:#8A5A00;
+  --andamento-fundo:#FBF0DA;
+
+  /* Tons de identidade: um por categoria, um por pessoa. São os oito matizes
+     da paleta categórica (faixa de luminosidade, croma e contraste validados
+     nos dois modos), reordenados: aqui dois cartões quaisquer podem ficar lado
+     a lado, então o que vale é a separação entre TODOS os pares, não a dos
+     vizinhos de uma pilha. Nesta ordem os três primeiros tons se separam com
+     folga (ΔE 13.0 sob protanopia/deuteranopia, 26.5 na visão normal) e o
+     quarto ainda fica na banda do piso. Do quinto em diante nenhuma ordenação
+     de oito matizes mantém todos os pares distintos — e é por isso que o nome
+     vem escrito ao lado da cor em todo lugar: a cor acelera, o texto informa. */
+  --c1:#2a78d6;
+  --c2:#008300;
+  --c3:#e87ba4;
+  --c4:#eda100;
+  --c5:#e34948;
+  --c6:#eb6834;
+  --c7:#4a3aa7;
+  --c8:#1baf7a;
+
+  --rail:#141A2B;
+  --rail-alto:#1F2740;
+  --rail-linha:#2C3650;
+  --rail-tinta:#EDF0F8;
+  --rail-fraca:#8E99B5;
+  --sombra:0 1px 2px rgba(21,26,38,.05), 0 8px 20px -14px rgba(21,26,38,.38);
+  --sombra-alta:0 2px 4px rgba(21,26,38,.07), 0 16px 32px -16px rgba(21,26,38,.45);
+  --raio:14px;
+  --raio-p:11px;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --papel:#12151A;
-    --superficie:#1A1E24;
-    --recuo:#232830;
-    --tinta:#E9ECE6;
-    --tinta-suave:#99A1AC;
-    --tinta-fraca:#79818D;
-    --linha:#2A3039;
-    --linha-forte:#3C4450;
-    --acento:#6FB59A;
-    --acento-tinta:#8FCBB3;
-    --acento-fundo:#1B2E29;
-    --atraso:#E9925A;
-    --atraso-fundo:#33211D;
-    --andamento:#D6AC61;
-    --andamento-fundo:#2E2617;
+    --papel:#101420;
+    --superficie:#1B2030;
+    --recuo:#232A3C;
+    --tinta:#E8EBF2;
+    --tinta-suave:#A2ABC0;
+    --tinta-fraca:#8089A0;
+    --linha:#2B3346;
+    --linha-forte:#3E4860;
+    --marca:#8FA2FF;
+    --marca-tinta:#A9B7FF;
+    --marca-fundo:#20264A;
+    --acento:#4FC79A;
+    --acento-tinta:#6FD8AF;
+    --acento-fundo:#13302A;
+    --atraso:#FF8A6B;
+    --atraso-fundo:#38211D;
+    --andamento:#E8B964;
+    --andamento-fundo:#33280F;
 
-    --sombra:0 1px 1px rgba(0,0,0,.3), 0 10px 26px -20px rgba(0,0,0,.8);
+    --c1:#3987e5;
+    --c2:#008300;
+    --c3:#d55181;
+    --c4:#c98500;
+    --c5:#e66767;
+    --c6:#d95926;
+    --c7:#9085e9;
+    --c8:#199e70;
+
+    --sombra:0 1px 2px rgba(0,0,0,.34), 0 10px 26px -18px rgba(0,0,0,.85);
+    --sombra-alta:0 2px 6px rgba(0,0,0,.4), 0 18px 34px -18px rgba(0,0,0,.95);
   }
 }
 :root[data-theme="dark"]{
-  --papel:#12151A;
-  --superficie:#1A1E24;
-  --recuo:#232830;
-  --tinta:#E9ECE6;
-  --tinta-suave:#99A1AC;
-  --tinta-fraca:#79818D;
-  --linha:#2A3039;
-  --linha-forte:#3C4450;
-  --acento:#6FB59A;
-  --acento-tinta:#8FCBB3;
-  --acento-fundo:#1B2E29;
-  --atraso:#E9925A;
-  --atraso-fundo:#33211D;
-  --andamento:#D6AC61;
-  --andamento-fundo:#2E2617;
+  --papel:#101420;
+  --superficie:#1B2030;
+  --recuo:#232A3C;
+  --tinta:#E8EBF2;
+  --tinta-suave:#A2ABC0;
+  --tinta-fraca:#8089A0;
+  --linha:#2B3346;
+  --linha-forte:#3E4860;
+  --marca:#8FA2FF;
+  --marca-tinta:#A9B7FF;
+  --marca-fundo:#20264A;
+  --acento:#4FC79A;
+  --acento-tinta:#6FD8AF;
+  --acento-fundo:#13302A;
+  --atraso:#FF8A6B;
+  --atraso-fundo:#38211D;
+  --andamento:#E8B964;
+  --andamento-fundo:#33280F;
 
-  --sombra:0 1px 1px rgba(0,0,0,.3), 0 10px 26px -20px rgba(0,0,0,.8);
+  --c1:#3987e5;
+  --c2:#008300;
+  --c3:#d55181;
+  --c4:#c98500;
+  --c5:#e66767;
+  --c6:#d95926;
+  --c7:#9085e9;
+  --c8:#199e70;
+
+  --sombra:0 1px 2px rgba(0,0,0,.34), 0 10px 26px -18px rgba(0,0,0,.85);
+  --sombra-alta:0 2px 6px rgba(0,0,0,.4), 0 18px 34px -18px rgba(0,0,0,.95);
 }
 
 *{box-sizing:border-box}
@@ -85,7 +136,7 @@ body{
 
 
 :is(button,input,textarea,select):focus-visible{
-  outline:2px solid var(--acento);
+  outline:2px solid var(--marca);
   outline-offset:2px;
   border-radius:4px;
 }
@@ -99,6 +150,9 @@ body{padding:0}
   grid-template-columns:236px minmax(0,1fr);
   min-height:100vh;
   min-height:100dvh;
+  /* o trilho fica grudado no topo; sem isto a coluna dele clareia quando a
+     página é mais alta que a tela */
+  background:linear-gradient(to right,var(--rail) 0 236px,var(--papel) 236px);
 }
 .rail{
   display:flex;
@@ -107,6 +161,16 @@ body{padding:0}
   padding:20px 16px 16px;
   background:var(--rail);
   color:var(--rail-tinta);
+  /* O trilho é escuro nos dois temas, então os tons de identidade aqui são
+     sempre os degraus de modo escuro — os claros desapareceriam no fundo. */
+  --c1:#3987e5;
+  --c2:#2e9e2e;
+  --c3:#d55181;
+  --c4:#c98500;
+  --c5:#e66767;
+  --c6:#d95926;
+  --c7:#9085e9;
+  --c8:#199e70;
   position:sticky;
   top:0;
   height:100vh;
@@ -117,11 +181,12 @@ body{padding:0}
 .marca .logo{
   display:grid;
   place-items:center;
-  width:28px;
-  height:28px;
-  border-radius:8px;
-  background:var(--acento);
-  color:#0E1216;
+  width:30px;
+  height:30px;
+  border-radius:9px;
+  background:linear-gradient(145deg,#5468E8,#3647C4);
+  color:#FFFFFF;
+  box-shadow:0 4px 12px -6px rgba(54,71,196,.9);
   font-family:"Newsreader",Georgia,serif;
   font-weight:600;
   font-size:17px;
@@ -147,7 +212,12 @@ body{padding:0}
   cursor:pointer;
 }
 .nav button:hover{background:var(--rail-alto);color:var(--rail-tinta)}
-.nav button[aria-selected="true"]{background:var(--rail-alto);color:var(--rail-tinta);font-weight:600}
+.nav button[aria-selected="true"]{
+  background:linear-gradient(135deg,#4356DB,#3647C4);
+  color:#FFFFFF;
+  font-weight:600;
+  box-shadow:0 6px 16px -10px rgba(67,86,219,.95);
+}
 .rail-paineis{display:flex;flex-direction:column;gap:16px;flex:1 1 auto}
 .rail-pe{
   display:flex;
@@ -212,7 +282,7 @@ body{padding:0}
 }
 
 @media (max-width:860px){
-  .shell{grid-template-columns:minmax(0,1fr)}
+  .shell{grid-template-columns:minmax(0,1fr);background:var(--papel)}
   .rail{position:static;height:auto;flex-direction:column;padding:16px}
   .rail-topo{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
   .nav{flex-direction:row;margin-top:0}
@@ -263,13 +333,14 @@ body{padding:0}
 /* Em repouso é uma linha só: escrever e dar Enter resolve o caso comum. Os
    outros campos aparecem ao focar o título, para quem precisa deles. */
 .compor{
-  margin-top:14px;
-  padding:9px 12px;
+  margin-top:16px;
+  padding:11px 14px;
   background:var(--superficie);
   border:1px solid var(--linha);
   border-radius:var(--raio);
-  box-shadow:var(--sombra);
+  box-shadow:var(--sombra-alta);
 }
+.compor:focus-within{border-color:var(--marca)}
 .linha-rapida{display:flex;align-items:center;gap:10px}
 .compor input{
   border:0;
@@ -323,7 +394,7 @@ body{padding:0}
 .mini{
   border:0;
   background:transparent;
-  color:var(--acento-tinta);
+  color:var(--marca-tinta);
   font-family:"IBM Plex Mono",ui-monospace,monospace;
   font-size:11px;
   letter-spacing:.04em;
@@ -331,7 +402,7 @@ body{padding:0}
   border-radius:5px;
   cursor:pointer;
 }
-.mini:hover{background:var(--acento-fundo)}
+.mini:hover{background:var(--marca-fundo)}
 .controles .campo-cat{width:132px}
 .controles .campo-cat::placeholder{color:var(--tinta-fraca)}
 select.chip{-webkit-appearance:none;appearance:none;padding-right:9px}
@@ -365,33 +436,36 @@ select.chip{-webkit-appearance:none;appearance:none;padding-right:9px}
 .botao-principal{
   flex:0 0 auto;
   border:0;
-  border-radius:6px;
-  background:var(--acento);
+  border-radius:9px;
+  background:var(--marca);
   color:#fff;
   font:inherit;
   font-weight:600;
   font-size:14px;
   padding:8px 18px;
   cursor:pointer;
-  transition:background .15s ease;
+  box-shadow:0 6px 14px -8px rgba(54,71,196,.8);
+  transition:background .15s ease, box-shadow .15s ease;
 }
 :root[data-theme="dark"] .botao-principal,
-:root:not([data-theme="light"]) .botao-principal{color:var(--papel)}
-@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .botao-principal{color:#fff}}
-.botao-principal:hover{background:var(--acento-tinta)}
+:root:not([data-theme="light"]) .botao-principal{color:var(--papel);box-shadow:none}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]) .botao-principal{color:#fff;box-shadow:0 6px 14px -8px rgba(54,71,196,.8)}
+}
+.botao-principal:hover{background:var(--marca-tinta)}
 .botao-secundario{
   flex:0 0 auto;
-  border:1px solid var(--acento);
-  border-radius:6px;
+  border:1px solid var(--marca);
+  border-radius:9px;
   background:transparent;
-  color:var(--acento-tinta);
+  color:var(--marca-tinta);
   font:inherit;
   font-weight:500;
   font-size:13px;
   padding:7px 13px;
   cursor:pointer;
 }
-.botao-secundario:hover{background:var(--acento-fundo)}
+.botao-secundario:hover{background:var(--marca-fundo)}
 
 /* ---------- filtros ---------- */
 /* Seletores, não pastilhas: uma fileira de pastilhas cresce com a equipe e
@@ -407,11 +481,17 @@ select.chip{-webkit-appearance:none;appearance:none;padding-right:9px}
   max-width:150px;
 }
 .filtros .par.ativo{
-  background:var(--acento-fundo);
+  background:var(--marca-fundo);
   border-color:transparent;
-  color:var(--acento-tinta);
+  color:var(--marca-tinta);
 }
-.filtros .par.ativo > span{color:var(--acento-tinta);opacity:.8}
+.filtros .par.ativo > span{color:var(--marca-tinta);opacity:.8}
+.filtros .par.ativo.tonal{
+  background:color-mix(in srgb,var(--cor) 16%,var(--superficie));
+  color:color-mix(in oklab,var(--cor) 72%,var(--tinta));
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--cor) 36%,transparent);
+}
+.filtros .par.ativo.tonal > span{color:inherit}
 
 /* ---------- avisos ---------- */
 .faixa-aviso{
@@ -421,7 +501,7 @@ select.chip{-webkit-appearance:none;appearance:none;padding-right:9px}
   background:var(--andamento-fundo);
   color:var(--andamento);
   font-size:13.5px;
-  border-radius:0 6px 6px 0;
+  border-radius:0 12px 12px 0;
 }
 .faixa-aviso.resgate{border-left-color:var(--acento);background:var(--acento-fundo);color:var(--acento-tinta)}
 .faixa-aviso .titulo-aviso{
@@ -484,13 +564,9 @@ select.chip{-webkit-appearance:none;appearance:none;padding-right:9px}
 }
 .cabeca-dia .qtd{margin-left:auto;font-variant-numeric:tabular-nums}
 .secao.urgente .cabeca-dia .nome{color:var(--atraso)}
-.painel{
-  background:var(--superficie);
-  border:1px solid var(--linha);
-  border-radius:var(--raio);
-  box-shadow:var(--sombra);
-  overflow:hidden;
-}
+/* Cada atividade é um cartão seu: a pilha de linhas com fio de cabelo não
+   tinha presença nenhuma. O painel agora só espaça os cartões. */
+.painel{display:flex;flex-direction:column;gap:7px}
 .dia-vazio{
   margin:0;
   padding:2px 0 4px;
@@ -499,22 +575,41 @@ select.chip{-webkit-appearance:none;appearance:none;padding-right:9px}
 }
 
 /* ---------- item ---------- */
+/* A cor da borda esquerda é identidade (categoria, ou quem faz). O estado vem
+   pelo fundo e pelas pastilhas — dois canais, nunca o mesmo. */
 .item{
   display:grid;
   grid-template-columns:auto minmax(0,1fr) auto;
   column-gap:10px;
-  padding:0 12px 0 10px;
-  border-left:2px solid transparent;
-  border-top:1px solid var(--linha);
+  padding:4px 12px 5px 11px;
+  background:var(--superficie);
+  border:1px solid var(--linha);
+  border-left:4px solid var(--cor,var(--linha-forte));
+  border-radius:var(--raio-p);
+  box-shadow:var(--sombra);
+  transition:box-shadow .15s ease, transform .15s ease;
 }
-.item:first-child{border-top:0}
-.item.atrasada{border-left-color:var(--atraso)}
-.item.andando{border-left-color:var(--andamento)}
-.item.aberto{background:var(--recuo)}
+.item:hover{box-shadow:var(--sombra-alta);transform:translateY(-1px)}
+.item.atrasada{background:var(--atraso-fundo);border-color:var(--atraso-fundo)}
+.item.atrasada{border-left-color:var(--cor,var(--atraso))}
+.item.andando{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--andamento) 50%,transparent),var(--sombra)}
+.item.feita{
+  box-shadow:none;
+  background:var(--recuo);
+  border-color:transparent;
+  /* a cor fica, só mais baixa: a atividade concluída continua sendo daquela
+     categoria */
+  border-left-color:color-mix(in srgb,var(--cor,var(--linha-forte)) 55%,transparent);
+  opacity:.85;
+}
+.item.feita:hover{transform:none;box-shadow:none}
+/* em edição ganha um anel, não uma borda: a borda esquerda continua sendo a
+   cor da categoria */
+.item.aberto{box-shadow:0 0 0 1.5px var(--marca),var(--sombra-alta)}
 
 .marcar{
   margin-top:10px;
-  width:19px;height:19px;
+  width:20px;height:20px;
   display:grid;place-items:center;
   border:1.5px solid var(--linha-forte);
   border-radius:50%;
@@ -558,24 +653,72 @@ select.chip{-webkit-appearance:none;appearance:none;padding-right:9px}
 .meta .prazo.vencido,.meta .hora.vencido{color:var(--atraso)}
 .meta .hora{font-weight:500;color:var(--tinta-suave)}
 .selo{padding:1px 7px;border-radius:999px;background:var(--recuo);color:var(--tinta-suave)}
-.item.aberto .selo{background:var(--superficie)}
-.selo.andamento{background:var(--andamento-fundo);color:var(--andamento)}
+.selo.andamento{background:var(--andamento-fundo);color:var(--andamento);font-weight:500}
 .selo.perto{background:var(--andamento-fundo);color:var(--andamento);font-weight:500}
 .selo.faltando{background:transparent;border:1px dashed var(--atraso);color:var(--atraso)}
 .selo.ciclo{background:transparent;border:1px solid var(--linha-forte);color:var(--tinta-fraca)}
 .selo.previsto{background:transparent;border:1px dashed var(--linha-forte);color:var(--tinta-fraca)}
-.selo.pessoa{background:var(--acento-fundo);color:var(--acento-tinta)}
 .selo.avanco{background:var(--acento-fundo);color:var(--acento-tinta);font-weight:500}
 .selo.parado{background:transparent;border:1px solid var(--andamento);color:var(--andamento)}
+/* O atraso é um aviso, não um detalhe: pastilha cheia, com o texto dizendo. */
+.selo.atrasado{
+  background:var(--atraso);
+  color:var(--superficie);
+  font-weight:600;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  font-size:10px;
+  padding:2px 8px;
+}
+:root[data-theme="dark"] .selo.atrasado,
+:root:not([data-theme="light"]) .selo.atrasado{color:var(--papel)}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]) .selo.atrasado{color:var(--superficie)}
+}
+
+/* ---------- identidade por cor ---------- */
+/* A categoria e a pessoa ganham cada uma o seu tom, sempre com o nome escrito
+   ao lado: a cor acelera o reconhecimento, o texto é que informa. */
+.selo.cat,.selo.pessoa{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  padding:1px 8px 1px 5px;
+  background:color-mix(in srgb,var(--cor,var(--linha-forte)) 15%,var(--superficie));
+  color:color-mix(in oklab,var(--cor,var(--tinta-suave)) 72%,var(--tinta));
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--cor,var(--linha-forte)) 34%,transparent);
+}
+.selo.cat .ponto{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:var(--cor,var(--linha-forte));
+  flex:0 0 auto;
+}
+.selo.pessoa{padding-left:2px}
+.av{
+  display:grid;
+  place-items:center;
+  width:17px;
+  height:17px;
+  border-radius:50%;
+  flex:0 0 auto;
+  background:color-mix(in srgb,var(--cor,var(--linha-forte)) 26%,var(--superficie));
+  box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--cor,var(--linha-forte)) 62%,transparent);
+  font-size:9px;
+  font-weight:600;
+  font-style:normal;
+  letter-spacing:0;
+}
 .barra-avanco{
   display:block;
-  height:3px;
-  margin-top:6px;
-  border-radius:2px;
+  height:4px;
+  margin-top:7px;
+  border-radius:3px;
   background:var(--recuo);
   overflow:hidden;
 }
-.barra-avanco i{display:block;height:100%;background:var(--acento);border-radius:2px}
+.barra-avanco i{display:block;height:100%;background:var(--acento);border-radius:3px}
 
 /* ---------- avanço ---------- */
 .avanco{
@@ -604,7 +747,7 @@ label.chip.par .pct{
 }
 label.chip.par .pct::-webkit-outer-spin-button,
 label.chip.par .pct::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-.chip.registrar{border-color:var(--acento);color:var(--acento-tinta);font-weight:500}
+.chip.registrar{border-color:var(--marca);color:var(--marca-tinta);font-weight:500}
 .trilha{
   list-style:none;
   margin:9px 0 0;
@@ -734,11 +877,14 @@ label.chip.par input{
   color:inherit;
   font:inherit;
   padding:2px 0;
-  width:62px;
+  /* sem largura fixa: em 12h o campo precisa de espaço para o AM/PM, e cortá-lo
+     escondia a hora */
+  width:auto;
+  min-width:0;
 }
-input.chip.categoria{width:108px}
+input.chip.categoria{width:122px}
 input.chip.categoria::placeholder{color:var(--tinta-fraca)}
-input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;color:var(--acento-tinta)}
+input.chip.preenchido{background:var(--marca-fundo);border-color:transparent;color:var(--marca-tinta)}
 
 /* ---------- histórico ---------- */
 .periodo{
@@ -839,9 +985,9 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 .registro-linha .nome{flex:1 1 auto}
 .detalhe-hist{
   margin:2px 0 10px 16px;
-  padding:11px 13px;
+  padding:12px 14px;
   background:var(--recuo);
-  border-radius:8px;
+  border-radius:12px;
 }
 .detalhe-hist dl{
   display:grid;
@@ -881,6 +1027,11 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   font-family:"IBM Plex Mono",ui-monospace,monospace;
   font-size:12px;
   font-weight:500;
+}
+.registro-linha .selo.cat{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:10.5px;
+  letter-spacing:.03em;
 }
 .registro .marca.dentro{color:var(--acento-tinta)}
 .registro .marca.fora{color:var(--atraso)}
@@ -929,8 +1080,8 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   margin-top:10px;
   padding:9px 13px;
   border:0;
-  border-left:3px solid var(--atraso);
-  border-radius:0 7px 7px 0;
+  border-left:4px solid var(--atraso);
+  border-radius:0 12px 12px 0;
   background:var(--atraso-fundo, var(--recuo));
   font:inherit;
   text-align:left;
@@ -968,8 +1119,8 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   display:flex;
   flex-direction:column;
   gap:1px;
-  padding:9px 10px;
-  border-radius:8px;
+  padding:10px 11px;
+  border-radius:10px;
   background:var(--rail-alto);
 }
 .tile .valor{
@@ -981,12 +1132,15 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   color:var(--rail-tinta);
 }
 .tile .chave{font-size:10px;line-height:1.3;color:var(--rail-fraca)}
-.tile.alerta-tile .valor{color:#F09A7E}
-.tile.boa-tile .valor{color:#7CC4A8}
-.tile.anda-tile .valor{color:#E3B268}
+.tile.alerta-tile{background:rgba(255,138,107,.14)}
+.tile.alerta-tile .valor{color:#FF8A6B}
+.tile.boa-tile{background:rgba(79,199,154,.14)}
+.tile.boa-tile .valor{color:#4FC79A}
+.tile.anda-tile{background:rgba(232,185,100,.14)}
+.tile.anda-tile .valor{color:#E8B964}
 
 .semana-lista,.equipe{display:flex;flex-direction:column;gap:1px}
-.dia-linha,.pessoa-linha{
+.dia-linha,.pessoa-linha,.cat-linha{
   display:grid;
   align-items:center;
   gap:8px;
@@ -999,19 +1153,31 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   cursor:pointer;
 }
 .dia-linha{grid-template-columns:54px minmax(0,1fr) 22px}
-.pessoa-linha{grid-template-columns:minmax(0,1fr) 44px 20px}
-.dia-linha:hover,.pessoa-linha:hover{background:var(--rail-alto)}
+.pessoa-linha{grid-template-columns:19px minmax(0,1fr) 40px 18px;gap:7px}
+.dia-linha:hover,.pessoa-linha:hover,.cat-linha:hover{background:var(--rail-alto)}
 .dia-linha.agora{background:var(--rail-alto)}
-.dia-linha.escolhida,.pessoa-linha.escolhida{background:var(--acento);color:#0E1216}
+.dia-linha.escolhida,.pessoa-linha.escolhida,.cat-linha.escolhida{background:#4356DB;color:#FFFFFF}
+.cat-linha{grid-template-columns:10px minmax(0,1fr) 18px;gap:8px}
+.cat-linha .ponto{width:10px;height:10px;border-radius:50%;background:var(--cor,var(--rail-fraca))}
+.cat-linha.escolhida .ponto{box-shadow:0 0 0 2px rgba(255,255,255,.55)}
+.cat-linha.escolhida .nome-pessoa,.cat-linha.escolhida .n-pessoa{color:#FFFFFF}
 .dia-linha .quando-dia{font-size:12px;color:var(--rail-fraca)}
 .dia-linha.agora .quando-dia{color:var(--rail-tinta);font-weight:600}
 .dia-linha.escolhida .quando-dia,.dia-linha.escolhida .n-dia,
-.pessoa-linha.escolhida .nome-pessoa,.pessoa-linha.escolhida .n-pessoa{color:#0E1216}
+.pessoa-linha.escolhida .nome-pessoa,.pessoa-linha.escolhida .n-pessoa{color:#FFFFFF}
 .trilho-dia{height:6px;border-radius:3px;background:var(--rail-linha);overflow:hidden}
-.trilho-dia i{display:block;height:100%;border-radius:3px;background:#5FA98F}
-.trilho-dia i.vencendo{background:#D97A5C}
-.dia-linha.escolhida .trilho-dia,.pessoa-linha.escolhida .trilho-dia{background:rgba(14,18,22,.25)}
-.dia-linha.escolhida .trilho-dia i,.pessoa-linha.escolhida .trilho-dia i{background:#0E1216}
+.trilho-dia i{display:block;height:100%;border-radius:3px;background:#4FC79A}
+.trilho-dia i.vencendo{background:#FF8A6B}
+.dia-linha.escolhida .trilho-dia,.pessoa-linha.escolhida .trilho-dia{background:rgba(255,255,255,.28)}
+.dia-linha.escolhida .trilho-dia i,.pessoa-linha.escolhida .trilho-dia i{background:#FFFFFF}
+/* O mesmo tom que a pessoa tem nos cartões, para o trilho e a lista falarem
+   a mesma língua. */
+.pessoa-linha .av{
+  background:color-mix(in srgb,var(--cor,var(--rail-fraca)) 30%,var(--rail-alto));
+  box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--cor,var(--rail-fraca)) 70%,transparent);
+  color:color-mix(in oklab,var(--cor,var(--rail-fraca)) 55%,var(--rail-tinta));
+}
+.pessoa-linha.escolhida .av{background:rgba(255,255,255,.22);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.6);color:#FFFFFF}
 .dia-linha .n-dia,.pessoa-linha .n-pessoa{
   text-align:right;
   font-family:"IBM Plex Mono",ui-monospace,monospace;
@@ -1037,16 +1203,19 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   padding:4px 0 10px;
 }
 .coluna-quadro{
-  flex:0 0 288px;
+  flex:1 1 288px;
+  min-width:272px;
+  max-width:460px;
   display:flex;
   flex-direction:column;
   gap:8px;
-  padding:10px;
-  border-radius:10px;
+  padding:11px;
+  border-radius:var(--raio);
   background:var(--recuo);
-  min-height:120px;
+  border:1px solid var(--linha);
+  min-height:140px;
 }
-.coluna-quadro.alvo{outline:2px dashed var(--acento);outline-offset:-3px}
+.coluna-quadro.alvo{outline:2px dashed var(--marca);outline-offset:-3px}
 .cabeca-coluna{
   display:flex;
   align-items:baseline;
@@ -1065,30 +1234,52 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 .cabeca-coluna .n-coluna{
   font-family:"IBM Plex Mono",ui-monospace,monospace;
   font-size:11px;
-  color:var(--tinta-fraca);
+  color:var(--tinta-suave);
   font-variant-numeric:tabular-nums;
+  background:var(--superficie);
+  border-radius:999px;
+  padding:1px 8px;
 }
+/* O cartão do quadro leva a cor numa faixa no alto, do jeito que se reconhece
+   um cartão de longe. O estado fica no fundo e nas pastilhas. */
 .cartao{
-  display:block;
+  position:relative;
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  column-gap:9px;
+  align-items:start;
   width:100%;
   text-align:left;
-  padding:9px 10px;
+  padding:14px 11px 10px;
   border:1px solid var(--linha);
-  border-left:3px solid transparent;
-  border-radius:8px;
+  border-radius:12px;
   background:var(--superficie);
   box-shadow:var(--sombra);
   font:inherit;
   cursor:grab;
+  overflow:hidden;
+  transition:box-shadow .15s ease, transform .15s ease;
 }
+.cartao::before{
+  content:"";
+  position:absolute;
+  inset:0 0 auto 0;
+  height:5px;
+  background:var(--cor,var(--linha-forte));
+}
+.cartao:hover{box-shadow:var(--sombra-alta);transform:translateY(-2px)}
 .cartao:active{cursor:grabbing}
-.cartao.atrasada{border-left-color:var(--atraso)}
-.cartao.andando{border-left-color:var(--andamento)}
-.cartao.arrastando{opacity:.45}
-.cartao .titulo-cartao{display:block;font-size:14px;line-height:1.35;color:var(--tinta)}
+.cartao.atrasada{background:var(--atraso-fundo);border-color:var(--atraso-fundo)}
+.cartao.andando{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--andamento) 50%,transparent),var(--sombra)}
+.cartao.feita{box-shadow:none;opacity:.8}
+.cartao.feita::before{opacity:.45}
+.cartao.arrastando{opacity:.45;transform:rotate(1.5deg)}
+.cartao .marcar{margin-top:1px}
+.cartao .titulo-cartao{grid-column:2;display:block;font-size:14.5px;line-height:1.35;color:var(--tinta)}
 .cartao.feita .titulo-cartao{color:var(--tinta-fraca);text-decoration:line-through}
-.cartao .meta{margin-top:5px}
-.cartao .acoes-cartao{display:flex;gap:2px;margin-top:6px;justify-content:flex-end}
+.cartao .meta{grid-column:2;margin-top:6px}
+.cartao .barra-avanco{grid-column:2}
+.cartao .acoes-cartao{grid-column:1/-1;display:flex;gap:2px;margin-top:7px;justify-content:flex-end}
 .coluna-quadro .vazio-coluna{
   padding:14px 6px;
   font-size:12.5px;
@@ -1243,7 +1434,8 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     assinatura: "",
     espelhoLiberado: true,  // trava enquanto houver dados locais ainda não resolvidos
     resgate: null,          // atividades presas neste navegador, fora da conta
-    avisosNavegador: "indisponivel"
+    avisosNavegador: "indisponivel",
+    cores: new Map()        // categoria/pessoa -> tom fixo de identidade
   };
 
   var db = null;
@@ -1917,8 +2109,91 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
 
   /* ---------------- agenda ---------------- */
 
+  /* ---------------- identidade por cor ---------------- */
+
+  // Oito tons, um por categoria e um por pessoa. A cor é um atalho para o olho:
+  // o nome vem escrito ao lado dela em todo lugar, de modo que nada depende de
+  // distinguir dois tons — é essa folga que torna legítimos os tons mais claros
+  // sobre fundo branco.
+  var TONS = 8;
+
+  // Ordem de aparição, não alfabética: uma categoria nova pega o tom seguinte e
+  // não troca a cor das que já estavam. De quebra, as três primeiras ficam com
+  // os três tons que mais se separam entre si — e três é o caso comum.
+  // Categorias e pessoas contam separado: as categorias pegam os tons do começo
+  // (os que mais se separam entre si, e é a categoria que pinta o cartão
+  // inteiro) e as pessoas pegam do fim para trás, de modo que as duas listas só
+  // se cruzam quando houver oito de cada. Mesmo então nada se confunde: a
+  // pessoa vem num círculo com as iniciais, a categoria num ponto, e ambas com
+  // o nome escrito.
+  var contagemTons = { "c:": 0, "p:": 0 };
+
+  function proximoTom(ns){
+    var n = contagemTons[ns]++ % TONS;
+    return ns === "p:" ? TONS - n : n + 1;
+  }
+
+  function mapearCores(todas){
+    var mapa = new Map();
+    contagemTons = { "c:": 0, "p:": 0 };
+    todas.slice().sort(function(a, b){
+      return (a.criadaEm || "") < (b.criadaEm || "") ? -1 : 1;
+    }).forEach(function(t){
+      [["c:", t.categoria], ["p:", t.responsavel]].forEach(function(par){
+        if (!par[1]) return;
+        var k = par[0] + par[1];
+        if (mapa.has(k)) return;
+        mapa.set(k, proximoTom(par[0]));
+      });
+    });
+    return mapa;
+  }
+
+  function tomDe(chave){
+    if (!chave) return 0;
+    if (!estado.cores.has(chave)) {
+      estado.cores.set(chave, proximoTom(chave.slice(0, 2) === "p:" ? "p:" : "c:"));
+    }
+    return estado.cores.get(chave);
+  }
+
+  // A categoria dá a cor do cartão; sem categoria, quem faz dá.
+  function chaveCor(t){
+    if (t.categoria) return "c:" + t.categoria;
+    if (t.responsavel) return "p:" + t.responsavel;
+    return "";
+  }
+
+  function estiloCor(chave){
+    var n = tomDe(chave);
+    return n ? ' style="--cor:var(--c' + n + ')"' : "";
+  }
+
+  // "Ana Paula Souza" -> "AS"
+  function iniciais(nome){
+    var p = String(nome || "").trim().split(/\s+/);
+    if (!p[0]) return "?";
+    var a = p[0].charAt(0);
+    var b = p.length > 1 ? p[p.length - 1].charAt(0) : "";
+    return (a + b).toUpperCase();
+  }
+
+  function pessoaHtml(nome){
+    return '<span class="selo pessoa"' + estiloCor("p:" + nome) + '>' +
+      '<i class="av" aria-hidden="true">' + esc(iniciais(nome)) + "</i>" + esc(nome) + "</span>";
+  }
+
+  function categoriaHtml(cat){
+    return '<span class="selo cat"' + estiloCor("c:" + cat) + '>' +
+      '<i class="ponto" aria-hidden="true"></i>' + esc(cat) + "</span>";
+  }
+
   function metaHtml(t, hoje, comData){
     var partes = [];
+    // Passou do prazo é a primeira coisa que a linha diz, e diz com palavra.
+    if (t.status !== "concluida" && estaAtrasada(t, hoje)) {
+      partes.push('<span class="selo atrasado">atrasada</span>');
+    }
     if (t.status === "andamento") {
       var corrido = t.iniciadaEm ? duracaoDesde(t.iniciadaEm) : "";
       partes.push('<span class="selo andamento">em andamento' +
@@ -1945,9 +2220,9 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     if (t.prazo && comData) partes.push('<span class="prazo' + (vencido ? " vencido" : "") + '">' + esc(rotuloPrazo(t.prazo)) + "</span>");
     var faixa = faixaHoraria(t);
     if (faixa) partes.push('<span class="hora' + (vencido ? " vencido" : "") + '">' + esc(faixa) + "</span>");
-    if (t.responsavel) partes.push('<span class="selo pessoa">→ ' + esc(t.responsavel) + "</span>");
+    if (t.responsavel) partes.push(pessoaHtml(t.responsavel));
     if (t.responsavel && t.retorno) partes.push('<span class="selo volta" title="Volta para mim">Eu</span>');
-    if (t.categoria) partes.push('<span class="selo">' + esc(t.categoria) + "</span>");
+    if (t.categoria) partes.push(categoriaHtml(t.categoria));
     if (t.repete) partes.push('<span class="selo ciclo">⟳ ' + esc(rotuloCiclo(t.repete, t.prazo)) + "</span>");
     return partes.join("");
   }
@@ -1973,9 +2248,10 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     var partes = [];
     var faixa = faixaHoraria(t);
     if (faixa) partes.push('<span class="hora">' + esc(faixa) + "</span>");
-    if (t.categoria) partes.push('<span class="selo">' + esc(t.categoria) + "</span>");
+    if (t.responsavel) partes.push(pessoaHtml(t.responsavel));
+    if (t.categoria) partes.push(categoriaHtml(t.categoria));
     partes.push('<span class="selo previsto">prevista</span>');
-    return '<article class="item previsto">' +
+    return '<article class="item previsto"' + estiloCor(chaveCor(t)) + ">" +
       '<span class="marcar-oco" aria-hidden="true"></span>' +
       '<div class="linha-previsto">' +
         '<span class="titulo">' + (t.titulo ? esc(t.titulo) : "<em>sem título</em>") + "</span>" +
@@ -2133,7 +2409,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
         atalhoHtml("excluir", "Excluir") +
       "</div>";
 
-    return '<article class="' + classes.join(" ") + '" data-id="' + esc(t.id) + '">' +
+    return '<article class="' + classes.join(" ") + '" data-id="' + esc(t.id) + '"' + estiloCor(chaveCor(t)) + ">" +
       '<button type="button" class="marcar" data-acao="alternar" aria-pressed="' + feita + '" aria-label="' + esc(rotuloBotao) + '">' +
         '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 8.4l3.2 3.2 6.4-7.2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
       "</button>" + interior + atalhos + "</article>";
@@ -2295,8 +2571,12 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
   }
 
   // Como a semana está: quantos compromissos em cada dia, na mesma escala.
-  function seletorFiltro(rotulo, alvo, atual, itens){
-    return '<label class="par' + (atual !== "todas" ? " ativo" : "") + '"><span>' + esc(rotulo) + "</span>" +
+  function seletorFiltro(rotulo, alvo, atual, itens, prefixo){
+    // Filtrar por uma categoria ou por uma pessoa pinta o filtro com o tom
+    // dela: o recorte da tela e os cartões passam a dizer a mesma coisa.
+    var tom = prefixo && atual !== "todas" && atual !== "minhas" ? estiloCor(prefixo + atual) : "";
+    return '<label class="par' + (atual !== "todas" ? " ativo" : "") + (tom ? " tonal" : "") + '"' + tom +
+      "><span>" + esc(rotulo) + "</span>" +
       '<select id="filtro-' + alvo + '" data-alvo="' + alvo + '" aria-label="Filtrar por ' + esc(rotulo) + '">' +
       itens.map(function(par){
         return '<option value="' + esc(par[0]) + '"' + (atual === par[0] ? " selected" : "") + ">" +
@@ -2311,12 +2591,12 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     if (pessoas.length) {
       var deQuem = [["todas", "todos"], ["minhas", "Eu"]];
       pessoas.forEach(function(p){ deQuem.push([p, p]); });
-      html += seletorFiltro("responsável", "quem", estado.quem, deQuem);
+      html += seletorFiltro("responsável", "quem", estado.quem, deQuem, "p:");
     }
     if (categorias.length) {
       var deCat = [["todas", "todas"]];
       categorias.forEach(function(c){ deCat.push([c, c]); });
-      html += seletorFiltro("categoria", "filtro", estado.filtro, deCat);
+      html += seletorFiltro("categoria", "filtro", estado.filtro, deCat, "c:");
     }
     if (html && (estado.quem !== "todas" || estado.filtro !== "todas")) {
       html += '<button type="button" class="mini" data-limpar="1">limpar</button>';
@@ -2408,11 +2688,39 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
           (c.atrasadas ? " · " + plural(c.atrasadas, "passou do prazo", "passaram do prazo") : "");
         html += '<button type="button" class="pessoa-linha' + (estado.quem === valor ? " escolhida" : "") +
           '" data-pessoa="' + esc(valor) + '" aria-pressed="' + (estado.quem === valor) + '" ' +
-          'title="' + esc(legenda) + '" aria-label="' + esc(n + ": " + legenda) + '">' +
+          'title="' + esc(legenda) + '" aria-label="' + esc(n + ": " + legenda) + '"' +
+          (n === "Eu" ? "" : estiloCor("p:" + n)) + ">" +
+          '<i class="av" aria-hidden="true">' + esc(n === "Eu" ? "EU" : iniciais(n)) + "</i>" +
           '<span class="nome-pessoa">' + esc(n) + "</span>" +
           '<span class="trilho-dia"><i class="' + (c.atrasadas ? "vencendo" : "") +
           '" style="width:' + larg + '%"></i></span>' +
           '<span class="n-pessoa' + (c.atrasadas ? " atrasada-pessoa" : "") + '">' + c.abertas + "</span></button>";
+      });
+      html += "</div></section>";
+    }
+
+    // A legenda das cores, que também é um filtro: ver de que cor é cada
+    // categoria e isolar uma delas é a mesma pergunta.
+    var porCat = {};
+    estado.tarefas.forEach(function(t){
+      if (!t.categoria || t.status === "concluida") return;
+      if (!porCat[t.categoria]) porCat[t.categoria] = { abertas:0, atrasadas:0 };
+      porCat[t.categoria].abertas++;
+      if (estaAtrasada(t, hoje)) porCat[t.categoria].atrasadas++;
+    });
+    var cats = Object.keys(porCat).sort(function(a, b){ return porCat[b].abertas - porCat[a].abertas; });
+    if (cats.length) {
+      html += '<section class="painel-lado"><h2>Categorias</h2><div class="equipe">';
+      cats.forEach(function(c){
+        var n = porCat[c];
+        var legenda = plural(n.abertas, "atividade aberta", "atividades abertas") +
+          (n.atrasadas ? " · " + plural(n.atrasadas, "passou do prazo", "passaram do prazo") : "");
+        html += '<button type="button" class="cat-linha' + (estado.filtro === c ? " escolhida" : "") +
+          '" data-categoria="' + esc(c) + '" aria-pressed="' + (estado.filtro === c) + '"' +
+          estiloCor("c:" + c) + ' title="' + esc(legenda) + '" aria-label="' + esc(c + ": " + legenda) + '">' +
+          '<i class="ponto" aria-hidden="true"></i>' +
+          '<span class="nome-pessoa">' + esc(c) + "</span>" +
+          '<span class="n-pessoa' + (n.atrasadas ? " atrasada-pessoa" : "") + '">' + n.abertas + "</span></button>";
       });
       html += "</div></section>";
     }
@@ -2463,7 +2771,8 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
         atalhoHtml("excluir", "Excluir") +
       "</div>";
 
-    return '<article class="' + classes.join(" ") + '" data-id="' + esc(t.id) + '" draggable="true">' +
+    return '<article class="' + classes.join(" ") + '" data-id="' + esc(t.id) + '"' +
+      estiloCor(chaveCor(t)) + ' draggable="true">' +
       '<button type="button" class="marcar" data-acao="alternar" aria-pressed="' + feita + '" ' +
         'aria-label="' + esc((feita ? "Reabrir" : "Concluir") + ": " + (t.titulo || "atividade")) + '">' +
         '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.2 8.4l3.2 3.2 6.4-7.2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
@@ -2655,11 +2964,13 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
         var marca = v === true ? "✓" : (v === false ? "!" : "·");
         var texto = v === true ? "no prazo" : (v === false ? (atrasoTexto(t) || "fora do prazo") : "sem prazo");
         var aberta = estado.historicoAberto === t.id;
+        var rotulo = t.categoria || t.responsavel;
         html += "<li>" +
           '<button type="button" class="registro-linha" data-acao="verHistorico" data-id="' + esc(t.id) + '" ' +
-            'aria-expanded="' + aberta + '">' +
+            'aria-expanded="' + aberta + '"' + estiloCor(chaveCor(t)) + ">" +
             '<span class="marca ' + tom + '" aria-hidden="true">' + marca + "</span>" +
             '<span class="nome">' + (t.titulo ? esc(t.titulo) : "<em>sem título</em>") + "</span>" +
+            (rotulo ? '<span class="selo cat"><i class="ponto" aria-hidden="true"></i>' + esc(rotulo) + "</span>" : "") +
             '<span class="veredito ' + tom + '">' + esc(texto) + "</span>" +
           "</button>" +
           (aberta ? detalheHistoricoHtml(t) : "") +
@@ -2695,8 +3006,9 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
         celulaHtml(soma.criadas, "criadas", "") +
         celulaHtml(soma.iniciadas, "iniciadas", "") +
         celulaHtml(soma.feitas, "concluídas", "") +
-        celulaHtml(soma.dentro, "no prazo", "boa") +
-        celulaHtml(soma.fora, "fora do prazo", "ruim") +
+        celulaHtml(soma.dentro, "no prazo", soma.dentro ? "boa" : "") +
+        // zero fora do prazo é uma boa notícia; pintá-lo de vermelho dizia o contrário
+        celulaHtml(soma.fora, "fora do prazo", soma.fora ? "ruim" : "") +
       "</div>" +
       '<div class="legenda">' +
         '<span><i class="amostra dentro"></i>entregue no prazo</span>' +
@@ -2762,6 +3074,7 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     var hoje = isoHoje();
     aplicarAutoInicio(hoje);
     var todas = Array.from(estado.tarefas.values());
+    estado.cores = mapearCores(todas);
 
     if (estado.aberto && !estado.tarefas.has(estado.aberto)) estado.aberto = null;
 
@@ -3099,6 +3412,14 @@ input.chip.preenchido{background:var(--acento-fundo);border-color:transparent;co
     if (pessoa) {
       var quem = pessoa.getAttribute("data-pessoa");
       estado.quem = estado.quem === quem ? "todas" : quem;
+      gravarPreferencias();
+      desenhar();
+      return;
+    }
+    var cat = e.target.closest("button[data-categoria]");
+    if (cat) {
+      var qual = cat.getAttribute("data-categoria");
+      estado.filtro = estado.filtro === qual ? "todas" : qual;
       gravarPreferencias();
       desenhar();
     }
