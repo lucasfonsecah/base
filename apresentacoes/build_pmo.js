@@ -274,27 +274,63 @@ async function slideDashboards(bg) {
 
   const dashes = [
     {
-      nome: "N5 ONBOARDING", per: "Periodicidade a definir  ·  prazos 05 e 10/10", done: 0,
+      nome: "N5 ONBOARDING", per: "Periodicidade a definir", done: 0,
       grupos: [
-        ["QUANTITATIVO", [["P.A", "Cliente", false], ["Clientes trabalhados", "Deyvid", false], ["Clientes finalizados", "Deyvid", false], ["SLA", "Deyvid", false]]],
-        ["TEMPOS", [["Tempo logado", "Willyan", false], ["Tempo pausas", "Willyan", false]]],
-        ["ANÁLISES %", [["Clientes / PA", "Willyan", false], ["Finalizados / PA", "Willyan", false], ["Reagendados", "Willyan", false]]],
+        ["QUANTITATIVO", [
+          ["P.A", "Cliente", false, "10/10"],
+          ["Clientes trabalhados", "Deyvid", false, "10/10"],
+          ["Clientes finalizados", "Deyvid", false, "10/10"],
+          ["SLA", "Deyvid", false, "10/10"],
+        ]],
+        ["TEMPOS", [
+          ["Tempo logado", "Willyan", false, "05/10"],
+          ["Tempo pausas", "Willyan", false, "05/10"],
+        ]],
+        ["ANÁLISES %", [
+          ["Clientes / PA", "Willyan", false, "10/10"],
+          ["Finalizados / PA", "Willyan", false, "10/10"],
+          ["Reagendados", "Willyan", false, "10/10"],
+        ]],
       ],
     },
     {
-      nome: "N5 PRÓ-ATIVOS", per: "Periodicidade a definir  ·  prazos 05 e 08/10", done: 2,
+      nome: "N5 PRÓ-ATIVOS", per: "Periodicidade a definir", done: 2,
       grupos: [
-        ["QUANTITATIVO", [["P.A", "Cliente", false], ["Clientes trabalhados", "Andressa", true], ["Clientes finalizados", "Andressa", true], ["SLA", "Andressa", false]]],
-        ["TEMPOS", [["Tempo logado", "Willyan", false], ["Tempo pausas", "Willyan", false]]],
-        ["ANÁLISES %", [["Clientes / PA", "Willyan", false], ["Finalizados / PA", "Willyan", false], ["Reagendados", "Willyan", false]]],
+        ["QUANTITATIVO", [
+          ["P.A", "Cliente", false, "05/10"],
+          ["Clientes trabalhados", "Andressa", true, "08/10"],
+          ["Clientes finalizados", "Andressa", true, "08/10"],
+          ["SLA", "Andressa", false, "08/10"],
+        ]],
+        ["TEMPOS", [
+          ["Tempo logado", "Willyan", false, "05/10"],
+          ["Tempo pausas", "Willyan", false, "05/10"],
+        ]],
+        ["ANÁLISES %", [
+          ["Clientes / PA", "Willyan", false, "08/10"],
+          ["Finalizados / PA", "Willyan", false, "08/10"],
+          ["Reagendados", "Willyan", false, "08/10"],
+        ]],
       ],
     },
     {
-      nome: "N4", per: "Diária (D-1)  ·  prazos 05 e 08/10", done: 6,
+      nome: "N4", per: "Diária (D-1)", done: 6,
       grupos: [
-        ["QUANTITATIVO", [["P.A", "Cliente", false], ["Clientes trabalhados", "Deyvid", true], ["Clientes finalizados", "Deyvid", true], ["SLA", "Deyvid", true]]],
-        ["TEMPOS", [["Tempo logado", "Willyan", false], ["Tempo pausas", "Willyan", false]]],
-        ["ANÁLISES %", [["Clientes / PA", "Willyan", true], ["Finalizados / PA", "Willyan", true], ["Reagendados", "Willyan", true]]],
+        ["QUANTITATIVO", [
+          ["P.A", "Cliente", false, "05/10"],
+          ["Clientes trabalhados", "Deyvid", true, "08/10"],
+          ["Clientes finalizados", "Deyvid", true, "08/10"],
+          ["SLA", "Deyvid", true, "08/10"],
+        ]],
+        ["TEMPOS", [
+          ["Tempo logado", "Willyan", false, "05/10"],
+          ["Tempo pausas", "Willyan", false, "05/10"],
+        ]],
+        ["ANÁLISES %", [
+          ["Clientes / PA", "Willyan", true, "08/10"],
+          ["Finalizados / PA", "Willyan", true, "08/10"],
+          ["Reagendados", "Willyan", true, "08/10"],
+        ]],
       ],
     },
   ];
@@ -332,30 +368,46 @@ async function slideDashboards(bg) {
     }
 
     let gy = CY + 1.06;
-    d.grupos.forEach(([titulo, itens]) => {
+    const fx = x + CW - 1.52;   // focal
+    const px = x + CW - 0.74;   // prazo
+
+    d.grupos.forEach(([titulo, itens], gi) => {
       s.addText(titulo, {
-        x: x + 0.3, y: gy, w: CW - 0.6, h: 0.22, isTextBox: true, margin: 0, valign: "middle",
+        x: x + 0.3, y: gy, w: CW - 1.7, h: 0.22, isTextBox: true, margin: 0, valign: "middle",
         fontFace: B, fontSize: 8, bold: true, color: AMBER, charSpacing: 1.3,
       });
+      if (gi === 0) {
+        s.addText("FOCAL", {
+          x: fx, y: gy, w: 0.7, h: 0.22, isTextBox: true, margin: 0, align: "right", valign: "middle",
+          fontFace: B, fontSize: 7, bold: true, color: MUTED, charSpacing: 0.8,
+        });
+        s.addText("PRAZO", {
+          x: px, y: gy, w: 0.44, h: 0.22, isTextBox: true, margin: 0, align: "right", valign: "middle",
+          fontFace: B, fontSize: 7, bold: true, color: MUTED, charSpacing: 0.8,
+        });
+      }
       gy += 0.24;
-      itens.forEach(([nome, focal, ok]) => {
+      itens.forEach(([nome, focal, ok, prazo]) => {
         s.addShape(pres.ShapeType.ellipse, {
           x: x + 0.32, y: gy + 0.06, w: 0.11, h: 0.11,
           fill: ok ? { color: AMBER } : { color: AMBER, transparency: 65 },
         });
         s.addText(nome, {
-          x: x + 0.52, y: gy, w: CW - 1.55, h: 0.22, isTextBox: true, margin: 0, valign: "middle",
+          x: x + 0.52, y: gy, w: CW - 2.1, h: 0.22, isTextBox: true, margin: 0, valign: "middle",
           fontFace: B, fontSize: 10, color: ok ? WHITE : ICE,
         });
         s.addText(focal, {
-          x: x + CW - 1.0, y: gy, w: 0.7, h: 0.22, isTextBox: true, margin: 0, align: "right", valign: "middle",
+          x: fx, y: gy, w: 0.7, h: 0.22, isTextBox: true, margin: 0, align: "right", valign: "middle",
           fontFace: B, fontSize: 8.5, color: MUTED,
+        });
+        s.addText(prazo, {
+          x: px, y: gy, w: 0.44, h: 0.22, isTextBox: true, margin: 0, align: "right", valign: "middle",
+          fontFace: B, fontSize: 9, bold: !ok, color: ok ? MUTED : AMBER,
         });
         gy += 0.22;
       });
       gy += 0.04;
     });
-
   });
 
   // rodapé
@@ -368,8 +420,8 @@ async function slideDashboards(bg) {
     [
       { text: "ORIGEM DOS DADOS   ", options: { bold: true, color: AMBER, fontSize: 9, charSpacing: 1.3 } },
       { text: "CRM  ·  Pmóvel  ·  Planilha do supervisor  ·  Dashboard", options: { color: ICE, fontSize: 11 } },
-      { text: "        FOCAIS   ", options: { bold: true, color: AMBER, fontSize: 9, charSpacing: 1.3 } },
-      { text: "Willyan  ·  Deyvid  ·  Andressa  ·  Cliente", options: { color: ICE, fontSize: 11 } },
+      { text: "          PRAZO EM ÂMBAR   ", options: { bold: true, color: AMBER, fontSize: 9, charSpacing: 1.3 } },
+      { text: "métrica ainda em andamento", options: { color: ICE, fontSize: 11 } },
     ],
     { x: M + 0.4, y: FY, w: W - 0.8, h: 0.6, isTextBox: true, margin: 0, valign: "middle", fontFace: B }
   );
