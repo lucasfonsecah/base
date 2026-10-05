@@ -273,6 +273,7 @@ button,input,textarea,select{font:inherit;color:inherit}
 .lista{
   flex:0 0 272px;
   max-height:100%;
+  overflow:hidden;
   display:flex;
   flex-direction:column;
   background:var(--lista);
@@ -460,7 +461,47 @@ button,input,textarea,select{font:inherit;color:inherit}
   padding:0;
 }
 .compor textarea::placeholder{color:var(--tinta-fraca)}
-.acoes-compor{display:flex;align-items:center;gap:8px;padding-top:8px}
+.acoes-compor{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding-top:8px}
+.acoes-compor .btn{white-space:nowrap}
+/* o compositor com detalhes: o cartão já nasce com prazo, descrição e checklist */
+.detalhes-compor{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:8px;
+  padding-top:10px;
+  border-top:1px solid var(--linha);
+}
+.detalhes-compor .mini-titulo{margin:0 0 5px}
+.compor textarea.extra{
+  min-height:0;
+  border:1px solid var(--linha);
+  border-radius:4px;
+  background:var(--lista);
+  padding:6px 8px;
+  font-size:13px;
+}
+.campo-linha{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.par-data{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  border:1px solid var(--linha);
+  border-radius:4px;
+  background:var(--lista);
+  padding:3px 7px;
+  font-size:12px;
+}
+.par-data > span{color:var(--tinta-fraca);font-size:11px}
+.par-data input,.par-data select{
+  border:0;background:transparent;color:var(--tinta);
+  font-size:12px;padding:2px 0;width:auto;min-width:0;
+}
+.et.alvo{cursor:pointer;border:0;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;color:#1F1F21;font-weight:600;font-size:12px}
+.et.alvo[aria-pressed="false"]{opacity:.55}
+.av.alvo{cursor:pointer;border:0}
+.av.alvo[aria-pressed="false"]{opacity:.4}
+.av.alvo[aria-pressed="true"]{box-shadow:0 0 0 2px var(--cartao),0 0 0 4px var(--azul)}
 .btn{
   border:0;
   border-radius:4px;
@@ -956,6 +997,14 @@ button,input,textarea,select{font:inherit;color:inherit}
 
   /* ======================= estado ======================= */
 
+  // O que está sendo escrito no compositor. Mora no estado, e não só no campo,
+  // para sobreviver aos redesenhos (o relógio redesenha o quadro de minuto em
+  // minuto, e perder o que a pessoa digitou no meio seria imperdoável).
+  function rascunhoVazio(){
+    return { titulo:"", descricao:"", dia:"", hora:"", inicioDia:"", inicioHora:"",
+             repete:"", etiquetas:[], membros:[], itens:"" };
+  }
+
   var estado = {
     listas: new Map(),      // id -> { id, nome, ordem, arquivada }
     cartoes: new Map(),     // id -> cartão
@@ -966,6 +1015,8 @@ button,input,textarea,select{font:inherit;color:inherit}
     mesCal: "",             // YYYY-MM da vista de calendário
     cartaoAberto: null,
     compondoEm: null,       // id da lista com o compositor aberto
+    comporDetalhes: false,  // o compositor está mostrando descrição, datas, etc.
+    rascunho: rascunhoVazio(),
     editandoLista: null,
     novaLista: false,
     editor: null,           // { tipo, id } do campo em edição dentro da janela
@@ -1332,7 +1383,8 @@ button,input,textarea,select{font:inherit;color:inherit}
   }
   function gravarPrefs(){
     try {
-      window.localStorage.setItem(CHAVE_PREF, JSON.stringify({ vista: estado.vista, tema: estado.prefs.tema }));
+      window.localStorage.setItem(CHAVE_PREF, JSON.stringify({
+        vista: estado.vista, tema: estado.prefs.tema, comporDetalhes: estado.comporDetalhes }));
     } catch (e) {}
   }
   function lerPrefs(){
@@ -1340,6 +1392,7 @@ button,input,textarea,select{font:inherit;color:inherit}
     if (!p) return;
     if (p.vista === "quadro" || p.vista === "calendario" || p.vista === "painel") estado.vista = p.vista;
     if (typeof p.tema === "string") estado.prefs.tema = p.tema;
+    estado.comporDetalhes = p.comporDetalhes === true;
   }
 
   function carregarDoLocal(){
@@ -1711,27 +1764,94 @@ button,input,textarea,select{font:inherit;color:inherit}
         'aria-label="Ações da lista">' + svg("pontos") + "</button></div>";
     }
 
+    var compondo = estado.compondoEm === l.id;
     html += '<div class="corpo-lista" data-corpo="' + esc(l.id) + '">';
-    if (!visiveis.length) {
+    if (!visiveis.length && !compondo) {
       html += '<p class="lista-vazia">' + (cartoes.length ? "nenhum cartão passa no filtro" : "sem cartões") + "</p>";
     } else {
       visiveis.forEach(function(c){ html += cartaoHtml(c); });
     }
+    // O compositor mora dentro da área que rola: aberto com todos os campos ele
+    // é mais alto do que a lista, e por fora transbordava por cima dos cartões.
+    if (compondo) html += comporHtml(l);
     html += "</div>";
 
-    if (estado.compondoEm === l.id) {
-      html += '<div class="compor" style="margin-top:8px">' +
-        '<textarea data-campo="novo-cartao" data-id="' + esc(l.id) + '" rows="2" ' +
-        'placeholder="Insira um título para este cartão…" aria-label="Título do novo cartão"></textarea>' +
-        '<div class="acoes-compor">' +
-          '<button type="button" class="btn" data-acao="salvar-cartao" data-id="' + esc(l.id) + '">Adicionar cartão</button>' +
-          '<button type="button" class="icone-botao" data-acao="cancelar-compor" aria-label="Cancelar">' + svg("x") + "</button>" +
-        "</div></div>";
-    } else {
+    if (!compondo) {
       html += '<button type="button" class="add-cartao" data-acao="compor" data-id="' + esc(l.id) + '">' +
         svg("mais", 14) + "Adicionar um cartão</button>";
     }
     return html + "</section>";
+  }
+
+  // O compositor é o cartão antes de existir: o título resolve o caso rápido, e
+  // "mais detalhes" abre descrição, datas, etiquetas, membros e checklist ali
+  // mesmo — assim o cartão já nasce com o que ele diz, em vez de nascer vazio e
+  // obrigar a abri-lo em seguida para preencher tudo.
+  function comporHtml(l){
+    var r = estado.rascunho;
+    var html = '<div class="compor">' +
+      '<textarea data-campo="novo-cartao" data-id="' + esc(l.id) + '" rows="2" ' +
+      'placeholder="Insira um título para este cartão…" aria-label="Título do novo cartão">' + esc(r.titulo) + "</textarea>";
+
+    if (estado.comporDetalhes) {
+      html += '<div class="detalhes-compor">';
+
+      html += '<div><p class="mini-titulo">Descrição</p>' +
+        '<textarea class="extra" data-campo="r-descricao" rows="2" ' +
+        'placeholder="O que precisa ser feito…" aria-label="Descrição">' + esc(r.descricao) + "</textarea></div>";
+
+      html += '<div><p class="mini-titulo">Datas</p><div class="campo-linha">' +
+        '<label class="par-data"><span>início</span>' +
+        '<input type="date" data-campo="r-inicioDia" value="' + esc(r.inicioDia) + '" aria-label="Dia de início">' +
+        '<input type="time" data-campo="r-inicioHora" value="' + esc(r.inicioHora) + '" aria-label="Hora de início"></label>' +
+        '<label class="par-data"><span>prazo</span>' +
+        '<input type="date" data-campo="r-dia" value="' + esc(r.dia) + '" aria-label="Dia do prazo">' +
+        '<input type="time" data-campo="r-hora" value="' + esc(r.hora) + '" aria-label="Hora do prazo"></label>' +
+        '<label class="par-data"><span>repete</span><select data-campo="r-repete" aria-label="Repetição">' +
+        '<option value="">não</option>';
+      Object.keys(REPETICOES).forEach(function(k){
+        html += '<option value="' + k + '"' + (r.repete === k ? " selected" : "") + ">" + esc(REPETICOES[k].rotulo) + "</option>";
+      });
+      html += "</select></label></div></div>";
+
+      if (estado.etiquetas.length) {
+        html += '<div><p class="mini-titulo">Etiquetas</p><div class="campo-linha">';
+        estado.etiquetas.forEach(function(e){
+          var on = r.etiquetas.indexOf(e.id) >= 0;
+          html += '<button type="button" class="et alvo' + (e.nome ? " com-texto" : "") + '" ' +
+            'style="--cor:' + hexEtiqueta(e.cor) + (e.nome ? "" : ";height:22px;min-width:34px") + '" ' +
+            'data-acao="r-etiqueta" data-et="' + esc(e.id) + '" aria-pressed="' + on + '" ' +
+            'title="' + esc(e.nome || "etiqueta sem nome") + '">' +
+            (on ? "✓" : "") + (e.nome ? (on ? " " : "") + esc(e.nome) : "") + "</button>";
+        });
+        html += "</div></div>";
+      }
+
+      if (estado.membros.length) {
+        html += '<div><p class="mini-titulo">Membros</p><div class="campo-linha">';
+        estado.membros.forEach(function(m){
+          var on = r.membros.indexOf(m.id) >= 0;
+          html += '<button type="button" class="av alvo" style="--cor:' + esc(m.cor) + '" ' +
+            'data-acao="r-membro" data-m="' + esc(m.id) + '" aria-pressed="' + on + '" ' +
+            'title="' + esc(m.nome) + '">' + esc(iniciais(m.nome)) + "</button>";
+        });
+        html += "</div></div>";
+      }
+
+      html += '<div><p class="mini-titulo">Checklist <span style="font-weight:400;opacity:.7">— um item por linha</span></p>' +
+        '<textarea class="extra" data-campo="r-itens" rows="2" ' +
+        'placeholder="Puxar relatório&#10;Conferir divergências" aria-label="Itens do checklist">' + esc(r.itens) + "</textarea></div>";
+
+      html += "</div>";
+    }
+
+    html += '<div class="acoes-compor">' +
+      '<button type="button" class="btn" data-acao="salvar-cartao" data-id="' + esc(l.id) + '">Adicionar cartão</button>' +
+      '<button type="button" class="icone-botao" data-acao="cancelar-compor" aria-label="Cancelar">' + svg("x") + "</button>" +
+      '<button type="button" class="btn fantasma" style="margin-left:auto" data-acao="detalhes-compor">' +
+      (estado.comporDetalhes ? "menos detalhes" : "+ detalhes") + "</button>" +
+      "</div></div>";
+    return html;
   }
 
   function desenharQuadro(){
@@ -2356,6 +2476,30 @@ button,input,textarea,select{font:inherit;color:inherit}
     return c;
   }
 
+  // O cartão nasce já com o que foi escrito no compositor.
+  function criarCartaoDoRascunho(idLista, titulo){
+    var r = estado.rascunho;
+    var lista = cartoesDa(idLista);
+    var itens = r.itens.split("\n").map(function(x){ return x.trim(); }).filter(Boolean);
+    var c = normalizarCartao(novoId(), {
+      lista: idLista,
+      ordem: ordemEntre(lista.length ? lista[lista.length-1].ordem : null, null),
+      titulo: titulo,
+      descricao: r.descricao.trim(),
+      inicio: juntar(r.inicioDia, r.inicioHora),
+      prazo: juntar(r.dia, r.hora),
+      repete: r.repete,
+      etiquetas: r.etiquetas.slice(),
+      membros: r.membros.slice(),
+      checklists: itens.length ? [{ id: novoId(), nome: "Checklist",
+        itens: itens.map(function(t){ return { id: novoId(), texto: t, feito: false }; }) }] : [],
+      criadoEm: agora()
+    });
+    anotar(c, "cartão criado");
+    gravarCartao(c);
+    return c;
+  }
+
   function moverCartao(c, idLista, ordem){
     var antes = c.lista;
     c.lista = idLista;
@@ -2647,20 +2791,40 @@ button,input,textarea,select{font:inherit;color:inherit}
       case "fechar-pop": fecharPop(); break;
 
       case "compor":
-        estado.compondoEm = id; desenhar();
+        estado.compondoEm = id; estado.rascunho = rascunhoVazio(); desenhar();
         var t = document.querySelector('[data-campo="novo-cartao"]');
-        if (t) t.focus();
+        if (t) { t.focus(); var cx = t.closest(".compor"); if (cx) cx.scrollIntoView({ block:"nearest" }); }
         break;
-      case "cancelar-compor": estado.compondoEm = null; desenhar(); break;
+      case "cancelar-compor": estado.compondoEm = null; estado.rascunho = rascunhoVazio(); desenhar(); break;
       case "salvar-cartao": {
         var campo = document.querySelector('[data-campo="novo-cartao"][data-id="' + id + '"]');
-        var txt = campo ? campo.value.trim() : "";
-        if (!txt) { estado.compondoEm = null; desenhar(); break; }
-        criarCartao(id, txt, false);
+        var txt = (campo ? campo.value : estado.rascunho.titulo).trim();
+        if (!txt) { estado.compondoEm = null; estado.rascunho = rascunhoVazio(); desenhar(); break; }
+        criarCartaoDoRascunho(id, txt);
+        estado.rascunho = rascunhoVazio();
         estado.compondoEm = id;
         desenhar();
         var t2 = document.querySelector('[data-campo="novo-cartao"]');
-        if (t2) { t2.value = ""; t2.focus(); }
+        if (t2) t2.focus();
+        break;
+      }
+      case "detalhes-compor":
+        estado.comporDetalhes = !estado.comporDetalhes;
+        gravarPrefs();
+        desenhar();
+        break;
+      case "r-etiqueta": {
+        var idEtR = el.getAttribute("data-et");
+        var pr = estado.rascunho.etiquetas.indexOf(idEtR);
+        if (pr >= 0) estado.rascunho.etiquetas.splice(pr, 1); else estado.rascunho.etiquetas.push(idEtR);
+        desenhar();
+        break;
+      }
+      case "r-membro": {
+        var idMR = el.getAttribute("data-m");
+        var pm2 = estado.rascunho.membros.indexOf(idMR);
+        if (pm2 >= 0) estado.rascunho.membros.splice(pm2, 1); else estado.rascunho.membros.push(idMR);
+        desenhar();
         break;
       }
       case "nova-lista":
@@ -3007,6 +3171,11 @@ button,input,textarea,select{font:inherit;color:inherit}
       c.titulo = ev.target.value;
       adiar("titulo" + id, function(){ gravarCartao(c, true); });
     }
+    if (campo === "novo-cartao") estado.rascunho.titulo = ev.target.value;
+    if (campo.slice(0, 2) === "r-") {
+      var chave = campo.slice(2);
+      if (estado.rascunho[chave] !== undefined) estado.rascunho[chave] = ev.target.value;
+    }
     if (campo === "fTexto") {
       estado.filtro.texto = ev.target.value.trim();
       adiar("busca", desenhar);
@@ -3014,6 +3183,11 @@ button,input,textarea,select{font:inherit;color:inherit}
   });
 
   document.addEventListener("change", function(ev){
+    var campoR = ev.target.getAttribute && ev.target.getAttribute("data-campo");
+    if (campoR && campoR.slice(0, 2) === "r-") {
+      var ch = campoR.slice(2);
+      if (estado.rascunho[ch] !== undefined) estado.rascunho[ch] = ev.target.value;
+    }
     var acao = ev.target.getAttribute && ev.target.getAttribute("data-acao");
     if (acao !== "item-check") return;
     var c = cartao(ev.target.getAttribute("data-id"));
@@ -3034,7 +3208,7 @@ button,input,textarea,select{font:inherit;color:inherit}
       if (!document.getElementById("pop").hidden) { fecharPop(); return; }
       if (!document.getElementById("gaveta").hidden) { document.getElementById("gaveta").hidden = true; return; }
       if (estado.editor) { estado.editor = null; desenhar(); return; }
-      if (estado.compondoEm) { estado.compondoEm = null; desenhar(); return; }
+      if (estado.compondoEm) { estado.compondoEm = null; estado.rascunho = rascunhoVazio(); desenhar(); return; }
       if (estado.novaLista) { estado.novaLista = false; desenhar(); return; }
       if (estado.editandoLista) { estado.editandoLista = null; desenhar(); return; }
       if (estado.cartaoAberto) { estado.cartaoAberto = null; desenhar(); return; }
