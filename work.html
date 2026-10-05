@@ -938,7 +938,7 @@ button,input,textarea,select{font:inherit;color:inherit}
   <header class="topo">
     <div class="topo-marca"><span class="sinal">W</span><span class="nome">Work</span></div>
     <button type="button" class="topo-btn" data-acao="ir-quadro">Quadro</button>
-    <button type="button" class="topo-btn" data-acao="abrir-gaveta">Opções</button>
+    <button type="button" class="topo-btn" data-acao="abrir-gaveta">Menu</button>
     <div class="busca">
       <input type="search" id="campoBusca" placeholder="Pesquisar cartões" aria-label="Pesquisar cartões">
       <svg class="lupa" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -949,17 +949,17 @@ button,input,textarea,select{font:inherit;color:inherit}
     <h1 id="nomeQuadro">Work</h1>
     <div class="vistas" id="vistas" role="tablist">
       <button type="button" role="tab" data-vista="quadro" aria-selected="true">Quadro</button>
-      <button type="button" role="tab" data-vista="calendario" aria-selected="false">Agenda</button>
-      <button type="button" role="tab" data-vista="painel" aria-selected="false">Indicadores</button>
+      <button type="button" role="tab" data-vista="calendario" aria-selected="false">Calendário</button>
+      <button type="button" role="tab" data-vista="painel" aria-selected="false">Painel</button>
     </div>
     <span class="separa"></span>
     <button type="button" class="btn-barra" id="btFiltro" data-acao="abrir-filtro">
       <svg viewBox="0 0 16 16" aria-hidden="true" width="14" height="14"><path d="M2 4h12M4 8h8M6.5 12h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-      <span id="rotuloFiltro">Filtrar</span>
+      <span id="rotuloFiltro">Filtro</span>
     </button>
     <div class="fim">
       <div class="membros-barra" id="membrosBarra"></div>
-      <button type="button" class="btn-barra" data-acao="abrir-membros-quadro" title="Responsáveis do quadro">+</button>
+      <button type="button" class="btn-barra" data-acao="abrir-membros-quadro" title="Membros do quadro">+</button>
       <span class="pilula-estado" id="pilulaEstado">Carregando…</span>
     </div>
   </div>
@@ -1196,7 +1196,7 @@ button,input,textarea,select{font:inherit;color:inherit}
       checklists: Array.isArray(d.checklists) ? d.checklists.map(function(cl){
         return {
           id: cl && cl.id ? String(cl.id) : novoId(),
-          nome: cl && typeof cl.nome === "string" ? cl.nome : "Subtarefas",
+          nome: cl && typeof cl.nome === "string" ? cl.nome : "Checklist",
           itens: Array.isArray(cl && cl.itens) ? cl.itens.map(function(it){
             return { id: it && it.id ? String(it.id) : novoId(),
                      texto: it && typeof it.texto === "string" ? it.texto : "",
@@ -1742,13 +1742,13 @@ button,input,textarea,select{font:inherit;color:inherit}
       var classe = e === "vencido" ? " vencido" : (e === "logo" ? " logo" : (e === "feito" ? " feito" : ""));
       var texto = rotuloPeriodo(c);
       partes.push('<button type="button" class="selo data' + classe + '" data-acao="alternar-prazo" data-id="' + esc(c.id) + '" ' +
-        'title="' + (c.prazoFeito ? "Entregue" : "Marcar como entregue") + '">' +
+        'title="' + (c.prazoFeito ? "Concluído" : "Marcar como concluído") + '">' +
         svg(c.prazoFeito ? "check" : "relogio") + "<span>" + esc(texto) + "</span></button>");
     }
 
     var totais = contarChecklist(c);
     if (totais.total) {
-      partes.push('<span class="selo' + (totais.feitos === totais.total ? " completa" : "") + '" title="Subtarefas">' +
+      partes.push('<span class="selo' + (totais.feitos === totais.total ? " completa" : "") + '" title="Itens de checklist">' +
         svg("caixa") + "<span>" + totais.feitos + "/" + totais.total + "</span></span>");
     }
     if (c.comentarios.length) {
@@ -1805,7 +1805,7 @@ button,input,textarea,select{font:inherit;color:inherit}
     var compondo = estado.compondoEm === l.id;
     html += '<div class="corpo-lista" data-corpo="' + esc(l.id) + '">';
     if (!visiveis.length && !compondo) {
-      html += '<p class="lista-vazia">' + (cartoes.length ? "nenhum cartão passa no filtro" : "nenhum cartão aqui") + "</p>";
+      html += '<p class="lista-vazia">' + (cartoes.length ? "nenhum cartão passa no filtro" : "sem cartões") + "</p>";
     } else {
       visiveis.forEach(function(c){ html += cartaoHtml(c); });
     }
@@ -1816,7 +1816,7 @@ button,input,textarea,select{font:inherit;color:inherit}
 
     if (!compondo) {
       html += '<button type="button" class="add-cartao" data-acao="compor" data-id="' + esc(l.id) + '">' +
-        svg("mais", 14) + "Novo cartão</button>";
+        svg("mais", 14) + "Adicionar um cartão</button>";
     }
     return html + "</section>";
   }
@@ -1829,7 +1829,7 @@ button,input,textarea,select{font:inherit;color:inherit}
     var r = estado.rascunho;
     var html = '<div class="compor">' +
       '<textarea data-campo="novo-cartao" data-id="' + esc(l.id) + '" rows="2" ' +
-      'placeholder="Título do cartão…" aria-label="Título do novo cartão">' + esc(r.titulo) + "</textarea>";
+      'placeholder="Insira um título para este cartão…" aria-label="Título do novo cartão">' + esc(r.titulo) + "</textarea>";
 
     if (estado.comporDetalhes) {
       html += '<div class="detalhes-compor">';
@@ -1838,7 +1838,7 @@ button,input,textarea,select{font:inherit;color:inherit}
         '<textarea class="extra" data-campo="r-descricao" rows="2" ' +
         'placeholder="O que precisa ser feito…" aria-label="Descrição">' + esc(r.descricao) + "</textarea></div>";
 
-      html += '<div><p class="mini-titulo">Prazos</p><div class="campo-linha">' +
+      html += '<div><p class="mini-titulo">Datas</p><div class="campo-linha">' +
         '<label class="par-data"><span>início</span>' +
         '<input type="date" data-campo="r-inicioDia" value="' + esc(r.inicioDia) + '" aria-label="Dia de início">' +
         '<input type="time" data-campo="r-inicioHora" value="' + esc(r.inicioHora) + '" aria-label="Hora de início"></label>' +
@@ -1853,7 +1853,7 @@ button,input,textarea,select{font:inherit;color:inherit}
       html += "</select></label></div></div>";
 
       if (estado.etiquetas.length) {
-        html += '<div><p class="mini-titulo">Marcadores</p><div class="campo-linha">';
+        html += '<div><p class="mini-titulo">Etiquetas</p><div class="campo-linha">';
         estado.etiquetas.forEach(function(e){
           var on = r.etiquetas.indexOf(e.id) >= 0;
           html += '<button type="button" class="et alvo' + (e.nome ? " com-texto" : "") + '" ' +
@@ -1866,7 +1866,7 @@ button,input,textarea,select{font:inherit;color:inherit}
       }
 
       if (estado.membros.length) {
-        html += '<div><p class="mini-titulo">Responsáveis</p><div class="campo-linha">';
+        html += '<div><p class="mini-titulo">Membros</p><div class="campo-linha">';
         estado.membros.forEach(function(m){
           var on = r.membros.indexOf(m.id) >= 0;
           html += '<button type="button" class="av alvo" style="--cor:' + esc(m.cor) + '" ' +
@@ -1876,15 +1876,15 @@ button,input,textarea,select{font:inherit;color:inherit}
         html += "</div></div>";
       }
 
-      html += '<div><p class="mini-titulo">Subtarefas <span style="font-weight:400;opacity:.7">— uma por linha</span></p>' +
+      html += '<div><p class="mini-titulo">Checklist <span style="font-weight:400;opacity:.7">— um item por linha</span></p>' +
         '<textarea class="extra" data-campo="r-itens" rows="2" ' +
-        'placeholder="Puxar relatório&#10;Conferir divergências" aria-label="Subtarefas">' + esc(r.itens) + "</textarea></div>";
+        'placeholder="Puxar relatório&#10;Conferir divergências" aria-label="Itens do checklist">' + esc(r.itens) + "</textarea></div>";
 
       html += "</div>";
     }
 
     html += '<div class="acoes-compor">' +
-      '<button type="button" class="btn" data-acao="salvar-cartao" data-id="' + esc(l.id) + '">Criar cartão</button>' +
+      '<button type="button" class="btn" data-acao="salvar-cartao" data-id="' + esc(l.id) + '">Adicionar cartão</button>' +
       '<button type="button" class="icone-botao" data-acao="cancelar-compor" aria-label="Cancelar">' + svg("x") + "</button>" +
       '<button type="button" class="btn fantasma" style="margin-left:auto" data-acao="detalhes-compor">' +
       (estado.comporDetalhes ? "menos detalhes" : "+ detalhes") + "</button>" +
@@ -1897,14 +1897,14 @@ button,input,textarea,select{font:inherit;color:inherit}
     listasVisiveis().forEach(function(l){ html += listaHtml(l); });
     if (estado.novaLista) {
       html += '<div class="caixa-lista">' +
-        '<input type="text" data-campo="nova-lista" placeholder="Título da lista" aria-label="Título da lista">' +
+        '<input type="text" data-campo="nova-lista" placeholder="Insira o título da lista" aria-label="Título da lista">' +
         '<div class="acoes-compor">' +
-          '<button type="button" class="btn" data-acao="salvar-lista">Criar lista</button>' +
+          '<button type="button" class="btn" data-acao="salvar-lista">Adicionar lista</button>' +
           '<button type="button" class="icone-botao" data-acao="cancelar-lista" aria-label="Cancelar">' + svg("x") + "</button>" +
         "</div></div>";
     } else {
       html += '<button type="button" class="add-lista" data-acao="nova-lista">' + svg("mais", 14) +
-        "Nova lista" + "</button>";
+        (estado.listas.size ? "Adicionar outra lista" : "Adicionar uma lista") + "</button>";
     }
     return html + "</div>";
   }
@@ -2014,15 +2014,15 @@ button,input,textarea,select{font:inherit;color:inherit}
       numeroHtml(ativos.length, "cartões", "") +
       numeroHtml(vencidos, "vencidos", vencidos ? "ruim" : "") +
       numeroHtml(logo, "vencem em 24h", logo ? "atencao" : "") +
-      numeroHtml(feitos, "entregues", feitos ? "bom" : "") +
+      numeroHtml(feitos, "concluídos", feitos ? "bom" : "") +
       numeroHtml(semPrazo, "sem data", "") +
       "</div></div>";
     html += '<div class="caixa-painel"><h3>Cartões por lista</h3>' + barrasHtml(porLista) + "</div>";
-    html += '<div class="caixa-painel"><h3>Cartões por responsável</h3>' + barrasHtml(porMembro) + "</div>";
-    html += '<div class="caixa-painel"><h3>Cartões por marcador</h3>' + barrasHtml(porEtiqueta) + "</div>";
+    html += '<div class="caixa-painel"><h3>Cartões por membro</h3>' + barrasHtml(porMembro) + "</div>";
+    html += '<div class="caixa-painel"><h3>Cartões por etiqueta</h3>' + barrasHtml(porEtiqueta) + "</div>";
     html += '<div class="caixa-painel"><h3>Entregas com data</h3>' +
       (entregas.length ? barrasHtml(entregas)
-        : '<p class="vazio-painel">Marque o prazo de um cartão como entregue para aparecer aqui.</p>') + "</div>";
+        : '<p class="vazio-painel">Marque o prazo de um cartão como concluído para aparecer aqui.</p>') + "</div>";
     return html + "</div></div>";
   }
   function numeroHtml(v, rot, tom){
@@ -2053,8 +2053,8 @@ button,input,textarea,select{font:inherit;color:inherit}
         mh += '<button type="button" class="av g" style="--cor:' + esc(m.cor) + '" data-acao="pop-membros" ' +
           'data-id="' + esc(c.id) + '" title="' + esc(m.nome) + '">' + esc(iniciais(m.nome)) + "</button>";
       });
-      mh += '<button type="button" class="add-quadrado" data-acao="pop-membros" data-id="' + esc(c.id) + '" aria-label="Adicionar responsável">' + svg("mais", 14) + "</button></div>";
-      fileiras += '<div style="margin-right:24px"><p class="mini-titulo">Responsáveis</p>' + mh + "</div>";
+      mh += '<button type="button" class="add-quadrado" data-acao="pop-membros" data-id="' + esc(c.id) + '" aria-label="Adicionar membro">' + svg("mais", 14) + "</button></div>";
+      fileiras += '<div style="margin-right:24px"><p class="mini-titulo">Membros</p>' + mh + "</div>";
     }
     if (c.etiquetas.length) {
       var eh = '<div class="fileira">';
@@ -2064,18 +2064,18 @@ button,input,textarea,select{font:inherit;color:inherit}
         eh += '<button type="button" class="et com-texto" style="--cor:' + hexEtiqueta(e.cor) + ';height:32px;display:inline-flex;align-items:center" ' +
           'data-acao="pop-etiquetas" data-id="' + esc(c.id) + '">' + esc(e.nome || " ") + "</button>";
       });
-      eh += '<button type="button" class="add-quadrado" data-acao="pop-etiquetas" data-id="' + esc(c.id) + '" aria-label="Adicionar marcador">' + svg("mais", 14) + "</button></div>";
-      fileiras += '<div style="margin-right:24px"><p class="mini-titulo">Marcadores</p>' + eh + "</div>";
+      eh += '<button type="button" class="add-quadrado" data-acao="pop-etiquetas" data-id="' + esc(c.id) + '" aria-label="Adicionar etiqueta">' + svg("mais", 14) + "</button></div>";
+      fileiras += '<div style="margin-right:24px"><p class="mini-titulo">Etiquetas</p>' + eh + "</div>";
     }
     if (c.inicio || c.prazo) {
       var e2 = estadoPrazo(c);
       var cls = e2 === "vencido" ? " vencido" : (e2 === "logo" ? " logo" : (e2 === "feito" ? " feito" : ""));
       var rotulo = rotuloPeriodo(c);
-      var sufixo = e2 === "vencido" ? " (vencido)" : (e2 === "feito" ? " (entregue)" : (e2 === "logo" ? " (vence logo)" : ""));
+      var sufixo = e2 === "vencido" ? " (vencido)" : (e2 === "feito" ? " (concluído)" : (e2 === "logo" ? " (vence logo)" : ""));
       fileiras += '<div><p class="mini-titulo">' + (c.prazo ? "Prazo" : "Início") + "</p>" +
         '<span class="chip-data' + cls + '">' +
         (c.prazo ? '<input type="checkbox" data-acao="alternar-prazo" data-id="' + esc(c.id) + '"' +
-          (c.prazoFeito ? " checked" : "") + ' aria-label="Marcar prazo como entregue">' : "") +
+          (c.prazoFeito ? " checked" : "") + ' aria-label="Marcar prazo como concluído">' : "") +
         '<button type="button" style="border:0;background:transparent;color:inherit;cursor:pointer;padding:0" ' +
         'data-acao="pop-datas" data-id="' + esc(c.id) + '">' + esc(rotulo + sufixo) + "</button></span></div>";
     }
@@ -2094,13 +2094,13 @@ button,input,textarea,select{font:inherit;color:inherit}
       "</div>";
     if (estado.editor === "descricao") {
       html += '<textarea class="editor" data-campo="descricao" data-id="' + esc(c.id) + '" ' +
-        'placeholder="Escreva os detalhes…">' + esc(c.descricao) + "</textarea>" +
+        'placeholder="Adicione uma descrição mais detalhada…">' + esc(c.descricao) + "</textarea>" +
         '<div class="acoes-editor"><button type="button" class="btn" data-acao="salvar-descricao" data-id="' + esc(c.id) + '">Salvar</button>' +
         '<button type="button" class="icone-botao" data-acao="cancelar-editor" aria-label="Cancelar">' + svg("x") + "</button></div>";
     } else if (c.descricao) {
       html += '<div class="desc-texto" data-acao="editar-descricao">' + esc(c.descricao) + "</div>";
     } else {
-      html += '<button type="button" class="desc-vazia" data-acao="editar-descricao">Escreva os detalhes…</button>';
+      html += '<button type="button" class="desc-vazia" data-acao="editar-descricao">Adicione uma descrição mais detalhada…</button>';
     }
     html += "</div>";
 
@@ -2110,7 +2110,7 @@ button,input,textarea,select{font:inherit;color:inherit}
       var pct = total ? Math.round(feitos / total * 100) : 0;
       html += '<div class="bloco checklist"><div class="bloco-cabeca"><span class="ic">' + svg("caixa") + "</span>" +
         (estado.editor === "nomecl:" + cl.id
-          ? '<textarea class="edita-nome" data-campo="nome-checklist" data-id="' + esc(c.id) + '" data-cl="' + esc(cl.id) + '" rows="1" aria-label="Nome da lista de subtarefas">' + esc(cl.nome) + "</textarea>"
+          ? '<textarea class="edita-nome" data-campo="nome-checklist" data-id="' + esc(c.id) + '" data-cl="' + esc(cl.id) + '" rows="1" aria-label="Nome do checklist">' + esc(cl.nome) + "</textarea>"
           : '<h3 style="cursor:pointer" data-acao="renomear-checklist" data-cl="' + esc(cl.id) + '">' + esc(cl.nome) + "</h3>") +
         '<button type="button" class="btn neutro" data-acao="excluir-checklist" data-id="' + esc(c.id) + '" data-cl="' + esc(cl.id) + '">Excluir</button></div>';
       html += '<div class="barra-check"><span class="pct">' + pct + '%</span>' +
@@ -2125,11 +2125,11 @@ button,input,textarea,select{font:inherit;color:inherit}
       });
       if (estado.editor === "item:" + cl.id) {
         html += '<textarea class="editor uma-linha" data-campo="novo-item" data-id="' + esc(c.id) + '" data-cl="' + esc(cl.id) + '" ' +
-          'placeholder="Nova subtarefa"></textarea>' +
+          'placeholder="Adicionar um item"></textarea>' +
           '<div class="acoes-editor"><button type="button" class="btn" data-acao="salvar-item" data-id="' + esc(c.id) + '" data-cl="' + esc(cl.id) + '">Adicionar</button>' +
           '<button type="button" class="icone-botao" data-acao="cancelar-editor" aria-label="Cancelar">' + svg("x") + "</button></div>";
       } else {
-        html += '<button type="button" class="btn neutro" style="margin:6px 0 0 30px" data-acao="novo-item" data-cl="' + esc(cl.id) + '">Nova subtarefa</button>';
+        html += '<button type="button" class="btn neutro" style="margin:6px 0 0 30px" data-acao="novo-item" data-cl="' + esc(cl.id) + '">Adicionar um item</button>';
       }
       html += "</div>";
     });
@@ -2156,13 +2156,13 @@ button,input,textarea,select{font:inherit;color:inherit}
 
     // coluna lateral
     html += '<div class="lado"><div class="grupo"><h4>Adicionar ao cartão</h4>' +
-      botaoLado("pop-membros", "pessoa", "Responsáveis", c.id) +
-      botaoLado("pop-etiquetas", "etiqueta", "Marcadores", c.id) +
-      botaoLado("nova-checklist", "caixa", "Subtarefas", c.id) +
-      botaoLado("pop-datas", "relogio", "Prazos", c.id) +
+      botaoLado("pop-membros", "pessoa", "Membros", c.id) +
+      botaoLado("pop-etiquetas", "etiqueta", "Etiquetas", c.id) +
+      botaoLado("nova-checklist", "caixa", "Checklist", c.id) +
+      botaoLado("pop-datas", "relogio", "Datas", c.id) +
       "</div><div class='grupo'><h4>Ações</h4>" +
       botaoLado("pop-mover", "mover", "Mover", c.id) +
-      botaoLado("copiar-cartao", "descricao", "Duplicar", c.id) +
+      botaoLado("copiar-cartao", "descricao", "Copiar", c.id) +
       (c.arquivado
         ? botaoLado("desarquivar", "arquivo", "Enviar para o quadro", c.id) +
           botaoLado("excluir-cartao", "x", "Excluir", c.id)
@@ -2197,7 +2197,7 @@ button,input,textarea,select{font:inherit;color:inherit}
     }).join("");
 
     var n = contarFiltros();
-    document.getElementById("rotuloFiltro").textContent = n ? "Filtrar · " + n : "Filtrar";
+    document.getElementById("rotuloFiltro").textContent = n ? "Filtro · " + n : "Filtro";
     document.getElementById("btFiltro").classList.toggle("ativo", n > 0);
 
     Array.prototype.forEach.call(document.querySelectorAll("#vistas button"), function(b){
@@ -2310,13 +2310,13 @@ button,input,textarea,select{font:inherit;color:inherit}
         'data-acao="toggle-etiqueta" data-id="' + esc(c.id) + '" data-et="' + esc(e.id) + '">' +
         esc(e.nome || "") + (tem ? '<span class="ok">✓</span>' : "") + "</button>" +
         '<button type="button" class="icone-botao" data-acao="editar-etiqueta" data-et="' + esc(e.id) + '" ' +
-        'data-id="' + esc(c.id) + '" aria-label="Editar marcador">' + svg("lapis") + "</button></div>";
+        'data-id="' + esc(c.id) + '" aria-label="Editar etiqueta">' + svg("lapis") + "</button></div>";
     });
     html += "</div>" +
-      '<button type="button" class="btn neutro" style="width:100%;margin-top:6px" data-acao="nova-etiqueta" data-id="' + esc(c.id) + '">Novo marcador</button>' +
+      '<button type="button" class="btn neutro" style="width:100%;margin-top:6px" data-acao="nova-etiqueta" data-id="' + esc(c.id) + '">Criar nova etiqueta</button>' +
       '<button type="button" class="btn fantasma" style="width:100%;margin-top:6px" data-acao="alternar-texto-etiqueta">' +
       (estado.prefs.textoEtiqueta ? "Ocultar nomes nos cartões" : "Mostrar nomes nos cartões") + "</button>";
-    abrirPop(ancora, "Marcadores", html);
+    abrirPop(ancora, "Etiquetas", html);
   }
 
   function popEditarEtiqueta(ancora, idEt, idCartao){
@@ -2337,7 +2337,7 @@ button,input,textarea,select{font:inherit;color:inherit}
       (novo ? "" : '<button type="button" class="btn perigo" data-acao="apagar-etiqueta" data-et="' + esc(e.id) + '">Excluir</button>') +
       "</div>";
     estado.etiquetaEditando = e;
-    abrirPop(ancora, novo ? "Criar marcador" : "Editar marcador", html, function(pop){
+    abrirPop(ancora, novo ? "Criar etiqueta" : "Editar etiqueta", html, function(pop){
       var i = pop.querySelector("#nomeEt");
       if (i) i.focus();
     });
@@ -2355,7 +2355,7 @@ button,input,textarea,select{font:inherit;color:inherit}
       '<label class="campo" for="novoMembro">Adicionar pessoa</label>' +
       '<div style="display:flex;gap:6px"><input type="text" id="novoMembro" placeholder="Nome" maxlength="40">' +
       '<button type="button" class="btn" data-acao="criar-membro" data-id="' + esc(c.id) + '">+</button></div>';
-    abrirPop(ancora, "Responsáveis", html);
+    abrirPop(ancora, "Membros", html);
   }
 
   function popMembrosQuadro(ancora){
@@ -2369,7 +2369,7 @@ button,input,textarea,select{font:inherit;color:inherit}
       '<label class="campo" for="novoMembro">Adicionar pessoa ao quadro</label>' +
       '<div style="display:flex;gap:6px"><input type="text" id="novoMembro" placeholder="Nome" maxlength="40">' +
       '<button type="button" class="btn" data-acao="criar-membro">+</button></div>';
-    abrirPop(ancora, "Responsáveis do quadro", html);
+    abrirPop(ancora, "Membros do quadro", html);
   }
 
   function popDatas(ancora, c){
@@ -2387,7 +2387,7 @@ button,input,textarea,select{font:inherit;color:inherit}
       '<p class="aviso-pop">Ao marcar o prazo como concluído, um cartão repetido nasce de novo na primeira lista, com a data seguinte.</p>' +
       '<div class="acoes-editor"><button type="button" class="btn" data-acao="salvar-datas" data-id="' + esc(c.id) + '">Salvar</button>' +
       '<button type="button" class="btn neutro" data-acao="limpar-datas" data-id="' + esc(c.id) + '">Remover</button></div>';
-    abrirPop(ancora, "Prazos", html);
+    abrirPop(ancora, "Datas", html);
   }
 
   function popMover(ancora, c){
@@ -2402,7 +2402,7 @@ button,input,textarea,select{font:inherit;color:inherit}
 
   function popMenuLista(ancora, l){
     var html = '<ul class="lista-pop">' +
-      itemPop("add-topo", "Novo cartão no topo", l.id) +
+      itemPop("add-topo", "Adicionar cartão", l.id) +
       itemPop("ordenar-data", "Ordenar por prazo", l.id) +
       itemPop("ordenar-nome", "Ordenar por título", l.id) +
       itemPop("arquivar-cartoes", "Arquivar todos os cartões", l.id) +
@@ -2418,16 +2418,16 @@ button,input,textarea,select{font:inherit;color:inherit}
     var f = estado.filtro;
     var html = '<label class="campo" for="fTexto">Palavra-chave</label>' +
       '<input type="text" id="fTexto" value="' + esc(f.texto) + '" placeholder="Título ou descrição">' +
-      '<label class="campo">Responsáveis</label><ul class="lista-pop">' +
+      '<label class="campo">Membros</label><ul class="lista-pop">' +
       '<li><button type="button" class="item-pop" data-acao="f-sem-membro">' +
-      '<span class="av" style="--cor:#8590A2">—</span><span>Sem responsável</span>' + (f.semMembro ? '<span class="marca">✓</span>' : "") + "</button></li>";
+      '<span class="av" style="--cor:#8590A2">—</span><span>Sem membros</span>' + (f.semMembro ? '<span class="marca">✓</span>' : "") + "</button></li>";
     estado.membros.forEach(function(m){
       html += '<li><button type="button" class="item-pop" data-acao="filtrar-membro" data-id="' + esc(m.id) + '">' +
         '<span class="av" style="--cor:' + esc(m.cor) + '">' + esc(iniciais(m.nome)) + "</span><span>" + esc(m.nome) + "</span>" +
         (f.membros.indexOf(m.id) >= 0 ? '<span class="marca">✓</span>' : "") + "</button></li>";
     });
-    html += "</ul><label class='campo'>Marcadores</label><ul class='lista-pop'>" +
-      '<li><button type="button" class="item-pop" data-acao="f-sem-etiqueta"><span>Sem marcador</span>' +
+    html += "</ul><label class='campo'>Etiquetas</label><ul class='lista-pop'>" +
+      '<li><button type="button" class="item-pop" data-acao="f-sem-etiqueta"><span>Sem etiquetas</span>' +
       (f.semEtiqueta ? '<span class="marca">✓</span>' : "") + "</button></li>";
     estado.etiquetas.forEach(function(e){
       html += '<li><button type="button" class="item-pop" data-acao="filtrar-etiqueta" data-et="' + esc(e.id) + '">' +
@@ -2435,14 +2435,14 @@ button,input,textarea,select{font:inherit;color:inherit}
         (f.etiquetas.indexOf(e.id) >= 0 ? '<span class="marca">✓</span>' : "") + "</button></li>";
     });
     html += "</ul><label class='campo'>Prazo</label><ul class='lista-pop'>";
-    [["", "Qualquer"], ["vencido", "Vencido"], ["semana", "Vence em 7 dias"], ["sem", "Sem data"], ["feito", "Já entregue"]]
+    [["", "Qualquer"], ["vencido", "Vencido"], ["semana", "Vence em 7 dias"], ["sem", "Sem data"], ["feito", "Prazo concluído"]]
       .forEach(function(p){
         html += '<li><button type="button" class="item-pop" data-acao="filtrar-prazo" data-p="' + p[0] + '"><span>' + p[1] + "</span>" +
           (f.prazo === p[0] ? '<span class="marca">✓</span>' : "") + "</button></li>";
       });
     html += "</ul>" +
       '<button type="button" class="btn neutro" style="width:100%;margin-top:8px" data-acao="limpar-filtro">Limpar filtro</button>';
-    abrirPop(ancora, "Filtrar cartões", html);
+    abrirPop(ancora, "Filtrar", html);
   }
 
   /* ======================= gaveta ======================= */
@@ -2454,7 +2454,7 @@ button,input,textarea,select{font:inherit;color:inherit}
     var listasArq = [];
     estado.listas.forEach(function(l){ if (l.arquivada) listasArq.push(l); });
 
-    var html = '<h2>Opções do quadro<button type="button" data-acao="fechar-gaveta" aria-label="Fechar">✕</button></h2>';
+    var html = '<h2>Menu do quadro<button type="button" data-acao="fechar-gaveta" aria-label="Fechar">✕</button></h2>';
 
     html += "<h3>Plano de fundo</h3><div class='cores-fundo'>";
     FUNDOS.forEach(function(f){
@@ -2470,7 +2470,7 @@ button,input,textarea,select{font:inherit;color:inherit}
         return '<button type="button" class="btn ' + (estado.prefs.tema === t ? "" : "neutro") + '" data-acao="tema" data-t="' + t + '">' + rot + "</button>";
       }).join("") + "</div>";
 
-    html += "<h3>Arquivados</h3>";
+    html += "<h3>Arquivo</h3>";
     if (!arquivados.length && !listasArq.length) {
       html += '<p style="font-size:13px;color:var(--tinta-fraca)">Nada arquivado.</p>';
     } else {
@@ -2529,7 +2529,7 @@ button,input,textarea,select{font:inherit;color:inherit}
       repete: r.repete,
       etiquetas: r.etiquetas.slice(),
       membros: r.membros.slice(),
-      checklists: itens.length ? [{ id: novoId(), nome: "Subtarefas",
+      checklists: itens.length ? [{ id: novoId(), nome: "Checklist",
         itens: itens.map(function(t){ return { id: novoId(), texto: t, feito: false }; }) }] : [],
       criadoEm: agora()
     });
@@ -2552,7 +2552,7 @@ button,input,textarea,select{font:inherit;color:inherit}
   function alternarPrazo(c){
     c.prazoFeito = !c.prazoFeito;
     c.feitoEm = c.prazoFeito ? agora() : "";
-    anotar(c, c.prazoFeito ? "marcou o prazo como entregue" : "reabriu o prazo");
+    anotar(c, c.prazoFeito ? "marcou o prazo como concluído" : "reabriu o prazo");
     if (c.prazoFeito && c.repete) nascerDeNovo(c);
     gravarCartao(c);
   }
@@ -2612,7 +2612,7 @@ button,input,textarea,select{font:inherit;color:inherit}
           return { id: novoId(), texto: i.texto, feito: i.feito }; }) };
       })
     }));
-    anotar(novo, "duplicado de " + (c.titulo || "outro cartão"));
+    anotar(novo, "copiado de " + (c.titulo || "outro cartão"));
     gravarCartao(novo);
     estado.cartaoAberto = novo.id;
     desenhar();
@@ -3026,7 +3026,7 @@ button,input,textarea,select{font:inherit;color:inherit}
         c.inicio = juntar(di ? di.value : "", hi ? hi.value : "");
         c.prazo = juntar(df ? df.value : "", hf ? hf.value : "");
         c.repete = rep && REPETICOES[rep.value] ? rep.value : "";
-        anotar(c, "mudou os prazos");
+        anotar(c, "mudou as datas");
         gravarCartao(c);
         fecharPop();
         break;
@@ -3034,7 +3034,7 @@ button,input,textarea,select{font:inherit;color:inherit}
       case "limpar-datas":
         if (!c) break;
         c.inicio = ""; c.prazo = ""; c.prazoFeito = false; c.feitoEm = ""; c.repete = "";
-        anotar(c, "removeu os prazos");
+        anotar(c, "removeu as datas");
         gravarCartao(c);
         fecharPop();
         break;
@@ -3063,8 +3063,8 @@ button,input,textarea,select{font:inherit;color:inherit}
 
       case "nova-checklist": {
         if (!c) break;
-        c.checklists.push({ id: novoId(), nome: "Subtarefas", itens: [] });
-        anotar(c, "adicionou subtarefas");
+        c.checklists.push({ id: novoId(), nome: "Checklist", itens: [] });
+        anotar(c, "adicionou um checklist");
         gravarCartao(c);
         break;
       }
