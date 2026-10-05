@@ -174,12 +174,12 @@ async function slideGanhos(bg) {
     {
       icon: Fi.FiActivity, tag: "HORA A HORA", gain: "Tempo real",
       text: "Acompanhamento contra a meta do dia: aponta onde o ritmo cai e em qual carteira, a tempo de reagir.",
-      status: "N4 concluído  ·  N5 em desenvolvimento",
+      status: "N4 concluído (14/15)  ·  N5 em curso",
     },
     {
       icon: Fi.FiBarChart2, tag: "DASHBOARD D-1", gain: "Um só número",
       text: "Dia anterior fechado com N4 e N5 na mesma régua: comparação direta entre carteiras, sem planilha paralela.",
-      status: "27 métricas mapeadas  ·  8 concluídas",
+      status: "33 métricas mapeadas  ·  16 concluídas",
     },
     {
       icon: Fi.FiTarget, tag: "METAS E COMPARATIVOS", gain: "Atingimento",
@@ -252,165 +252,145 @@ async function slideGanhos(bg) {
   s.addNotes(
     "Mensagem central: o Willyan assume o processo, o tratamento dos dados e a construção das visões. A operação recebe a leitura pronta e decide. " +
       "Hora a Hora: acompanhamento intradiário contra a meta do dia — dá para ver onde o ritmo cai, em qual carteira, e reagir no mesmo turno. Já concluído na N4; N5 em desenvolvimento. " +
-      "Dashboard D-1: dia anterior fechado com N4 e N5 na mesma régua. São 27 métricas mapeadas nos três dashboards, 8 já concluídas. " +
+      "Dashboard D-1: dia anterior fechado com N4 e N5 na mesma régua. São 33 métricas mapeadas nos três dashboards, 16 já concluídas. " +
       "Metas e comparativos: com a meta dentro do relatório, ganhamos visão mês a mês e atingimento contra o mês corrente. " +
       "Por trás das visões, o Will atua no desenvolvimento dos processos, na automação de relatórios e rotinas, na identificação de oportunidades e nos estudos que levam análise para as reuniões."
   );
 }
 
-/* ====================================== SLIDE 2 — PMO DOS DASHBOARDS */
-async function slideDashboards(bg) {
+/* ======================================= SLIDE 2 — DASHBOARDS N5 */
+async function slideDashN5(bg) {
   const s = pres.addSlide();
   s.background = { color: NAVY };
   s.addImage({ data: bg, x: 0, y: 0, w: 13.33, h: 7.5 });
 
   header(
     s,
-    "PMO   ·   MAPEAMENTO DOS DASHBOARDS",
-    "Métricas por carteira",
-    "27 métricas mapeadas nos três dashboards — 8 concluídas e 19 em andamento."
+    "PMO   ·   DASHBOARDS N5",
+    "Métricas das carteiras N5",
+    "18 métricas mapeadas entre Onboarding e Pró-Ativos — 2 concluídas e 16 em andamento."
   );
-  progressPanel(s, 8, 27, "MÉTRICAS");
+  progressPanel(s, 2, 18, "MÉTRICAS N5");
 
   const dashes = [
     {
-      nome: "N5 ONBOARDING", per: "Periodicidade a definir", done: 0,
+      nome: "N5 ONBOARDING", per: "Periodicidade a definir", done: 0, total: 9,
       grupos: [
         ["QUANTITATIVO", [
-          ["P.A", "Cliente", false, "10/10"],
-          ["Clientes trabalhados", "Deyvid", false, "10/10"],
-          ["Clientes finalizados", "Deyvid", false, "10/10"],
-          ["SLA", "Deyvid", false, "10/10"],
+          ["P.A", "CRM", "Cliente", false, "10/10"],
+          ["Clientes trabalhados", "CRM", "Deyvid", false, "10/10"],
+          ["Clientes finalizados", "CRM", "Deyvid", false, "10/10"],
+          ["SLA", "CRM", "Deyvid", false, "10/10"],
         ]],
         ["TEMPOS", [
-          ["Tempo logado", "Willyan", false, "05/10"],
-          ["Tempo pausas", "Willyan", false, "05/10"],
+          ["Tempo logado", "Pmóvel", "Willyan", false, "05/10"],
+          ["Tempo pausas", "Pmóvel", "Willyan", false, "05/10"],
         ]],
         ["ANÁLISES %", [
-          ["Clientes / PA", "Willyan", false, "10/10"],
-          ["Finalizados / PA", "Willyan", false, "10/10"],
-          ["Reagendados", "Willyan", false, "10/10"],
+          ["Clientes / PA", "Dashboard", "Willyan", false, "10/10"],
+          ["Finalizados / PA", "Dashboard", "Willyan", false, "10/10"],
+          ["Reagendados", "Dashboard", "Willyan", false, "10/10"],
         ]],
       ],
     },
     {
-      nome: "N5 PRÓ-ATIVOS", per: "Periodicidade a definir", done: 2,
+      nome: "N5 PRÓ-ATIVOS", per: "Periodicidade a definir", done: 2, total: 9,
       grupos: [
         ["QUANTITATIVO", [
-          ["P.A", "Cliente", false, "05/10"],
-          ["Clientes trabalhados", "Andressa", true, "08/10"],
-          ["Clientes finalizados", "Andressa", true, "08/10"],
-          ["SLA", "Andressa", false, "08/10"],
+          ["P.A", "CRM", "Cliente", false, "05/10"],
+          ["Clientes trabalhados", "CRM", "Andressa", true, "08/10"],
+          ["Clientes finalizados", "CRM", "Andressa", true, "08/10"],
+          ["SLA", "CRM", "Andressa", false, "08/10"],
         ]],
         ["TEMPOS", [
-          ["Tempo logado", "Willyan", false, "05/10"],
-          ["Tempo pausas", "Willyan", false, "05/10"],
+          ["Tempo logado", "Pmóvel", "Willyan", false, "05/10"],
+          ["Tempo pausas", "Pmóvel", "Willyan", false, "05/10"],
         ]],
         ["ANÁLISES %", [
-          ["Clientes / PA", "Willyan", false, "08/10"],
-          ["Finalizados / PA", "Willyan", false, "08/10"],
-          ["Reagendados", "Willyan", false, "08/10"],
-        ]],
-      ],
-    },
-    {
-      nome: "N4", per: "Diária (D-1)", done: 6,
-      grupos: [
-        ["QUANTITATIVO", [
-          ["P.A", "Cliente", false, "05/10"],
-          ["Clientes trabalhados", "Deyvid", true, "08/10"],
-          ["Clientes finalizados", "Deyvid", true, "08/10"],
-          ["SLA", "Deyvid", true, "08/10"],
-        ]],
-        ["TEMPOS", [
-          ["Tempo logado", "Willyan", false, "05/10"],
-          ["Tempo pausas", "Willyan", false, "05/10"],
-        ]],
-        ["ANÁLISES %", [
-          ["Clientes / PA", "Willyan", true, "08/10"],
-          ["Finalizados / PA", "Willyan", true, "08/10"],
-          ["Reagendados", "Willyan", true, "08/10"],
+          ["Clientes / PA", "Dashboard", "Willyan", false, "08/10"],
+          ["Finalizados / PA", "Dashboard", "Willyan", false, "08/10"],
+          ["Reagendados", "Dashboard", "Willyan", false, "08/10"],
         ]],
       ],
     },
   ];
 
-  const CY = 2.08, CH = 4.1, CGAP = 0.3;
-  const CW = (W - 2 * CGAP) / 3;
+  const CY = 2.08, CH = 4.18, CGAP = 0.35;
+  const CW = (W - CGAP) / 2;
 
   dashes.forEach((d, i) => {
     const x = M + i * (CW + CGAP);
-    panel(s, x, CY, CW, CH, d.done === 6);
+    panel(s, x, CY, CW, CH, false);
 
     s.addText(d.nome, {
-      x: x + 0.3, y: CY + 0.26, w: CW - 1.3, h: 0.3, isTextBox: true, margin: 0, valign: "middle",
-      fontFace: B, fontSize: 13, bold: true, color: WHITE, charSpacing: 0.8,
+      x: x + 0.34, y: CY + 0.26, w: CW - 1.4, h: 0.3, isTextBox: true, margin: 0, valign: "middle",
+      fontFace: B, fontSize: 14, bold: true, color: WHITE, charSpacing: 0.8,
     });
-    s.addText(`${d.done}/9`, {
-      x: x + CW - 1.0, y: CY + 0.26, w: 0.7, h: 0.3, isTextBox: true, margin: 0, align: "right", valign: "middle",
-      fontFace: H, fontSize: 14, bold: true, color: AMBER,
+    s.addText(`${d.done}/${d.total}`, {
+      x: x + CW - 1.04, y: CY + 0.26, w: 0.7, h: 0.3, isTextBox: true, margin: 0, align: "right", valign: "middle",
+      fontFace: H, fontSize: 15, bold: true, color: AMBER,
     });
     s.addText(d.per, {
-      x: x + 0.3, y: CY + 0.56, w: CW - 0.6, h: 0.22, isTextBox: true, margin: 0, valign: "top",
-      fontFace: B, fontSize: 9, color: MUTED,
+      x: x + 0.34, y: CY + 0.58, w: CW - 0.68, h: 0.22, isTextBox: true, margin: 0, valign: "top",
+      fontFace: B, fontSize: 9.5, color: MUTED,
     });
-
-    // barra de progresso do card
-    const bw = CW - 0.6;
+    const bw = CW - 0.68;
     s.addShape(pres.ShapeType.roundRect, {
-      x: x + 0.3, y: CY + 0.82, w: bw, h: 0.08, rectRadius: 0.04,
+      x: x + 0.34, y: CY + 0.86, w: bw, h: 0.08, rectRadius: 0.04,
       fill: { color: WHITE, transparency: 80 }, line: { color: WHITE, width: 0.5, transparency: 72 },
     });
     if (d.done > 0) {
       s.addShape(pres.ShapeType.roundRect, {
-        x: x + 0.3, y: CY + 0.82, w: bw * (d.done / 9), h: 0.08, rectRadius: 0.04, fill: { color: AMBER },
+        x: x + 0.34, y: CY + 0.86, w: bw * (d.done / d.total), h: 0.08, rectRadius: 0.04, fill: { color: AMBER },
       });
     }
 
+    const ox = x + CW - 2.72;  // origem
+    const fx = x + CW - 1.72;  // focal
+    const px = x + CW - 0.82;  // prazo
     let gy = CY + 1.06;
-    const fx = x + CW - 1.52;   // focal
-    const px = x + CW - 0.74;   // prazo
 
     d.grupos.forEach(([titulo, itens], gi) => {
       s.addText(titulo, {
-        x: x + 0.3, y: gy, w: CW - 1.7, h: 0.22, isTextBox: true, margin: 0, valign: "middle",
-        fontFace: B, fontSize: 8, bold: true, color: AMBER, charSpacing: 1.3,
+        x: x + 0.34, y: gy, w: CW - 2.9, h: 0.22, isTextBox: true, margin: 0, valign: "middle",
+        fontFace: B, fontSize: 8.5, bold: true, color: AMBER, charSpacing: 1.3,
       });
       if (gi === 0) {
-        s.addText("FOCAL", {
-          x: fx, y: gy, w: 0.7, h: 0.22, isTextBox: true, margin: 0, align: "right", valign: "middle",
-          fontFace: B, fontSize: 7, bold: true, color: MUTED, charSpacing: 0.8,
-        });
-        s.addText("PRAZO", {
-          x: px, y: gy, w: 0.44, h: 0.22, isTextBox: true, margin: 0, align: "right", valign: "middle",
-          fontFace: B, fontSize: 7, bold: true, color: MUTED, charSpacing: 0.8,
+        [["ORIGEM", ox, 0.92], ["FOCAL", fx, 0.82], ["PRAZO", px, 0.48]].forEach(([t, cx2, cw2]) => {
+          s.addText(t, {
+            x: cx2, y: gy, w: cw2, h: 0.22, isTextBox: true, margin: 0, align: "right", valign: "middle",
+            fontFace: B, fontSize: 7, bold: true, color: MUTED, charSpacing: 0.8,
+          });
         });
       }
       gy += 0.24;
-      itens.forEach(([nome, focal, ok, prazo]) => {
+      itens.forEach(([nome, origem, focal, ok, prazo]) => {
         s.addShape(pres.ShapeType.ellipse, {
-          x: x + 0.32, y: gy + 0.06, w: 0.11, h: 0.11,
+          x: x + 0.36, y: gy + 0.06, w: 0.12, h: 0.12,
           fill: ok ? { color: AMBER } : { color: AMBER, transparency: 65 },
         });
         s.addText(nome, {
-          x: x + 0.52, y: gy, w: CW - 2.1, h: 0.22, isTextBox: true, margin: 0, valign: "middle",
-          fontFace: B, fontSize: 10, color: ok ? WHITE : ICE,
+          x: x + 0.58, y: gy, w: CW - 3.4, h: 0.23, isTextBox: true, margin: 0, valign: "middle",
+          fontFace: B, fontSize: 10.5, color: ok ? WHITE : ICE,
+        });
+        s.addText(origem, {
+          x: ox, y: gy, w: 0.92, h: 0.23, isTextBox: true, margin: 0, align: "right", valign: "middle",
+          fontFace: B, fontSize: 9, color: MUTED,
         });
         s.addText(focal, {
-          x: fx, y: gy, w: 0.7, h: 0.22, isTextBox: true, margin: 0, align: "right", valign: "middle",
-          fontFace: B, fontSize: 8.5, color: MUTED,
+          x: fx, y: gy, w: 0.82, h: 0.23, isTextBox: true, margin: 0, align: "right", valign: "middle",
+          fontFace: B, fontSize: 9, color: MUTED,
         });
         s.addText(prazo, {
-          x: px, y: gy, w: 0.44, h: 0.22, isTextBox: true, margin: 0, align: "right", valign: "middle",
-          fontFace: B, fontSize: 9, bold: !ok, color: ok ? MUTED : AMBER,
+          x: px, y: gy, w: 0.48, h: 0.23, isTextBox: true, margin: 0, align: "right", valign: "middle",
+          fontFace: B, fontSize: 9.5, bold: !ok, color: ok ? MUTED : AMBER,
         });
-        gy += 0.22;
+        gy += 0.23;
       });
       gy += 0.04;
     });
   });
 
-  // rodapé
   const FY = 6.42;
   s.addShape(pres.ShapeType.roundRect, {
     x: M, y: FY, w: W, h: 0.6, rectRadius: 0.09,
@@ -418,19 +398,137 @@ async function slideDashboards(bg) {
   });
   s.addText(
     [
-      { text: "ORIGEM DOS DADOS   ", options: { bold: true, color: AMBER, fontSize: 9, charSpacing: 1.3 } },
-      { text: "CRM  ·  Pmóvel  ·  Planilha do supervisor  ·  Dashboard", options: { color: ICE, fontSize: 11 } },
-      { text: "          PRAZO EM ÂMBAR   ", options: { bold: true, color: AMBER, fontSize: 9, charSpacing: 1.3 } },
+      { text: "PRAZO EM ÂMBAR   ", options: { bold: true, color: AMBER, fontSize: 9, charSpacing: 1.3 } },
       { text: "métrica ainda em andamento", options: { color: ICE, fontSize: 11 } },
+      { text: "          PERIODICIDADE   ", options: { bold: true, color: AMBER, fontSize: 9, charSpacing: 1.3 } },
+      { text: "a definir nas duas carteiras N5", options: { color: ICE, fontSize: 11 } },
     ],
     { x: M + 0.4, y: FY, w: W - 0.8, h: 0.6, isTextBox: true, margin: 0, valign: "middle", fontFace: B }
   );
 
   s.addNotes(
-    "PMO dos dashboards: 27 métricas mapeadas entre N5 Onboarding, N5 Pró-Ativos e N4, divididas em quantitativo, tempos e análises percentuais. " +
-      "O N4 está mais maduro, com 6 de 9 métricas concluídas e periodicidade diária D-1 já definida. O N5 Pró-Ativos tem 2 de 9 e o N5 Onboarding ainda não tem métrica concluída. " +
-      "Os tempos (logado e pausas) vêm do Pmóvel e estão com o Willyan nas três carteiras, com prazo em 05/10. " +
-      "O P.A depende do cliente nas três carteiras. Os prazos restantes se concentram em 08 e 10/10."
+    "Dashboards das carteiras N5: 18 métricas no total, divididas em quantitativo, tempos e análises percentuais. " +
+      "O Pró-Ativos tem 2 de 9 concluídas (clientes trabalhados e finalizados, com a Andressa). O Onboarding ainda não tem métrica concluída. " +
+      "Os tempos vêm do Pmóvel e estão com o Willyan nas duas carteiras, com prazo em 05/10. O P.A depende do cliente. " +
+      "A periodicidade das duas ainda precisa ser definida."
+  );
+}
+
+/* ==================================== SLIDE 3 — HORA A HORA N4 */
+async function slideHoraHoraN4(bg) {
+  const s = pres.addSlide();
+  s.background = { color: NAVY };
+  s.addImage({ data: bg, x: 0, y: 0, w: 13.33, h: 7.5 });
+
+  header(
+    s,
+    "PMO   ·   HORA A HORA  ·  N4",
+    "A visão mais madura",
+    "15 métricas mapeadas e atualização 4x ao dia — 14 concluídas, só o P.A em aberto."
+  );
+  progressPanel(s, 14, 15, "MÉTRICAS N4");
+
+  const QW = 6.0;
+  const RX = M + QW + 0.35;
+  const RW = W - QW - 0.35;
+
+  const grupos = [
+    {
+      titulo: "QUANTITATIVO", x: M, y: 2.08, w: QW, h: 3.72,
+      itens: [
+        ["P.A", "Cliente", false, "05/10"],
+        ["Clientes trabalhados", "Lucas", true, "08/10"],
+        ["Clientes finalizados", "Lucas", true, "08/10"],
+        ["SLA", "Lucas", true, "08/10"],
+        ["Visão por tabulação", "Lucas", true, "05/10"],
+        ["Clientes fechados HxH", "Lucas", true, "05/10"],
+        ["Fechados por célula", "Lucas", true, "05/10"],
+        ["Clientes por status", "Lucas", true, "05/10"],
+        ["Semana e mês", "Lucas", true, "05/10"],
+      ],
+    },
+    {
+      titulo: "TEMPOS", x: RX, y: 2.08, w: RW, h: 1.78,
+      itens: [
+        ["Tempo logado", "Willyan", true, "05/10"],
+        ["Tempo pausas", "Willyan", true, "05/10"],
+        ["TMA por tabulação", "Lucas", true, "05/10"],
+      ],
+    },
+    {
+      titulo: "ANÁLISES %", x: RX, y: 4.02, w: RW, h: 1.78,
+      itens: [
+        ["Clientes / PA", "Willyan", true, "08/10"],
+        ["Finalizados / PA", "Willyan", true, "08/10"],
+        ["Reagendados", "Willyan", true, "08/10"],
+      ],
+    },
+  ];
+
+  grupos.forEach((g) => {
+    panel(s, g.x, g.y, g.w, g.h, false);
+    s.addText(g.titulo, {
+      x: g.x + 0.32, y: g.y + 0.24, w: g.w - 1.5, h: 0.26, isTextBox: true, margin: 0, valign: "middle",
+      fontFace: B, fontSize: 9.5, bold: true, color: AMBER, charSpacing: 1.4,
+    });
+    s.addText(`${g.itens.filter((i) => i[2]).length}/${g.itens.length}`, {
+      x: g.x + g.w - 1.0, y: g.y + 0.24, w: 0.68, h: 0.26, isTextBox: true, margin: 0, align: "right", valign: "middle",
+      fontFace: H, fontSize: 13, bold: true, color: AMBER,
+    });
+
+    const fx = g.x + g.w - 1.64;
+    const px = g.x + g.w - 0.8;
+    s.addText("FOCAL", {
+      x: fx, y: g.y + 0.56, w: 0.78, h: 0.22, isTextBox: true, margin: 0, align: "right", valign: "middle",
+      fontFace: B, fontSize: 7, bold: true, color: MUTED, charSpacing: 0.8,
+    });
+    s.addText("PRAZO", {
+      x: px, y: g.y + 0.56, w: 0.48, h: 0.22, isTextBox: true, margin: 0, align: "right", valign: "middle",
+      fontFace: B, fontSize: 7, bold: true, color: MUTED, charSpacing: 0.8,
+    });
+
+    let gy = g.y + 0.82;
+    g.itens.forEach(([nome, focal, ok, prazo]) => {
+      s.addShape(pres.ShapeType.ellipse, {
+        x: g.x + 0.34, y: gy + 0.08, w: 0.12, h: 0.12,
+        fill: ok ? { color: AMBER } : { color: AMBER, transparency: 65 },
+      });
+      s.addText(nome, {
+        x: g.x + 0.56, y: gy, w: g.w - 2.3, h: 0.27, isTextBox: true, margin: 0, valign: "middle",
+        fontFace: B, fontSize: 10.5, color: ok ? WHITE : ICE,
+      });
+      s.addText(focal, {
+        x: fx, y: gy, w: 0.78, h: 0.27, isTextBox: true, margin: 0, align: "right", valign: "middle",
+        fontFace: B, fontSize: 9, color: MUTED,
+      });
+      s.addText(prazo, {
+        x: px, y: gy, w: 0.48, h: 0.27, isTextBox: true, margin: 0, align: "right", valign: "middle",
+        fontFace: B, fontSize: 9.5, bold: !ok, color: ok ? MUTED : AMBER,
+      });
+      gy += 0.27;
+    });
+  });
+
+  const FY = 5.96;
+  s.addShape(pres.ShapeType.roundRect, {
+    x: M, y: FY, w: W, h: 1.08, rectRadius: 0.1,
+    fill: { color: AMBER, transparency: 88 }, line: { color: AMBER, width: 1.6 },
+  });
+  s.addShape(pres.ShapeType.ellipse, { x: M + 0.42, y: FY + 0.4, w: 0.3, h: 0.3, fill: { color: AMBER } });
+  s.addImage({ data: await iconData(Fi.FiClock, NAVY), x: M + 0.49, y: FY + 0.47, w: 0.16, h: 0.16 });
+  s.addText(
+    [
+      { text: "Atualização 4x ao dia, com 14 das 15 métricas prontas.  ", options: { bold: true, color: WHITE } },
+      { text: "É a carteira que já opera no modelo completo: volumetria por hora e por célula, status, tabulação, TMA e corte por semana e mês. O único item aberto é o P.A, que depende do cliente.", options: { color: ICE } },
+    ],
+    { x: M + 0.86, y: FY, w: W - 1.3, h: 1.08, isTextBox: true, margin: 0, valign: "middle", fontFace: B, fontSize: 11.5 }
+  );
+
+  s.addNotes(
+    "Hora a Hora da N4: 15 métricas mapeadas, 14 concluídas, com atualização quatro vezes ao dia. " +
+      "O quantitativo cobre clientes trabalhados e finalizados, SLA, visão por tabulação, clientes fechados por hora e por célula, distribuição por status e corte por semana e mês. " +
+      "Os tempos trazem logado, pausas e TMA por tabulação. As análises percentuais trazem clientes por PA, finalizados por PA e reagendados. " +
+      "O único item em aberto é o P.A, que depende do cliente, com prazo em 05/10. Esta é a referência de maturidade para levar às carteiras N5."
   );
 }
 
@@ -444,9 +542,9 @@ async function slideProcessos(bg) {
     s,
     "PMO   ·   PROCESSOS RECORRENTES",
     "Quem opera cada rotina",
-    "4 rotinas em 3 carteiras — 4 concluídas, 4 em andamento e 4 pendentes de acesso externo."
+    "5 rotinas em 3 carteiras — 3 concluídas, 7 em andamento e 5 pendentes de acesso externo."
   );
-  progressPanel(s, 4, 12, "ROTINAS");
+  progressPanel(s, 3, 15, "ROTINAS");
 
   const LW = 3.5;
   const CGAP = 0.2;
@@ -464,17 +562,19 @@ async function slideProcessos(bg) {
 
   // 0 concluído · 1 em andamento · 2 pendente
   const linhas = [
-    ["Preenchimento dos dados para\napresentação de resultados", "Semanal  ·  N5 quartas, N4 terças",
-      [["Juliana", 2], ["Juliana", 2], ["Juliana", 2]]],
-    ["Desenvolvimento do HXH operacional", "Diário",
-      [["Deyvid", 1], ["Andressa", 1], ["Lucas", 0]]],
-    ["Envio do HXH operacional", "Diário",
-      [["Deyvid", 1], ["Andressa", 1], ["Lucas", 0]]],
-    ["Análise dos dados e insights", "Diário",
-      [["Deyvid", 2], ["Andressa", 2], ["Lucas", 0]]],
+    ["Preenchimento da apresentação", "Semanal  ·  N5 quartas, N4 terças",
+      [["Juliana", 2, "09/10"], ["Juliana", 2, "09/10"], ["Juliana", 2, "09/10"]]],
+    ["Desenvolvimento do HXH", "Diário  ·  KPI's Meli",
+      [["Deyvid", 1, "09/10"], ["Andressa", 1, "09/10"], ["Lucas", 0, "05/10"]]],
+    ["Envio do HXH", "Diário  ·  KPI's Meli",
+      [["Deyvid", 1, "09/10"], ["Andressa", 1, "09/10"], ["Lucas", 0, "05/10"]]],
+    ["Análise dos dados e insights", "Diário  ·  KPI's Meli",
+      [["Deyvid", 2, "09/10"], ["Andressa", 2, "09/10"], ["Lucas", 0, "05/10"]]],
+    ["Movimentação de fila", "Diário  ·  CX One",
+      [["Juliana", 1, "09/10"], ["Juliana", 1, "09/10"], ["Juliana", 1, "09/10"]]],
   ];
 
-  const RY = 2.5, RH = 0.86, RGAP = 0.12;
+  const RY = 2.44, RH = 0.68, RGAP = 0.1;
   linhas.forEach((l, i) => {
     const [nome, per, celulas] = l;
     const y = RY + i * (RH + RGAP);
@@ -485,26 +585,30 @@ async function slideProcessos(bg) {
     });
 
     s.addText(nome.replace("\n", " "), {
-      x: M + 0.3, y: y + 0.1, w: LW - 0.5, h: 0.44, isTextBox: true, margin: 0, valign: "middle",
+      x: M + 0.3, y: y + 0.08, w: LW - 0.5, h: 0.3, isTextBox: true, margin: 0, valign: "middle",
       fontFace: B, fontSize: 11.5, bold: true, color: WHITE,
     });
     s.addText(per, {
-      x: M + 0.3, y: y + 0.56, w: LW - 0.5, h: 0.22, isTextBox: true, margin: 0, valign: "middle",
+      x: M + 0.3, y: y + 0.38, w: LW - 0.5, h: 0.22, isTextBox: true, margin: 0, valign: "middle",
       fontFace: B, fontSize: 9, color: MUTED,
     });
 
-    celulas.forEach(([focal, level], j) => {
+    celulas.forEach(([focal, level, prazo], j) => {
       const label = level === 0 ? "CONCLUÍDO" : level === 1 ? "EM ANDAMENTO" : "PENDENTE ACESSO";
       const pw = 1.65;
-      statusPill(s, colX[j] + (CW - pw) / 2, y + 0.18, pw, label, level);
-      s.addText(focal, {
-        x: colX[j], y: y + 0.5, w: CW, h: 0.26, isTextBox: true, margin: 0, align: "center", valign: "middle",
-        fontFace: B, fontSize: 10, color: ICE,
-      });
+      statusPill(s, colX[j] + (CW - pw) / 2, y + 0.09, pw, label, level);
+      s.addText(
+        [
+          { text: focal + "   ", options: { color: ICE } },
+          { text: prazo, options: { bold: level !== 0, color: level === 0 ? MUTED : AMBER } },
+        ],
+        { x: colX[j], y: y + 0.38, w: CW, h: 0.24, isTextBox: true, margin: 0, align: "center", valign: "middle",
+          fontFace: B, fontSize: 9.5 }
+      );
     });
   });
 
-  const FY = RY + 4 * (RH + RGAP) + 0.12;
+  const FY = RY + 5 * (RH + RGAP) + 0.16;
   s.addShape(pres.ShapeType.roundRect, {
     x: M, y: FY, w: W, h: 0.92, rectRadius: 0.09,
     fill: { color: AMBER, transparency: 89 }, line: { color: AMBER, width: 1.4 },
@@ -513,17 +617,17 @@ async function slideProcessos(bg) {
   s.addImage({ data: await iconData(Fi.FiAlertCircle, NAVY), x: M + 0.47, y: FY + 0.39, w: 0.14, h: 0.14 });
   s.addText(
     [
-      { text: "O acesso externo é o que destrava 4 das 12 rotinas.  ", options: { bold: true, color: WHITE } },
+      { text: "O acesso externo é o que destrava 5 das 15 rotinas.  ", options: { bold: true, color: WHITE } },
       { text: "O preenchimento para a apresentação semanal e a análise de insights das duas carteiras N5 dependem do acesso aos KPI's Meli.", options: { color: ICE } },
     ],
     { x: M + 0.8, y: FY, w: W - 1.2, h: 0.92, isTextBox: true, margin: 0, valign: "middle", fontFace: B, fontSize: 11.5 }
   );
 
   s.addNotes(
-    "PMO dos processos recorrentes: quatro rotinas replicadas nas três carteiras, todas com origem nos KPI's Meli. " +
+    "PMO dos processos recorrentes: cinco rotinas replicadas nas três carteiras. Quatro vêm dos KPI's Meli e a movimentação de fila vem do CX One. " +
       "A N4 (Lucas) já está concluída nas três rotinas diárias: desenvolvimento do HXH, envio do HXH e análise de dados. " +
       "Nas carteiras N5, o desenvolvimento e o envio do HXH estão em andamento com Deyvid (Pró-Ativos) e Andressa (Onboarding). " +
-      "O ponto crítico é o acesso externo: o preenchimento para a apresentação semanal (focal Juliana, N5 às quartas e N4 às terças) e a análise de dados e insights das duas carteiras N5 estão parados aguardando o acesso aos KPI's Meli."
+      "A movimentação de fila entrou como nova rotina diária nas três carteiras, com a Juliana e prazo em 09/10. " + "O ponto crítico segue sendo o acesso externo: o preenchimento para a apresentação semanal (focal Juliana, N5 às quartas e N4 às terças) e a análise de dados e insights das duas carteiras N5 estão parados aguardando o acesso aos KPI's Meli, com prazo em 09/10."
   );
 }
 
@@ -746,7 +850,8 @@ async function build() {
 
   const bg = await backgroundData();
   await slideGanhos(bg);
-  await slideDashboards(bg);
+  await slideDashN5(bg);
+  await slideHoraHoraN4(bg);
   await slideProcessos(bg);
   await slideAlinhamentos(bg);
   await slideEvolucoes(bg);
