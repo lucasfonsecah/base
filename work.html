@@ -382,6 +382,7 @@ button,input,textarea,select{font:inherit;color:inherit}
 .et{
   height:8px;
   min-width:40px;
+  border:0;
   border-radius:4px;
   background:var(--cor);
   cursor:pointer;
@@ -408,19 +409,26 @@ button,input,textarea,select{font:inherit;color:inherit}
   margin-bottom:4px;
 }
 .selos{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin-bottom:4px;min-height:4px}
+/* Alguns selos são <button> (o do prazo, que marca como concluído) e outros são
+   <span>. Sem zerar borda e fundo, o navegador desenha o botão com a moldura
+   cinza dele em volta — era o contorno escuro em volta da data. */
 .selo{
   display:inline-flex;
   align-items:center;
   gap:4px;
   font-size:12px;
   color:var(--tinta-fraca);
+  border:0;
+  background:transparent;
   border-radius:4px;
   padding:2px 4px;
   max-width:100%;
+  text-align:left;
 }
 .selo svg{width:14px;height:14px;flex:0 0 auto}
 .selo.data{cursor:pointer}
-.selo.data:hover{filter:brightness(.95)}
+.selo.data:not(.vencido):not(.logo):not(.feito):hover{background:var(--neutro)}
+.selo.data.vencido:hover,.selo.data.logo:hover,.selo.data.feito:hover{filter:brightness(.94)}
 .selo.vencido{background:var(--vermelho);color:var(--sobre-vermelho)}
 .selo.logo{background:var(--amarelo-fundo);color:var(--amarelo)}
 .selo.feito{background:var(--verde-fundo);color:var(--verde)}
@@ -429,6 +437,7 @@ button,input,textarea,select{font:inherit;color:inherit}
 .av{
   display:grid;place-items:center;
   width:24px;height:24px;
+  border:0;
   border-radius:50%;
   background:var(--cor,#8590A2);
   color:#fff;
