@@ -36,6 +36,13 @@
   --sobre-vermelho:#FFFFFF;
   --amarelo:#7F5F01;
   --amarelo-fundo:#FFF7D6;
+  /* o selo de prazo não muda com o tema: é um sinal, e sinal se mantém */
+  --prazo-vencido:#C9372C;
+  --prazo-vencido-tinta:#FFFFFF;
+  --prazo-logo:#F5CD47;
+  --prazo-logo-tinta:#172B4D;
+  --prazo-feito:#4BCE97;
+  --prazo-feito-tinta:#172B4D;
 
   /* As dez cores de etiqueta. São decorativas: o nome vai escrito do lado
      delas no cartão e no seletor, então nenhuma informação mora só na cor. */
@@ -429,9 +436,14 @@ button,input,textarea,select{font:inherit;color:inherit}
 .selo.data{cursor:pointer}
 .selo.data:not(.vencido):not(.logo):not(.feito):hover{background:var(--neutro)}
 .selo.data.vencido:hover,.selo.data.logo:hover,.selo.data.feito:hover{filter:brightness(.94)}
-.selo.vencido{background:var(--vermelho);color:var(--sobre-vermelho)}
-.selo.logo{background:var(--amarelo-fundo);color:var(--amarelo)}
-.selo.feito{background:var(--verde-fundo);color:var(--verde)}
+.selo.data.vencido,.selo.data.logo,.selo.data.feito{
+  padding:2px 7px;
+  border-radius:3px;
+  font-weight:500;
+}
+.selo.vencido{background:var(--prazo-vencido);color:var(--prazo-vencido-tinta)}
+.selo.logo{background:var(--prazo-logo);color:var(--prazo-logo-tinta)}
+.selo.feito{background:var(--prazo-feito);color:var(--prazo-feito-tinta)}
 .selo.completa{background:var(--verde-fundo);color:var(--verde)}
 .membros-cartao{display:flex;gap:4px;margin-left:auto;flex:0 0 auto}
 .av{
@@ -713,9 +725,9 @@ button,input,textarea,select{font:inherit;color:inherit}
   cursor:pointer;
 }
 .chip-data:hover{background:var(--neutro-forte)}
-.chip-data.vencido{background:var(--vermelho);color:var(--sobre-vermelho)}
-.chip-data.logo{background:var(--amarelo-fundo);color:var(--amarelo)}
-.chip-data.feito{background:var(--verde-fundo);color:var(--verde)}
+.chip-data.vencido{background:var(--prazo-vencido);color:var(--prazo-vencido-tinta)}
+.chip-data.logo{background:var(--prazo-logo);color:var(--prazo-logo-tinta)}
+.chip-data.feito{background:var(--prazo-feito);color:var(--prazo-feito-tinta)}
 .chip-data input[type="checkbox"]{margin:0;accent-color:var(--verde)}
 .desc-vazia,.desc-texto{
   width:100%;
@@ -1101,6 +1113,29 @@ button,input,textarea,select{font:inherit;color:inherit}
     if (!dia) return "";
     return dia + (parteHora(v) ? ", " + parteHora(v) : "");
   }
+  // "hoje", "amanhã" e "ontem" dizem mais do que a data e ocupam menos.
+  function rotuloDiaCurto(dia){
+    if (!dia) return "";
+    var h = hoje();
+    if (dia === h) return "hoje";
+    if (dia === somarDias(h, 1)) return "amanhã";
+    if (dia === somarDias(h, -1)) return "ontem";
+    return diaTexto(dia);
+  }
+
+  // Na frente do cartão a data é um selo pequeno, então ela diz o essencial: o
+  // prazo. O período inteiro fica na janela, que tem espaço para ele.
+  function rotuloCurto(c){
+    var di = parteDia(c.inicio), df = parteDia(c.prazo);
+    var hi = parteHora(c.inicio), hf = parteHora(c.prazo);
+    if (df) {
+      var base = rotuloDiaCurto(df);
+      if (di === df && hi && hf) return base + ", " + hi + "\u2013" + hf;
+      return hf ? base + ", " + hf : base;
+    }
+    return rotuloDiaCurto(di) + (hi ? ", " + hi : "");
+  }
+
   // Um período no jeito que se lê: no mesmo dia a data não se repete.
   function rotuloPeriodo(c){
     var di = parteDia(c.inicio), df = parteDia(c.prazo);
@@ -1711,7 +1746,7 @@ button,input,textarea,select{font:inherit;color:inherit}
     if (c.prazo || c.inicio) {
       var e = estadoPrazo(c);
       var classe = e === "vencido" ? " vencido" : (e === "logo" ? " logo" : (e === "feito" ? " feito" : ""));
-      var texto = rotuloPeriodo(c);
+      var texto = rotuloCurto(c);
       partes.push('<button type="button" class="selo data' + classe + '" data-acao="alternar-prazo" data-id="' + esc(c.id) + '" ' +
         'title="' + (c.prazoFeito ? "Concluído" : "Marcar como concluído") + '">' +
         svg(c.prazoFeito ? "check" : "relogio") + "<span>" + esc(texto) + "</span></button>");
