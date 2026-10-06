@@ -1,0 +1,503 @@
+<title>PMO do Planejamento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@600;700&display=swap">
+<style>
+/* Layout: cabeçalho fixo com resumo + seções empilhadas em tabelas densas e editáveis */
+:root{
+  --bg:#f3f5f8; --surface:#ffffff; --surface-2:#f7f9fb;
+  --ink:#14233b; --fg:#1d2d45; --muted:#64748b; --line:#dfe5ec;
+  --accent:#b4700f; --accent-soft:#fdf3e1;
+  --ok:#0f7a52; --ok-soft:#e4f4ec;
+  --wip:#9a6410; --wip-soft:#fcf1dd;
+  --block:#ad2d45; --block-soft:#fbe9ec;
+  --idea:#4b4a9e; --idea-soft:#ecebf8;
+  --shadow:0 1px 2px rgba(20,35,59,.06),0 8px 24px -16px rgba(20,35,59,.28);
+  --f-display:"IBM Plex Serif",Georgia,"Times New Roman",serif;
+  --f-body:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0c1522; --surface:#152337; --surface-2:#1b2c43;
+  --ink:#eaf1fa; --fg:#dbe6f3; --muted:#92a6c0; --line:#2a3d59;
+  --accent:#e9a13b; --accent-soft:#2a2316;
+  --ok:#49c795; --ok-soft:#10301f;
+  --wip:#e9a13b; --wip-soft:#2e2414;
+  --block:#f2798f; --block-soft:#36161e;
+  --idea:#9f9df0; --idea-soft:#201f3b;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px -18px rgba(0,0,0,.8);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0c1522; --surface:#152337; --surface-2:#1b2c43;
+  --ink:#eaf1fa; --fg:#dbe6f3; --muted:#92a6c0; --line:#2a3d59;
+  --accent:#e9a13b; --accent-soft:#2a2316;
+  --ok:#49c795; --ok-soft:#10301f;
+  --wip:#e9a13b; --wip-soft:#2e2414;
+  --block:#f2798f; --block-soft:#36161e;
+  --idea:#9f9df0; --idea-soft:#201f3b;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px -18px rgba(0,0,0,.8);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:0 56px}
+
+/* ---------- cabeçalho ---------- */
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
+.top-in{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:14px 12px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between}
+.eyebrow{font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:0 0 2px}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(20px,3.4vw,27px);margin:0;color:var(--ink);letter-spacing:-.01em;text-wrap:balance}
+.sub{margin:3px 0 0;color:var(--muted);font-size:12.5px}
+.sub input{font:inherit;color:inherit}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{font:inherit;font-size:12.5px;font-weight:600;padding:7px 13px;border-radius:7px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn:focus-visible,input:focus-visible,select:focus-visible,.cell-in:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.btn.primary{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+:root[data-theme="dark"] .btn.primary,:root:not([data-theme="light"]) .btn.primary{color:var(--bg)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn.primary{background:var(--accent);border-color:var(--accent);color:#14233b}}
+:root[data-theme="dark"] .btn.primary{background:var(--accent);border-color:var(--accent);color:#14233b}
+.btn[disabled]{opacity:.42;cursor:default}
+.saved{font-size:12px;color:var(--muted)}
+
+/* ---------- resumo ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-block:18px 6px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;box-shadow:var(--shadow)}
+.kpi .lab{font-size:10px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--muted)}
+.kpi .val{font-family:var(--f-display);font-size:25px;font-weight:700;color:var(--ink);line-height:1.1;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi .val small{font-family:var(--f-body);font-size:13px;font-weight:500;color:var(--muted)}
+.bar{height:5px;border-radius:3px;background:var(--line);margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+
+/* ---------- filtros ---------- */
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-block:16px 4px}
+.filters input[type=search]{flex:1 1 220px;min-width:0;font:inherit;font-size:13px;padding:7px 11px;border:1px solid var(--line);border-radius:7px;background:var(--surface);color:var(--fg)}
+.chip{font-size:11.5px;font-weight:600;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer}
+.chip[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .chip[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#14233b}}
+:root[data-theme="dark"] .chip[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#14233b}
+
+/* ---------- seções ---------- */
+section{margin-block:26px 0}
+.sec-head{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+h2{font-family:var(--f-display);font-size:17px;font-weight:700;margin:0;color:var(--ink)}
+.sec-note{font-size:12px;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow);overflow:hidden}
+.card+.card{margin-top:12px}
+.card-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+.card-head h3{font-size:14px;font-weight:700;margin:0;color:var(--ink);letter-spacing:.01em}
+.card-head .meta{font-size:11.5px;color:var(--muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.count{font-family:var(--f-display);font-weight:700;font-size:15px;color:var(--accent);font-variant-numeric:tabular-nums}
+.minibar{width:92px;height:5px;border-radius:3px;background:var(--line);overflow:hidden}
+.minibar i{display:block;height:100%;background:var(--accent)}
+
+.tbl{width:100%;overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:620px}
+th{text-align:left;font-size:9.5px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:4px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--surface-2)}
+.grp td{background:var(--surface-2);font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);padding:7px 10px}
+.cell-in{width:100%;font:inherit;font-size:13px;color:var(--fg);background:transparent;border:1px solid transparent;border-radius:6px;padding:5px 6px}
+.cell-in:hover{border-color:var(--line);background:var(--surface)}
+.cell-in.num{font-variant-numeric:tabular-nums;font-weight:600}
+.cell-in.dim{color:var(--muted);font-size:12px}
+.sel{font:inherit;font-size:11px;font-weight:700;letter-spacing:.04em;padding:4px 7px;border-radius:999px;border:1px solid transparent;cursor:pointer;-webkit-appearance:none;appearance:none;text-align:center}
+.sel.s-concluido{background:var(--ok-soft);color:var(--ok);border-color:var(--ok)}
+.sel.s-andamento{background:var(--wip-soft);color:var(--wip);border-color:var(--wip)}
+.sel.s-pendente{background:var(--block-soft);color:var(--block);border-color:var(--block)}
+.sel.s-conceito{background:var(--idea-soft);color:var(--idea);border-color:var(--idea)}
+.del{border:0;background:transparent;color:var(--muted);font-size:15px;line-height:1;cursor:pointer;padding:4px 7px;border-radius:6px}
+.del:hover{color:var(--block);background:var(--block-soft)}
+.add{margin:0;padding:9px 14px;border-top:1px solid var(--line);background:var(--surface-2)}
+.add button{font:inherit;font-size:12px;font-weight:600;color:var(--accent);background:transparent;border:0;cursor:pointer;padding:3px 0}
+
+.note{background:var(--accent-soft);border:1px solid var(--accent);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--fg);margin-top:12px}
+.note b{color:var(--ink)}
+.empty{padding:26px 16px;text-align:center;color:var(--muted);font-size:13px}
+footer{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);font-size:11.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between}
+@media(max-width:560px){.top-in{padding-block:11px 10px}.kpi .val{font-size:21px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<script id="pmo-state" type="application/json">
+{"atualizado":"6 de outubro de 2026","fonte":"Dev_reports_processos + notas de alinhamento","acessos":"liberados","dashboards":[{"nome":"N5 Onboarding","per":"Periodicidade a definir","metricas":[{"g":"Quantitativo","n":"P.A","o":"CRM","f":"Cliente","p":"10/10","s":"andamento"},{"g":"Quantitativo","n":"Total de clientes trabalhados","o":"CRM","f":"Deyvid","p":"10/10","s":"andamento"},{"g":"Quantitativo","n":"Total de clientes finalizados","o":"CRM","f":"Deyvid","p":"10/10","s":"andamento"},{"g":"Quantitativo","n":"SLA","o":"CRM","f":"Deyvid","p":"10/10","s":"andamento"},{"g":"Tempos","n":"Tempo logado","o":"Pmóvel","f":"Willyan","p":"05/10","s":"andamento"},{"g":"Tempos","n":"Tempo pausas","o":"Pmóvel","f":"Willyan","p":"05/10","s":"andamento"},{"g":"Análises %","n":"Clientes / PA","o":"Dashboard","f":"Willyan","p":"10/10","s":"andamento"},{"g":"Análises %","n":"Clientes finalizados / PA","o":"Dashboard","f":"Willyan","p":"10/10","s":"andamento"},{"g":"Análises %","n":"Reagendados","o":"Dashboard","f":"Willyan","p":"10/10","s":"andamento"}]},{"nome":"N5 Pró-Ativos","per":"Periodicidade a definir","metricas":[{"g":"Quantitativo","n":"P.A","o":"CRM","f":"Cliente","p":"05/10","s":"andamento"},{"g":"Quantitativo","n":"Total de clientes trabalhados","o":"CRM","f":"Andressa","p":"08/10","s":"concluido"},{"g":"Quantitativo","n":"Total de clientes finalizados","o":"CRM","f":"Andressa","p":"08/10","s":"concluido"},{"g":"Quantitativo","n":"SLA","o":"CRM","f":"Andressa","p":"08/10","s":"andamento"},{"g":"Tempos","n":"Tempo logado","o":"Pmóvel","f":"Willyan","p":"05/10","s":"andamento"},{"g":"Tempos","n":"Tempo pausas","o":"Pmóvel","f":"Willyan","p":"05/10","s":"andamento"},{"g":"Análises %","n":"Clientes / PA","o":"Dashboard","f":"Willyan","p":"08/10","s":"andamento"},{"g":"Análises %","n":"Clientes finalizados / PA","o":"Dashboard","f":"Willyan","p":"08/10","s":"andamento"},{"g":"Análises %","n":"Reagendados","o":"Dashboard","f":"Willyan","p":"08/10","s":"andamento"}]},{"nome":"Hora a Hora · N4","per":"4x ao dia","metricas":[{"g":"Quantitativo","n":"P.A","o":"CRM","f":"Cliente","p":"05/10","s":"andamento"},{"g":"Quantitativo","n":"Total de clientes trabalhados","o":"Planilha do supervisor","f":"Lucas","p":"08/10","s":"concluido"},{"g":"Quantitativo","n":"Total de clientes finalizados","o":"Planilha do supervisor","f":"Lucas","p":"08/10","s":"concluido"},{"g":"Quantitativo","n":"SLA","o":"Planilha do supervisor","f":"Lucas","p":"08/10","s":"concluido"},{"g":"Quantitativo","n":"Visão por tabulação (categoria)","o":"Planilha do supervisor","f":"Lucas","p":"05/10","s":"concluido"},{"g":"Quantitativo","n":"Clientes fechados HxH","o":"Planilha do supervisor","f":"Lucas","p":"05/10","s":"concluido"},{"g":"Quantitativo","n":"Clientes fechados por célula","o":"Planilha do supervisor","f":"Lucas","p":"05/10","s":"concluido"},{"g":"Quantitativo","n":"Clientes por status","o":"Planilha do supervisor","f":"Lucas","p":"05/10","s":"concluido"},{"g":"Quantitativo","n":"Semana e mês","o":"Planilha do supervisor","f":"Lucas","p":"05/10","s":"concluido"},{"g":"Tempos","n":"Tempo logado","o":"Pmóvel","f":"Willyan","p":"05/10","s":"concluido"},{"g":"Tempos","n":"Tempo pausas","o":"Pmóvel","f":"Willyan","p":"05/10","s":"concluido"},{"g":"Tempos","n":"TMA por tabulação (categoria)","o":"Planilha do supervisor","f":"Lucas","p":"05/10","s":"concluido"},{"g":"Análises %","n":"Clientes / PA","o":"Dashboard","f":"Willyan","p":"08/10","s":"concluido"},{"g":"Análises %","n":"Clientes finalizados / PA","o":"Dashboard","f":"Willyan","p":"08/10","s":"concluido"},{"g":"Análises %","n":"Reagendados","o":"Dashboard","f":"Willyan","p":"08/10","s":"concluido"}]}],"carteiras":["N5 Pró-Ativos","N5 Onboarding","N4"],"processos":[{"n":"Preenchimento dos dados para apresentação de resultados","per":"Semanal · N5 quartas, N4 terças","o":"KPI's Meli","c":[{"f":"Juliana","p":"09/10","s":"pendente"},{"f":"Juliana","p":"09/10","s":"pendente"},{"f":"Juliana","p":"09/10","s":"pendente"}]},{"n":"Desenvolvimento de HXH operacional","per":"Diário","o":"KPI's Meli","c":[{"f":"Deyvid","p":"09/10","s":"andamento"},{"f":"Andressa","p":"09/10","s":"andamento"},{"f":"Lucas","p":"05/10","s":"concluido"}]},{"n":"Envio de HXH operacional","per":"Diário","o":"KPI's Meli","c":[{"f":"Deyvid","p":"09/10","s":"andamento"},{"f":"Andressa","p":"09/10","s":"andamento"},{"f":"Lucas","p":"05/10","s":"concluido"}]},{"n":"Análise dos dados e insights","per":"Diário","o":"KPI's Meli","c":[{"f":"Deyvid","p":"09/10","s":"pendente"},{"f":"Andressa","p":"09/10","s":"pendente"},{"f":"Lucas","p":"05/10","s":"concluido"}]},{"n":"Movimentação de fila","per":"Diário","o":"CX One","c":[{"f":"Juliana","p":"09/10","s":"andamento"},{"f":"Juliana","p":"09/10","s":"andamento"},{"f":"Juliana","p":"09/10","s":"andamento"}]}],"frentes":[{"n":"Apresentação de resultados","d":"Rodada semanal às quintas-feiras, com os dados já consolidados.","p":"Pendente ext","s":"pendente"},{"n":"Dimensionamento","d":"Demanda entrante + backlog. Avaliar os dados nesta semana e movimentar a partir da próxima.","p":"13/10","s":"andamento"},{"n":"Dashboard Pró-Ativos · dados manuais","d":"Will aprofunda na carteira, analisa as planilhas do Deyvid e desenha o processo de acompanhamento, com visão de catálogo.","p":"13/10","s":"andamento"},{"n":"Dashboard Onboarding · dados manuais","d":"Mapeamento com a Andressa e desenho do fluxo com operações para controlar o preenchimento da planilha pelos agentes.","p":"13/10","s":"andamento"},{"n":"Demanda de catálogo · CRM","d":"Extração da base, separação por vendor e definição da prioridade de tratativa.","p":"Em estudo","s":"andamento"},{"n":"KPIs por frente de atuação + aging","d":"Análise por frente, não consolidada, com foco no aging de 5 dias sem atuação. Visão de frentes a desenvolver; aging já construído, aguarda EXT para validar.","p":"13/10 · 09/10","s":"andamento"}],"escopo":"N4 — Full, Inbound e P2P   ·   N5 — Onboarding (2 frentes) e Pró-Ativos (9 frentes)","evolucoes":[{"n":"Volumetria de casos fechados por hora","d":"na evolução dia a dia","s":"concluido"},{"n":"Volumetria e % de casos fechados por célula","d":"","s":"concluido"},{"n":"Todos os status dos tickets","d":"além do que foi fechado","s":"concluido"},{"n":"Visão online de N4","d":"com acesso do Plan no CXOne","s":"concluido"},{"n":"Abertura por semana e ano","d":"","s":"concluido"},{"n":"Visão de tabulação dos casos tratados","d":"","s":"concluido"},{"n":"TMA e recebimento por categoria","d":"abertos na visão","s":"concluido"},{"n":"Produtividade apenas de quem trabalhou na fila","d":"regra validada, implementação na sequência","s":"conceito"},{"n":"Filtro de operador já logado","d":"regra validada, implementação na sequência","s":"conceito"},{"n":"Acesso para migração entre filas","d":"solicitação aberta","s":"andamento"}]}
+</script>
+
+<header class="top">
+  <div class="top-in">
+    <div>
+      <p class="eyebrow">Planejamento · Willyan</p>
+      <h1>PMO do Planejamento</h1>
+      <p class="sub">Atualizado em <input id="f-data" class="cell-in" style="width:auto;display:inline-block;padding:2px 4px" aria-label="Data de atualização"> · acessos <span id="f-acessos">liberados</span></p>
+    </div>
+    <div class="tools">
+      <span class="saved" id="saved"></span>
+      <button class="btn" id="btn-json" type="button">Copiar JSON</button>
+      <button class="btn primary" id="btn-save" type="button" disabled>Salvar</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="kpis" id="kpis"></div>
+
+  <div class="filters">
+    <input type="search" id="q" placeholder="Buscar métrica, rotina, focal ou prazo…" aria-label="Buscar">
+    <button class="chip" type="button" data-f="todos" aria-pressed="true">Tudo</button>
+    <button class="chip" type="button" data-f="concluido" aria-pressed="false">Concluído</button>
+    <button class="chip" type="button" data-f="andamento" aria-pressed="false">Em andamento</button>
+    <button class="chip" type="button" data-f="pendente" aria-pressed="false">Pendente</button>
+    <button class="chip" type="button" data-f="conceito" aria-pressed="false">Conceito</button>
+  </div>
+
+  <section>
+    <div class="sec-head"><h2>Dashboards</h2><span class="sec-note" id="note-dash"></span></div>
+    <div id="dash"></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Processos recorrentes</h2><span class="sec-note" id="note-proc"></span></div>
+    <div class="card"><div class="tbl"><table id="tbl-proc"></table></div>
+      <p class="add"><button type="button" data-add="proc">+ Adicionar rotina</button></p>
+    </div>
+    <div class="note" id="note-acesso"></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Frentes dos alinhamentos</h2><span class="sec-note" id="note-fre"></span></div>
+    <div class="card"><div class="tbl"><table id="tbl-fre"></table></div>
+      <p class="add"><button type="button" data-add="fre">+ Adicionar frente</button></p>
+    </div>
+    <div class="note"><b>Escopo das frentes.</b> <span id="f-escopo"></span></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Evoluções do dashboard</h2><span class="sec-note" id="note-evo"></span></div>
+    <div class="card"><div class="tbl"><table id="tbl-evo"></table></div>
+      <p class="add"><button type="button" data-add="evo">+ Adicionar melhoria</button></p>
+    </div>
+  </section>
+
+  <footer>
+    <span id="foot-fonte"></span>
+    <span id="foot-modo"></span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var HEAD = document.head.innerHTML;
+  var BODY_TEMPLATE = document.body.innerHTML;
+
+  var ST = {concluido:"Concluído", andamento:"Em andamento", pendente:"Pendente", conceito:"Conceito"};
+  var ORDER = ["concluido","andamento","pendente","conceito"];
+
+  var state;
+  try { state = JSON.parse(document.getElementById("pmo-state").textContent); }
+  catch(e){ state = null; }
+
+  var LS = "pmo-planejamento-v1";
+  var artifact = null, dirty = false, filtro = "todos", busca = "";
+
+  try {
+    var local = localStorage.getItem(LS);
+    if (local) { var p = JSON.parse(local); if (p && p.dashboards) state = p; }
+  } catch(e){}
+
+  var $ = function(id){ return document.getElementById(id); };
+  function esc(s){ return String(s == null ? "" : s).replace(/[&<>"]/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+
+  function touch(){
+    dirty = true;
+    var b = $("btn-save"); if (b) b.disabled = false;
+    var s = $("saved"); if (s) s.textContent = "alterações não salvas";
+    renderKpis();
+  }
+
+  /* ---------- contadores ---------- */
+  function countMetricas(){
+    var t = 0, ok = 0;
+    state.dashboards.forEach(function(d){
+      d.metricas.forEach(function(m){ t++; if (m.s === "concluido") ok++; });
+    });
+    return {t:t, ok:ok};
+  }
+  function countCels(){
+    var t = 0, ok = 0, bl = 0;
+    state.processos.forEach(function(r){
+      r.c.forEach(function(c){ t++; if (c.s === "concluido") ok++; if (c.s === "pendente") bl++; });
+    });
+    return {t:t, ok:ok, bl:bl};
+  }
+  function countList(arr){
+    var t = arr.length, ok = 0;
+    arr.forEach(function(i){ if (i.s === "concluido") ok++; });
+    return {t:t, ok:ok};
+  }
+
+  function kpi(lab, val, sub, done, total){
+    var pct = total ? Math.round(done / total * 100) : 0;
+    return '<div class="kpi"><div class="lab">' + esc(lab) + '</div>' +
+      '<div class="val">' + esc(val) + ' <small>' + esc(sub) + '</small></div>' +
+      '<div class="bar"><i style="width:' + pct + '%"></i></div></div>';
+  }
+
+  function renderKpis(){
+    var m = countMetricas(), c = countCels(), f = countList(state.frentes), e = countList(state.evolucoes);
+    $("kpis").innerHTML =
+      kpi("Métricas de dashboard", m.ok + "/" + m.t, "concluídas", m.ok, m.t) +
+      kpi("Rotinas recorrentes", c.ok + "/" + c.t, "concluídas", c.ok, c.t) +
+      kpi("Frentes em aberto", String(state.frentes.length - f.ok), "de " + state.frentes.length, f.ok, f.t) +
+      kpi("Evoluções entregues", e.ok + "/" + e.t, "no dashboard", e.ok, e.t);
+
+    $("note-dash").textContent = m.t + " métricas · " + m.ok + " concluídas";
+    $("note-proc").textContent = state.processos.length + " rotinas × " + state.carteiras.length + " carteiras";
+    $("note-fre").textContent = state.frentes.length + " frentes";
+    $("note-evo").textContent = e.ok + " de " + e.t + " entregues";
+    $("note-acesso").innerHTML = c.bl > 0
+      ? "<b>O acesso externo trava " + c.bl + " das " + c.t + " rotinas.</b> Enquanto o acesso aos KPI's Meli não sai, o preenchimento da apresentação semanal e a análise de insights das carteiras N5 não andam."
+      : "<b>Nenhuma rotina travada por acesso externo.</b>";
+  }
+
+  /* ---------- helpers de célula ---------- */
+  function inp(val, path, cls, ph){
+    return '<input class="cell-in ' + (cls || "") + '" value="' + esc(val) + '" data-path="' + path +
+      '" placeholder="' + esc(ph || "") + '">';
+  }
+  function sel(val, path){
+    var o = ORDER.map(function(k){
+      return '<option value="' + k + '"' + (k === val ? " selected" : "") + ">" + ST[k] + "</option>";
+    }).join("");
+    return '<select class="sel s-' + esc(val) + '" data-path="' + path + '">' + o + "</select>";
+  }
+  function match(row){
+    if (filtro !== "todos" && row.s !== filtro) return false;
+    if (!busca) return true;
+    return JSON.stringify(row).toLowerCase().indexOf(busca) !== -1;
+  }
+
+  /* ---------- dashboards ---------- */
+  function renderDash(){
+    var html = "";
+    state.dashboards.forEach(function(d, di){
+      var ok = d.metricas.filter(function(m){ return m.s === "concluido"; }).length;
+      var pct = d.metricas.length ? Math.round(ok / d.metricas.length * 100) : 0;
+      var rows = "", grupo = null, vis = 0;
+      d.metricas.forEach(function(m, mi){
+        if (!match(m)) return;
+        vis++;
+        if (m.g !== grupo){ grupo = m.g; rows += '<tr class="grp"><td colspan="6">' + esc(m.g) + "</td></tr>"; }
+        var b = "dashboards." + di + ".metricas." + mi + ".";
+        rows += "<tr>" +
+          "<td>" + inp(m.n, b + "n", "", "Métrica") + "</td>" +
+          "<td>" + inp(m.o, b + "o", "dim", "Origem") + "</td>" +
+          "<td>" + inp(m.f, b + "f", "dim", "Focal") + "</td>" +
+          "<td>" + inp(m.p, b + "p", "num", "Prazo") + "</td>" +
+          "<td>" + sel(m.s, b + "s") + "</td>" +
+          '<td><button class="del" type="button" data-del="dash:' + di + ":" + mi + '" title="Remover">×</button></td>' +
+          "</tr>";
+      });
+      html += '<div class="card"><div class="card-head">' +
+        "<h3>" + esc(d.nome) + "</h3>" +
+        '<div class="meta"><span>' + esc(d.per) + "</span>" +
+        '<span class="count">' + ok + "/" + d.metricas.length + "</span>" +
+        '<span class="minibar"><i style="width:' + pct + '%"></i></span></div></div>' +
+        '<div class="tbl"><table>' +
+        "<thead><tr><th>Métrica</th><th>Origem</th><th>Focal</th><th>Prazo</th><th>Status</th><th></th></tr></thead>" +
+        "<tbody>" + (vis ? rows : '<tr><td colspan="6" class="empty">Nenhuma métrica com esse filtro.</td></tr>') +
+        "</tbody></table></div>" +
+        '<p class="add"><button type="button" data-add="dash:' + di + '">+ Adicionar métrica</button></p></div>';
+    });
+    $("dash").innerHTML = html;
+  }
+
+  /* ---------- processos ---------- */
+  function renderProc(){
+    var head = "<thead><tr><th>Rotina</th>" +
+      state.carteiras.map(function(c){ return "<th>" + esc(c) + "</th>"; }).join("") +
+      "<th></th></tr></thead>";
+    var rows = "";
+    state.processos.forEach(function(r, ri){
+      if (filtro !== "todos" && !r.c.some(function(c){ return c.s === filtro; })) return;
+      if (busca && JSON.stringify(r).toLowerCase().indexOf(busca) === -1) return;
+      rows += "<tr><td style=\"min-width:300px\">" +
+        inp(r.n, "processos." + ri + ".n", "", "Rotina") +
+        '<div style="display:flex;gap:2px">' +
+        inp(r.per, "processos." + ri + ".per", "dim", "Periodicidade") +
+        inp(r.o, "processos." + ri + ".o", "dim", "Origem") + "</div>" +
+        "</td>";
+      r.c.forEach(function(c, ci){
+        var b = "processos." + ri + ".c." + ci + ".";
+        rows += '<td style="min-width:150px">' + sel(c.s, b + "s") +
+          '<div style="display:flex;gap:2px;margin-top:2px">' +
+          inp(c.f, b + "f", "dim", "Focal") + inp(c.p, b + "p", "num", "Prazo") + "</div></td>";
+      });
+      rows += '<td><button class="del" type="button" data-del="proc:' + ri + '" title="Remover">×</button></td></tr>';
+    });
+    $("tbl-proc").innerHTML = head + "<tbody>" +
+      (rows || '<tr><td colspan="' + (state.carteiras.length + 2) + '" class="empty">Nenhuma rotina com esse filtro.</td></tr>') +
+      "</tbody>";
+  }
+
+  /* ---------- frentes e evoluções ---------- */
+  function renderFre(){
+    var rows = "";
+    state.frentes.forEach(function(f, i){
+      if (!match(f)) return;
+      rows += "<tr><td style=\"min-width:240px\">" + inp(f.n, "frentes." + i + ".n", "", "Frente") +
+        inp(f.d, "frentes." + i + ".d", "dim", "Encaminhamento") + "</td>" +
+        '<td style="width:120px">' + inp(f.p, "frentes." + i + ".p", "num", "Prazo") + "</td>" +
+        '<td style="width:150px">' + sel(f.s, "frentes." + i + ".s") + "</td>" +
+        '<td><button class="del" type="button" data-del="fre:' + i + '" title="Remover">×</button></td></tr>';
+    });
+    $("tbl-fre").innerHTML = "<thead><tr><th>Frente</th><th>Prazo</th><th>Status</th><th></th></tr></thead><tbody>" +
+      (rows || '<tr><td colspan="4" class="empty">Nenhuma frente com esse filtro.</td></tr>') + "</tbody>";
+  }
+
+  function renderEvo(){
+    var rows = "";
+    state.evolucoes.forEach(function(e, i){
+      if (!match(e)) return;
+      rows += "<tr><td style=\"min-width:260px\">" + inp(e.n, "evolucoes." + i + ".n", "", "Melhoria") +
+        inp(e.d, "evolucoes." + i + ".d", "dim", "Observação") + "</td>" +
+        '<td style="width:150px">' + sel(e.s, "evolucoes." + i + ".s") + "</td>" +
+        '<td><button class="del" type="button" data-del="evo:' + i + '" title="Remover">×</button></td></tr>';
+    });
+    $("tbl-evo").innerHTML = "<thead><tr><th>Melhoria</th><th>Status</th><th></th></tr></thead><tbody>" +
+      (rows || '<tr><td colspan="3" class="empty">Nenhuma melhoria com esse filtro.</td></tr>') + "</tbody>";
+  }
+
+  function renderAll(){
+    $("f-data").value = state.atualizado || "";
+    $("f-acessos").textContent = state.acessos || "—";
+    $("f-escopo").textContent = state.escopo || "";
+    $("foot-fonte").textContent = "Fonte: " + (state.fonte || "—");
+    renderKpis(); renderDash(); renderProc(); renderFre(); renderEvo();
+  }
+
+  /* ---------- edição ---------- */
+  function setPath(path, val){
+    var parts = path.split("."), o = state;
+    for (var i = 0; i < parts.length - 1; i++) o = o[parts[i]];
+    o[parts[parts.length - 1]] = val;
+  }
+
+  document.addEventListener("input", function(ev){
+    var t = ev.target;
+    if (t.id === "f-data"){ state.atualizado = t.value; touch(); return; }
+    if (t.classList && t.classList.contains("cell-in") && t.dataset.path){
+      setPath(t.dataset.path, t.value); touch();
+    }
+    if (t.id === "q"){ busca = t.value.trim().toLowerCase(); renderDash(); renderProc(); renderFre(); renderEvo(); }
+  });
+
+  document.addEventListener("change", function(ev){
+    var t = ev.target;
+    if (t.classList && t.classList.contains("sel") && t.dataset.path){
+      setPath(t.dataset.path, t.value);
+      t.className = "sel s-" + t.value;
+      touch();
+      renderDash();
+    }
+  });
+
+  document.addEventListener("click", function(ev){
+    var t = ev.target.closest ? ev.target.closest("[data-add],[data-del],.chip,#btn-save,#btn-json") : null;
+    if (!t) return;
+
+    if (t.classList.contains("chip")){
+      filtro = t.dataset.f;
+      Array.prototype.forEach.call(document.querySelectorAll(".chip"), function(c){
+        c.setAttribute("aria-pressed", c === t ? "true" : "false");
+      });
+      renderDash(); renderProc(); renderFre(); renderEvo();
+      return;
+    }
+
+    if (t.dataset.add){
+      var a = t.dataset.add.split(":");
+      if (a[0] === "dash"){
+        var d = state.dashboards[+a[1]];
+        var ultimo = d.metricas[d.metricas.length - 1];
+        d.metricas.push({g: ultimo ? ultimo.g : "Quantitativo", n:"", o:"", f:"", p:"", s:"andamento"});
+      }
+      if (a[0] === "proc") state.processos.push({n:"", per:"Diário", o:"", c: state.carteiras.map(function(){ return {f:"", p:"", s:"andamento"}; })});
+      if (a[0] === "fre") state.frentes.push({n:"", d:"", p:"", s:"andamento"});
+      if (a[0] === "evo") state.evolucoes.push({n:"", d:"", s:"andamento"});
+      touch(); renderAll();
+      return;
+    }
+
+    if (t.dataset.del){
+      var p = t.dataset.del.split(":");
+      if (p[0] === "dash") state.dashboards[+p[1]].metricas.splice(+p[2], 1);
+      if (p[0] === "proc") state.processos.splice(+p[1], 1);
+      if (p[0] === "fre") state.frentes.splice(+p[1], 1);
+      if (p[0] === "evo") state.evolucoes.splice(+p[1], 1);
+      touch(); renderAll();
+      return;
+    }
+
+    if (t.id === "btn-json"){
+      var txt = JSON.stringify(state, null, 2);
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(txt).then(function(){
+          $("saved").textContent = "JSON copiado";
+        }, function(){ $("saved").textContent = "não foi possível copiar"; });
+      } else { $("saved").textContent = "não foi possível copiar"; }
+      return;
+    }
+
+    if (t.id === "btn-save") salvar();
+  });
+
+  /* ---------- salvar ---------- */
+  function serialize(){
+    var json = JSON.stringify(state).replace(/</g, "\\u003c");
+    var body = BODY_TEMPLATE.replace(
+      /(<script id="pmo-state" type="application\/json">)[\s\S]*?(<\/script>)/,
+      function(_, a, b){ return a + "\n" + json + "\n" + b; }
+    );
+    return "<!doctype html><html><head>" + HEAD + "</head><body>" + body + "</body></html>";
+  }
+
+  function salvar(){
+    var btn = $("btn-save"), lab = $("saved");
+    btn.disabled = true; lab.textContent = "salvando…";
+    try { localStorage.setItem(LS, JSON.stringify(state)); } catch(e){}
+
+    if (!artifact){
+      lab.textContent = "salvo neste navegador";
+      dirty = false;
+      return;
+    }
+    artifact.publish(serialize()).then(function(){
+      dirty = false; lab.textContent = "salvo para todos";
+    }, function(err){
+      btn.disabled = false;
+      lab.textContent = (err && err.code === "conflict")
+        ? "outra pessoa salvou antes — recarregue"
+        : "salvo só neste navegador";
+    });
+  }
+
+  window.addEventListener("beforeunload", function(ev){
+    if (dirty){ ev.preventDefault(); ev.returnValue = ""; }
+  });
+
+  renderAll();
+  $("foot-modo").textContent = "Edição local — as alterações ficam neste navegador.";
+
+  if (window.claude && window.claude.use){
+    window.claude.use("artifact").then(function(a){
+      if (!a) return;
+      artifact = a;
+      $("foot-modo").textContent = "Salvar publica uma nova versão para todo mundo que abre o link.";
+    }, function(){});
+  }
+})();
+</script>
