@@ -1133,6 +1133,11 @@ button,input,textarea,select{font:inherit;color:inherit}
     anexosDoComentario: [],   // o que foi colado na caixa de comentário e ainda não foi salvo
     alvoAnexo: null,          // para onde vai o que o seletor de arquivo devolver
     desfazer: null,           // o caminho de volta do último arquivamento
+    // Texto em digitação que ainda não foi salvo. Sem guardar aqui, qualquer
+    // redesenho — o relógio de minuto em minuto, um salvamento vindo de outra
+    // aba — remonta o campo a partir do que está gravado e come a frase pela
+    // metade.
+    textos: {},
     editandoLista: null,
     novaLista: false,
     editor: null,           // { tipo, id } do campo em edição dentro da janela
@@ -2041,7 +2046,7 @@ button,input,textarea,select{font:inherit;color:inherit}
 
     if (estado.editandoLista === l.id) {
       html += '<div class="cabeca-lista"><textarea class="edita-nome" data-campo="nome-lista" data-id="' + esc(l.id) + '" ' +
-        'rows="1" aria-label="Nome da lista">' + esc(l.nome) + "</textarea></div>";
+        'rows="1" aria-label="Nome da lista">' + esc(textoDe("nome-lista", l.id, "", l.nome)) + "</textarea></div>";
     } else {
       html += '<div class="cabeca-lista" data-pegar-lista="' + esc(l.id) + '">' +
         '<h2 data-acao="editar-lista" data-id="' + esc(l.id) + '">' + esc(l.nome) + "</h2>" +
@@ -2345,7 +2350,7 @@ button,input,textarea,select{font:inherit;color:inherit}
       "</div>";
     if (estado.editor === "descricao") {
       html += '<textarea class="editor" data-campo="descricao" data-id="' + esc(c.id) + '" ' +
-        'placeholder="Adicione uma descrição mais detalhada…">' + esc(c.descricao) + "</textarea>" +
+        'placeholder="Adicione uma descrição mais detalhada…">' + esc(textoDe("descricao", c.id, "", c.descricao)) + "</textarea>" +
         '<div class="acoes-editor"><button type="button" class="btn" data-acao="salvar-descricao" data-id="' + esc(c.id) + '">Salvar</button>' +
         '<button type="button" class="icone-botao" data-acao="cancelar-editor" aria-label="Cancelar">' + svg("x") + "</button></div>";
     } else if (c.descricao) {
@@ -2380,7 +2385,7 @@ button,input,textarea,select{font:inherit;color:inherit}
       var pct = total ? Math.round(feitos / total * 100) : 0;
       html += '<div class="bloco checklist"><div class="bloco-cabeca"><span class="ic">' + svg("caixa") + "</span>" +
         (estado.editor === "nomecl:" + cl.id
-          ? '<textarea class="edita-nome" data-campo="nome-checklist" data-id="' + esc(c.id) + '" data-cl="' + esc(cl.id) + '" rows="1" aria-label="Nome do checklist">' + esc(cl.nome) + "</textarea>"
+          ? '<textarea class="edita-nome" data-campo="nome-checklist" data-id="' + esc(c.id) + '" data-cl="' + esc(cl.id) + '" rows="1" aria-label="Nome do checklist">' + esc(textoDe("nome-checklist", c.id, cl.id, cl.nome)) + "</textarea>"
           : '<h3 style="cursor:pointer" data-acao="renomear-checklist" data-cl="' + esc(cl.id) + '">' + esc(cl.nome) + "</h3>") +
         '<button type="button" class="btn neutro" data-acao="excluir-checklist" data-id="' + esc(c.id) + '" data-cl="' + esc(cl.id) + '">Excluir</button></div>';
       html += '<div class="barra-check"><span class="pct">' + pct + '%</span>' +
@@ -2395,7 +2400,7 @@ button,input,textarea,select{font:inherit;color:inherit}
       });
       if (estado.editor === "item:" + cl.id) {
         html += '<textarea class="editor uma-linha" data-campo="novo-item" data-id="' + esc(c.id) + '" data-cl="' + esc(cl.id) + '" ' +
-          'placeholder="Adicionar um item"></textarea>' +
+          'placeholder="Adicionar um item">' + esc(textoDe("novo-item", c.id, cl.id, "")) + "</textarea>" +
           '<div class="acoes-editor"><button type="button" class="btn" data-acao="salvar-item" data-id="' + esc(c.id) + '" data-cl="' + esc(cl.id) + '">Adicionar</button>' +
           '<button type="button" class="icone-botao" data-acao="cancelar-editor" aria-label="Cancelar">' + svg("x") + "</button></div>";
       } else {
@@ -2408,7 +2413,7 @@ button,input,textarea,select{font:inherit;color:inherit}
     html += '<div class="bloco"><div class="bloco-cabeca"><span class="ic">' + svg("comentario") + "</span><h3>Comentários e atividade</h3></div>";
     html += '<div class="comentario"><span class="av g" style="--cor:' + esc((estado.membros[0] || {}).cor || CORES_MEMBRO[0]) + '">EU</span>' +
       '<div style="flex:1 1 auto"><textarea class="editor uma-linha" data-campo="comentario" data-id="' + esc(c.id) + '" ' +
-      'placeholder="Escrever um comentário… (pode colar um print aqui)"></textarea>' +
+      'placeholder="Escrever um comentário… (pode colar um print aqui)">' + esc(textoDe("comentario", c.id, "", "")) + "</textarea>" +
       imagensHtml(c, estado.anexosDoComentario, true) +
       '<div class="acoes-editor"><button type="button" class="btn" data-acao="salvar-comentario" data-id="' + esc(c.id) + '">Salvar</button>' +
       '<button type="button" class="btn fantasma" data-acao="anexar-comentario" data-id="' + esc(c.id) + '">' +
@@ -2566,6 +2571,16 @@ button,input,textarea,select{font:inherit;color:inherit}
     }
     Array.prototype.forEach.call(document.querySelectorAll(".edita-nome,.compor textarea"), crescer);
   }
+
+  /* --------- texto em digitação --------- */
+
+  function chaveTexto(campo, id, cl){ return campo + ":" + (id || "") + ":" + (cl || ""); }
+  function textoDe(campo, id, cl, gravado){
+    var k = chaveTexto(campo, id, cl);
+    return estado.textos[k] !== undefined ? estado.textos[k] : gravado;
+  }
+  function esquecerTexto(campo, id, cl){ delete estado.textos[chaveTexto(campo, id, cl)]; }
+  function esquecerTextos(){ estado.textos = {}; }
 
   function crescer(el){
     if (!el || el.tagName !== "TEXTAREA") return;
@@ -3188,8 +3203,8 @@ button,input,textarea,select{font:inherit;color:inherit}
     if (!el) {
       // clicar no cartão (fora dos botões) abre a janela
       var c0 = ev.target.closest(".cartao");
-      if (c0 && !arrasto && !suprimirClique) { estado.cartaoAberto = c0.getAttribute("data-cartao"); estado.editor = null; estado.anexosDoComentario = []; desenhar(); return; }
-      if (ev.target.id === "veu") { estado.cartaoAberto = null; estado.editor = null; desenhar(); }
+      if (c0 && !arrasto && !suprimirClique) { estado.cartaoAberto = c0.getAttribute("data-cartao"); estado.editor = null; estado.anexosDoComentario = []; esquecerTextos(); desenhar(); return; }
+      if (ev.target.id === "veu") { estado.cartaoAberto = null; estado.editor = null; esquecerTextos(); desenhar(); }
       return;
     }
 
@@ -3322,8 +3337,8 @@ button,input,textarea,select{font:inherit;color:inherit}
         break;
       }
 
-      case "abrir-cartao": estado.cartaoAberto = id; estado.editor = null; estado.anexosDoComentario = []; desenhar(); break;
-      case "fechar-janela": estado.cartaoAberto = null; estado.editor = null; estado.anexosDoComentario = []; desenhar(); break;
+      case "abrir-cartao": estado.cartaoAberto = id; estado.editor = null; estado.anexosDoComentario = []; esquecerTextos(); desenhar(); break;
+      case "fechar-janela": estado.cartaoAberto = null; estado.editor = null; estado.anexosDoComentario = []; esquecerTextos(); desenhar(); break;
       case "alternar-prazo": if (c) alternarPrazo(c); break;
       case "pop-etiquetas": if (c) popEtiquetas(el, c); break;
       case "pop-membros": if (c) popMembros(el, c); break;
@@ -3453,11 +3468,12 @@ button,input,textarea,select{font:inherit;color:inherit}
       case "salvar-descricao": {
         var cd = document.querySelector('[data-campo="descricao"]');
         if (c && cd) { c.descricao = cd.value; anotar(c, "mudou a descrição"); }
+        if (c) esquecerTexto("descricao", c.id, "");
         estado.editor = null;
         if (c) gravarCartao(c); else desenhar();
         break;
       }
-      case "cancelar-editor": estado.editor = null; desenhar(); break;
+      case "cancelar-editor": estado.editor = null; esquecerTextos(); desenhar(); break;
 
       case "anexar":
       case "anexar-comentario": {
@@ -3524,6 +3540,7 @@ button,input,textarea,select{font:inherit;color:inherit}
           });
           gravarCartao(c, true);
         }
+        esquecerTexto("novo-item", c.id, idCl2);
         desenhar();
         var ti2 = document.querySelector('[data-campo="novo-item"]');
         if (ti2) { ti2.value = ""; ti2.focus(); }
@@ -3546,6 +3563,7 @@ button,input,textarea,select{font:inherit;color:inherit}
         if (!txtC && !estado.anexosDoComentario.length) break;
         c.comentarios.push({ id: novoId(), texto: txtC, anexos: estado.anexosDoComentario.slice(), em: agora() });
         estado.anexosDoComentario = [];
+        esquecerTexto("comentario", c.id, "");
         gravarCartao(c);
         break;
       }
@@ -3695,6 +3713,9 @@ button,input,textarea,select{font:inherit;color:inherit}
       c.titulo = ev.target.value;
       adiar("titulo" + id, function(){ gravarCartao(c, true); });
     }
+    if (CAMPOS_GUARDADOS[campo]) {
+      estado.textos[chaveTexto(campo, ev.target.getAttribute("data-id"), ev.target.getAttribute("data-cl"))] = ev.target.value;
+    }
     if (campo === "novo-cartao") estado.rascunho.titulo = ev.target.value;
     if (campo === "r-dia" || campo === "r-inicioDia") adiar("repeticao", desenhar);
     if (campo.slice(0, 2) === "r-") {
@@ -3706,6 +3727,11 @@ button,input,textarea,select{font:inherit;color:inherit}
       adiar("busca", desenhar);
     }
   });
+
+  // Os campos cujo texto precisa sobreviver a um redesenho.
+  var CAMPOS_GUARDADOS = {
+    "descricao": 1, "comentario": 1, "novo-item": 1, "nome-lista": 1, "nome-checklist": 1
+  };
 
   document.addEventListener("input", function(ev){
     if (ev.target.id === "dFim" || ev.target.id === "dIni") atualizarRepeticao();
@@ -3737,11 +3763,11 @@ button,input,textarea,select{font:inherit;color:inherit}
     if (ev.key === "Escape") {
       if (!document.getElementById("pop").hidden) { fecharPop(); return; }
       if (!document.getElementById("gaveta").hidden) { document.getElementById("gaveta").hidden = true; return; }
-      if (estado.editor) { estado.editor = null; desenhar(); return; }
+      if (estado.editor) { estado.editor = null; esquecerTextos(); desenhar(); return; }
       if (estado.compondoEm) { estado.compondoEm = null; estado.rascunho = rascunhoVazio(); desenhar(); return; }
       if (estado.novaLista) { estado.novaLista = false; desenhar(); return; }
       if (estado.editandoLista) { estado.editandoLista = null; desenhar(); return; }
-      if (estado.cartaoAberto) { estado.cartaoAberto = null; desenhar(); return; }
+      if (estado.cartaoAberto) { estado.cartaoAberto = null; esquecerTextos(); desenhar(); return; }
       return;
     }
 
@@ -3787,6 +3813,7 @@ button,input,textarea,select{font:inherit;color:inherit}
       var idCl = ev.target.getAttribute("data-cl");
       var nomeCl = ev.target.value.trim();
       estado.editor = null;
+      esquecerTexto("nome-checklist", ev.target.getAttribute("data-id"), idCl);
       if (cc && nomeCl) {
         cc.checklists.forEach(function(cl){ if (cl.id === idCl) cl.nome = nomeCl; });
         gravarCartao(cc);
@@ -3796,6 +3823,7 @@ button,input,textarea,select{font:inherit;color:inherit}
       var l = estado.listas.get(ev.target.getAttribute("data-id"));
       var nome = ev.target.value.trim();
       estado.editandoLista = null;
+      esquecerTexto("nome-lista", ev.target.getAttribute("data-id"), "");
       if (l && nome && nome !== l.nome) { l.nome = nome; gravarQuadro(); }
       else desenhar();
     }
@@ -3817,8 +3845,19 @@ button,input,textarea,select{font:inherit;color:inherit}
   conectar();
 
   // o quadro envelhece sozinho: prazos viram "vence logo" e depois "vencido"
+  // O relógio existe só para envelhecer os prazos ("vence logo" vira "vencido").
+  // Ele nunca pode interromper quem está no meio de alguma coisa: com um cartão
+  // aberto, um campo em foco ou um popover na tela, ele espera a vez.
   window.setInterval(function(){
-    if (estado.vista === "quadro" || estado.vista === "calendario") desenhar();
+    if (estado.vista !== "quadro" && estado.vista !== "calendario") return;
+    if (estado.cartaoAberto || estado.compondoEm || estado.editor ||
+        estado.editandoLista || estado.novaLista) return;
+    if (!document.getElementById("pop").hidden) return;
+    if (!document.getElementById("gaveta").hidden) return;
+    var foco = document.activeElement;
+    if (foco && (foco.tagName === "TEXTAREA" || foco.tagName === "INPUT" ||
+                 foco.isContentEditable)) return;
+    desenhar();
   }, 60000);
 })();
 </script>
