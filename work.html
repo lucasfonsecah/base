@@ -1233,6 +1233,21 @@ button,input,textarea,select{font:inherit;color:inherit}
     return regra.rotulo;
   }
 
+  // "vence logo" não diz nada: logo quando? Melhor o tempo que falta de fato.
+  function faltaTexto(c){
+    var d = paraData(c.prazo);
+    if (!d) return "";
+    var min = Math.round((d.getTime() - Date.now()) / 60000);
+    var atrasado = min < 0;
+    var m = Math.abs(min);
+    var n, unidade;
+    if (m < 60) { n = m || 1; unidade = "min"; }
+    else if (m < 1440) { n = Math.round(m / 60); unidade = n === 1 ? "hora" : "horas"; }
+    else { n = Math.round(m / 1440); unidade = n === 1 ? "dia" : "dias"; }
+    if (atrasado) return "venceu há " + n + " " + unidade;
+    return (n === 1 ? "falta " : "faltam ") + n + " " + unidade;
+  }
+
   function formatarTamanho(n){
     if (!n) return "";
     if (n < 1024) return n + " B";
@@ -2119,8 +2134,10 @@ button,input,textarea,select{font:inherit;color:inherit}
       var e = estadoPrazo(c);
       var classe = e === "vencido" ? " vencido" : (e === "logo" ? " logo" : (e === "feito" ? " feito" : ""));
       var texto = rotuloPeriodo(c);
+      var dica = c.prazoFeito ? "Concluído"
+               : ((e === "vencido" || e === "logo" ? faltaTexto(c) + " · " : "") + "clique para marcar como concluído");
       partes.push('<button type="button" class="selo data' + classe + '" data-acao="alternar-prazo" data-id="' + esc(c.id) + '" ' +
-        'title="' + (c.prazoFeito ? "Concluído" : "Marcar como concluído") + '">' +
+        'title="' + esc(dica) + '">' +
         svg(c.prazoFeito ? "check" : "relogio") + "<span>" + esc(texto) + "</span></button>");
     }
 
@@ -2458,7 +2475,8 @@ button,input,textarea,select{font:inherit;color:inherit}
       var e2 = estadoPrazo(c);
       var cls = e2 === "vencido" ? " vencido" : (e2 === "logo" ? " logo" : (e2 === "feito" ? " feito" : ""));
       var rotulo = rotuloPeriodo(c);
-      var sufixo = e2 === "vencido" ? " (vencido)" : (e2 === "feito" ? " (concluído)" : (e2 === "logo" ? " (vence logo)" : ""));
+      var sufixo = e2 === "feito" ? " (concluído)"
+                 : (e2 === "vencido" || e2 === "logo" ? " · " + faltaTexto(c) : "");
       fileiras += '<div><p class="mini-titulo">' + (c.prazo ? "Prazo" : "Início") + "</p>" +
         '<span class="chip-data' + cls + '">' +
         (c.prazo ? '<input type="checkbox" data-acao="alternar-prazo" data-id="' + esc(c.id) + '"' +
