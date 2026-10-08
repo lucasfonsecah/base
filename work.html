@@ -1067,6 +1067,7 @@ button,input,textarea,select{font:inherit;color:inherit}
   var COL_QUADRO  = "quadro";
   var CHAVE_CARTOES = "minha-pauta:atividades:v1";
   var CHAVE_QUADRO  = "minha-pauta:quadro:v1";
+  var CHAVE_ANTERIOR = "minha-pauta:anterior:v1";
   var CHAVE_PREF    = "minha-pauta:preferencias:v1";
 
   var CORES_ETIQUETA = [
@@ -1557,8 +1558,47 @@ button,input,textarea,select{font:inherit;color:inherit}
       return cru ? JSON.parse(cru) : null;
     } catch (e) { return null; }
   }
+  // Uma cópia de segurança que acompanha o ponto mais alto do quadro: quando
+  // ele chega a um tamanho maior que o da cópia, a cópia é refeita. Se depois
+  // encolher — de uma vez por um erro meu, ou aos poucos sem ninguém notar — o
+  // maior estado continua recuperável. A cada 6 horas ela se atualiza para a
+  // realidade de agora, para não guardar um passado eterno.
+  //
+  // Vai enxuta: sem o histórico de atividade e sem o conteúdo dos anexos. O que
+  // importa recuperar é o trabalho escrito, e o armazenamento do navegador é
+  // pequeno demais para guardar tudo duas vezes.
+  function enxugar(c){
+    var x = Object.assign({}, c);
+    x.atividade = [];
+    if (Array.isArray(x.anexos)) {
+      x.anexos = x.anexos.map(function(a){
+        return a && a.src && a.src.slice(0, 5) === "data:" ? Object.assign({}, a, { src: "" }) : a;
+      });
+    }
+    return x;
+  }
+
+  function guardarAnterior(){
+    try {
+      var cru = window.localStorage.getItem(CHAVE_CARTOES);
+      if (!cru) return;
+      var antes = JSON.parse(cru);
+      if (!Array.isArray(antes) || !antes.length) return;
+      var copia = lerLocal(CHAVE_ANTERIOR);
+      var temCopia = copia && typeof copia.quantos === "number";
+      var velha = temCopia && copia.em &&
+        (Date.now() - new Date(copia.em).getTime() > 6 * 3600 * 1000);
+      if (temCopia && !velha && antes.length <= copia.quantos) return;
+      window.localStorage.setItem(CHAVE_ANTERIOR, JSON.stringify({
+        em: agora(), quantos: antes.length,
+        atividades: antes.map(enxugar), quadro: lerLocal(CHAVE_QUADRO)
+      }));
+    } catch (e) { /* sem espaço para a cópia: a gravação principal é a que importa */ }
+  }
+
   function gravarLocalCartoes(){
     if (!estado.espelhoLiberado) return;
+    guardarAnterior();
     try {
       var lista = [];
       estado.cartoes.forEach(function(c){ lista.push(Object.assign({ id:c.id }, corpoCartao(c))); });
@@ -1648,6 +1688,7 @@ button,input,textarea,select{font:inherit;color:inherit}
         presos.forEach(function(c){ estado.cartoes.set(c.id, c); });
         migrarSePreciso();
         if (primeira && renomearPadroesAntigos()) gravarQuadro(true);
+        if (primeira) recolherOrfaos();
         presos.forEach(function(c){ gravarCartao(c, true); });
         if (primeira && (!temQuadroNaConta || presos.length)) gravarQuadro(true);
 
@@ -1660,6 +1701,25 @@ button,input,textarea,select{font:inherit;color:inherit}
     });
   }
 
+  // Um cartão cuja lista não existe mais fica invisível: some do quadro e
+  // continua ocupando lugar. Acontece ao importar um arquivo cujo quadro tem
+  // outras listas. Em vez de sumir, ele vai para a primeira lista.
+  function recolherOrfaos(){
+    if (!estado.listas.size) return 0;
+    var visiveis = listasVisiveis();
+    if (!visiveis.length) return 0;
+    var destino = visiveis[0];
+    var n = 0;
+    estado.cartoes.forEach(function(c){
+      if (c.lista && estado.listas.has(c.lista)) return;
+      c.lista = destino.id;
+      c.ordem = (++n) * 1024 + 1e6;
+      anotar(c, "recolhido para \u201c" + destino.nome + "\u201d: a lista dele não veio junto");
+      gravarCartao(c, true);
+    });
+    return n;
+  }
+
   function modoLocal(){
     db = null;
     if (!estado.cartoes.size) carregarDoLocal();
@@ -1669,6 +1729,7 @@ button,input,textarea,select{font:inherit;color:inherit}
     estado.pronto = true;
     migrarSePreciso();
     renomearPadroesAntigos();
+    recolherOrfaos();
     gravarLocalQuadro();
     desenhar();
   }
@@ -1923,19 +1984,23 @@ button,input,textarea,select{font:inherit;color:inherit}
                 : (Array.isArray(dados) ? dados : null));
       if (!lista) { avisar("Esse arquivo não parece um export do Work."); return; }
       if (!estado.listas.size) quadroPadrao();
-      var n = 0;
+      var novos = 0, atualizados = 0, jaEstavam = estado.cartoes.size;
       lista.forEach(function(item){
         if (!item || !item.id) return;
         var convertido = (item.lista === undefined && item.ordem === undefined) ? converterAntigo(item) : null;
         var c = normalizarCartao(item.id, convertido || item);
         if (convertido) c._cru = convertido;
+        if (estado.cartoes.has(c.id)) atualizados++; else novos++;
         estado.cartoes.set(c.id, c);
-        n++;
       });
       migrarSePreciso();
+      var recolhidos = recolherOrfaos();
       estado.cartoes.forEach(function(c){ gravarCartao(c, true); });
       gravarQuadro(true);
-      avisar(n + " cartões importados.");
+      avisar(novos + " cartões novos" +
+        (atualizados ? " · " + atualizados + " atualizados" : "") +
+        (jaEstavam - atualizados ? " · " + (jaEstavam - atualizados) + " que já estavam aqui continuam" : "") +
+        (recolhidos ? " · " + recolhidos + " sem lista foram para a primeira" : "") + ".");
       desenhar();
     };
     leitor.onerror = function(){ avisar("Não consegui ler o arquivo."); };
@@ -2940,6 +3005,40 @@ button,input,textarea,select{font:inherit;color:inherit}
       }).join("") + "</div>";
 
     var guardados = lerLocal(CHAVE_CARTOES);
+    // ---- o que existe guardado neste navegador, e como trazer de volta ----
+    var achados = [];
+    try {
+      for (var i = 0; i < window.localStorage.length; i++) {
+        var chave = window.localStorage.key(i);
+        if (!chave || chave.indexOf("minha-pauta:") !== 0) continue;
+        var cru = window.localStorage.getItem(chave) || "";
+        var quantos = null, quando = "";
+        try {
+          var v = JSON.parse(cru);
+          if (Array.isArray(v)) quantos = v.length;
+          else if (v && Array.isArray(v.atividades)) { quantos = v.atividades.length; quando = v.em || ""; }
+        } catch (e) { quantos = -1; }
+        achados.push({ chave: chave, quantos: quantos, quando: quando, peso: cru.length });
+      }
+    } catch (e) { /* armazenamento bloqueado */ }
+
+    var recuperaveis = achados.filter(function(a){
+      return a.quantos > 0 && a.chave !== CHAVE_CARTOES;
+    });
+    if (recuperaveis.length) {
+      html += "<h3>Recuperar</h3>" +
+        '<p style="font-size:12.5px;color:var(--tinta-suave);margin:0 0 8px;line-height:1.5">' +
+        "Há outra cópia guardada neste navegador. Isto acontece quando o quadro encolhe de uma vez: " +
+        "antes de gravar a menor, o Work guarda a maior." +
+        "</p>";
+      recuperaveis.forEach(function(a){
+        html += '<div class="item-arquivo"><span class="nome"><b>' + a.quantos + " cartões</b>" +
+          (a.quando ? " · de " + esc(quandoRelativo(a.quando)) : "") +
+          " · " + esc(formatarTamanho(a.peso)) + "</span>" +
+          '<button type="button" data-acao="recuperar" data-chave="' + esc(a.chave) + '">trazer de volta</button></div>';
+      });
+    }
+
     html += "<h3>Trabalhar em equipe</h3>";
     if (estado.modo === "nuvem") {
       html += '<p style="font-size:12.5px;color:var(--tinta-suave);margin:0 0 10px;line-height:1.5">' +
@@ -3748,6 +3847,28 @@ button,input,textarea,select{font:inherit;color:inherit}
         estado.prefs.tema = el.getAttribute("data-t");
         gravarPrefs(); gravarQuadro(); abrirGaveta();
         break;
+      case "recuperar": {
+        var chaveR = el.getAttribute("data-chave");
+        var guardado = lerLocal(chaveR);
+        var listaR = Array.isArray(guardado) ? guardado
+                   : (guardado && Array.isArray(guardado.atividades) ? guardado.atividades : null);
+        if (!listaR) { avisar("Não consegui ler essa cópia."); break; }
+        if (guardado && guardado.quadro) aplicarQuadro(guardado.quadro);
+        var voltaram = 0;
+        listaR.forEach(function(item){
+          if (!item || !item.id || estado.cartoes.has(item.id)) return;
+          estado.cartoes.set(item.id, normalizarCartao(item.id, item));
+          voltaram++;
+        });
+        // junta, nunca substitui: o que está na tela agora continua
+        recolherOrfaos();
+        estado.cartoes.forEach(function(c){ gravarCartao(c, true); });
+        gravarQuadro(true);
+        avisar(voltaram ? voltaram + " cartões voltaram." : "Essa cópia não tinha nada que já não esteja aqui.");
+        abrirGaveta();
+        desenhar();
+        break;
+      }
       case "exportar": exportar(); break;
       case "importar": document.getElementById("arquivoImport").click(); break;
     }
