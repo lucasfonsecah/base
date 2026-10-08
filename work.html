@@ -1138,6 +1138,11 @@ button,input,textarea,select{font:inherit;color:inherit}
     // aba — remonta o campo a partir do que está gravado e come a frase pela
     // metade.
     textos: {},
+    // Com o quadro compartilhado, "Eu" deixa de bastar: cada comentário e cada
+    // linha de atividade guarda o id de quem fez, e o nome é resolvido na hora
+    // de desenhar (nome é dado de outra pessoa, e muda — nunca se grava).
+    eu: null,        // { id, nome, cor, podeEscrever }
+    perfis: {},      // id -> { nome, cor }
     editandoLista: null,
     novaLista: false,
     editor: null,           // { tipo, id } do campo em edição dentro da janela
@@ -1147,6 +1152,7 @@ button,input,textarea,select{font:inherit;color:inherit}
     modo: "carregando",
     pronto: false,
     espelhoLiberado: true,
+    gravandoQuadro: false,
     aviso: ""
   };
 
@@ -1337,10 +1343,12 @@ button,input,textarea,select{font:inherit;color:inherit}
         return { id: k && k.id ? String(k.id) : novoId(),
                  texto: k && typeof k.texto === "string" ? k.texto : "",
                  anexos: Array.isArray(k.anexos) ? k.anexos.filter(function(i){ return typeof i === "string"; }) : [],
+                 autor: k && typeof k.autor === "string" ? k.autor : "",
                  em: k && typeof k.em === "string" ? k.em : "" };
       }) : [],
       atividade: Array.isArray(d.atividade) ? d.atividade.slice(-40).map(function(a){
         return { texto: a && typeof a.texto === "string" ? a.texto : "",
+                 autor: a && typeof a.autor === "string" ? a.autor : "",
                  em: a && typeof a.em === "string" ? a.em : "" };
       }) : [],
       arquivado: d.arquivado === true,
@@ -1600,6 +1608,18 @@ button,input,textarea,select{font:inherit;color:inherit}
     db.collection(COL_QUADRO).doc("quadro").get().then(function(doc){
       if (doc && doc.exists && doc.data()) { temQuadroNaConta = true; aplicarQuadro(doc.data()); }
     }).catch(function(){}).then(function(){
+      // Listas, etiquetas e membros também chegam ao vivo: sem isto, a lista
+      // que um colega criasse só apareceria no próximo carregamento.
+      try {
+        db.collection(COL_QUADRO).doc("quadro").onSnapshot(function(doc){
+          if (!doc || !doc.exists || !doc.data()) return;
+          if (estado.gravandoQuadro) return;       // o eco da nossa própria escrita
+          aplicarQuadro(doc.data());
+          gravarLocalQuadro();
+          desenharQuandoPuder();
+        }, function(){});
+      } catch (e) { /* sem tempo real no quadro, só nos cartões */ }
+
       db.collection(COL_CARTOES).onSnapshot(function(snap){
         var mapa = new Map();
         snap.docs.forEach(function(doc){
@@ -1635,7 +1655,7 @@ button,input,textarea,select{font:inherit;color:inherit}
         estado.espelhoLiberado = true;
         gravarLocalCartoes();
         gravarLocalQuadro();
-        desenhar();
+        desenharQuandoPuder();
       }, function(){ modoLocal(); });
     });
   }
@@ -1656,6 +1676,7 @@ button,input,textarea,select{font:inherit;color:inherit}
   function conectar(){
     carregarDoLocal();           // a tela abre com o que já está aqui
     pedirAssets();
+    pedirUsuario();
     var pedido = null;
     try { pedido = window.claude && window.claude.use ? window.claude.use("db") : null; }
     catch (e) { pedido = null; }
@@ -1693,7 +1714,10 @@ button,input,textarea,select{font:inherit;color:inherit}
     gravarLocalQuadro();
     if (!silencioso) desenhar();
     if (!db) return;
-    db.collection(COL_QUADRO).doc("quadro").set(corpoQuadro()).catch(relatar);
+    estado.gravandoQuadro = true;
+    db.collection(COL_QUADRO).doc("quadro").set(corpoQuadro()).then(function(){
+      estado.gravandoQuadro = false;
+    }, function(erro){ estado.gravandoQuadro = false; relatar(erro); });
   }
   function relatar(erro){
     var codigo = erro && erro.code;
@@ -1710,13 +1734,57 @@ button,input,textarea,select{font:inherit;color:inherit}
     temporizadores.set(id, window.setTimeout(function(){ temporizadores.delete(id); fn(); }, 600));
   }
   function anotar(c, texto){
-    c.atividade.push({ texto: texto, em: agora() });
+    c.atividade.push({ texto: texto, autor: meuId(), em: agora() });
     if (c.atividade.length > 40) c.atividade = c.atividade.slice(-40);
   }
 
   /* ======================= anexos ======================= */
 
   var assets = null;   // o armazenamento de arquivos do artefato, quando existe
+  var usuario = null;  // quem está vendo a página, quando a conta sabe dizer
+
+  function pedirUsuario(){
+    try {
+      var p = window.claude && window.claude.use ? window.claude.use("user") : null;
+      if (!p || typeof p.then !== "function") return;
+      p.then(function(ns){
+        if (!ns) return;
+        usuario = ns;
+        ns.me().then(function(m){
+          estado.eu = { id: m.id || "", nome: m.name || "", cor: m.color || CORES_MEMBRO[0], podeEscrever: true };
+          return ns.can("data.write");
+        }).then(function(pode){
+          if (estado.eu && pode === false) estado.eu.podeEscrever = false;
+          desenhar();
+        });
+      }, function(){});
+    } catch (e) { /* segue anônimo */ }
+  }
+
+  // Resolve os nomes de quem aparece na tela. Repetir a chamada é barato por
+  // contrato, e só redesenha quando algum nome novo chegou.
+  function resolverPerfis(ids){
+    if (!usuario) return;
+    var faltam = [];
+    ids.forEach(function(i){ if (i && !estado.perfis[i] && faltam.indexOf(i) < 0) faltam.push(i); });
+    if (!faltam.length) return;
+    usuario.profiles(faltam).then(function(mapa){
+      Object.keys(mapa).forEach(function(k){
+        estado.perfis[k] = { nome: mapa[k].name || "", cor: mapa[k].color || CORES_MEMBRO[0] };
+      });
+      desenhar();
+    });
+  }
+
+  function pessoaDe(id){
+    var padrao = (estado.eu && estado.eu.cor) || CORES_MEMBRO[0];
+    if (!id) return { nome: (estado.eu && estado.eu.nome) || "Eu", cor: padrao };
+    if (estado.eu && estado.eu.id === id) return { nome: estado.eu.nome || "Eu", cor: estado.eu.cor };
+    var p = estado.perfis[id];
+    if (p) return { nome: p.nome || "Alguém", cor: p.cor };
+    return { nome: "…", cor: padrao };
+  }
+  function meuId(){ return (estado.eu && estado.eu.id) || ""; }
 
   function pedirAssets(){
     try {
@@ -2411,7 +2479,9 @@ button,input,textarea,select{font:inherit;color:inherit}
 
     // comentários
     html += '<div class="bloco"><div class="bloco-cabeca"><span class="ic">' + svg("comentario") + "</span><h3>Comentários e atividade</h3></div>";
-    html += '<div class="comentario"><span class="av g" style="--cor:' + esc((estado.membros[0] || {}).cor || CORES_MEMBRO[0]) + '">EU</span>' +
+    var mim = pessoaDe(meuId());
+    html += '<div class="comentario"><span class="av g" style="--cor:' + esc(mim.cor) + '" title="' + esc(mim.nome) + '">' +
+      esc(iniciais(mim.nome)) + "</span>" +
       '<div style="flex:1 1 auto"><textarea class="editor uma-linha" data-campo="comentario" data-id="' + esc(c.id) + '" ' +
       'placeholder="Escrever um comentário… (pode colar um print aqui)">' + esc(textoDe("comentario", c.id, "", "")) + "</textarea>" +
       imagensHtml(c, estado.anexosDoComentario, true) +
@@ -2420,8 +2490,10 @@ button,input,textarea,select{font:inherit;color:inherit}
       svg("clipe", 14) + " imagem</button></div></div></div>";
 
     c.comentarios.slice().reverse().forEach(function(k){
-      html += '<div class="comentario"><span class="av g" style="--cor:' + esc((estado.membros[0] || {}).cor || CORES_MEMBRO[0]) + '">EU</span>' +
-        '<div style="flex:1 1 auto"><div class="quem">Eu</div>' +
+      var quem = pessoaDe(k.autor);
+      html += '<div class="comentario"><span class="av g" style="--cor:' + esc(quem.cor) + '">' +
+        esc(iniciais(quem.nome)) + "</span>" +
+        '<div style="flex:1 1 auto"><div class="quem">' + esc(quem.nome) + "</div>" +
         (k.texto ? '<div class="texto">' + esc(k.texto) + "</div>" : "") +
         imagensHtml(c, k.anexos, false) +
         '<div class="quando"><span>' + esc(quandoRelativo(k.em)) + "</span>" +
@@ -2429,8 +2501,10 @@ button,input,textarea,select{font:inherit;color:inherit}
         "</div></div></div>";
     });
     c.atividade.slice().reverse().slice(0, 12).forEach(function(a){
+      var autor = a.autor ? pessoaDe(a.autor).nome + " " : "";
       html += '<div class="atividade-linha"><span class="ic">' + svg("seta", 14) + "</span>" +
-        "<span>" + esc(a.texto) + ' <span class="quando">' + esc(quandoRelativo(a.em)) + "</span></span></div>";
+        "<span>" + (autor ? "<b>" + esc(autor) + "</b>" : "") + esc(a.texto) +
+        ' <span class="quando">' + esc(quandoRelativo(a.em)) + "</span></span></div>";
     });
     html += "</div></div>";
 
@@ -2484,7 +2558,15 @@ button,input,textarea,select{font:inherit;color:inherit}
     if (!estado.pronto) { p.textContent = "Carregando…"; return; }
     var n = 0;
     estado.cartoes.forEach(function(c){ if (!c.arquivado) n++; });
-    p.textContent = (estado.modo === "nuvem" ? "Salvo na conta" : "Salvo neste navegador") + " · " + n + " cartões";
+    if (estado.eu && estado.eu.podeEscrever === false) {
+      p.textContent = "Somente leitura · " + n + " cartões";
+      p.title = "Você está vendo o quadro de outra pessoa sem permissão para editar.";
+      return;
+    }
+    p.textContent = (estado.modo === "nuvem" ? "Na conta, ao vivo" : "Só neste navegador") + " · " + n + " cartões";
+    p.title = estado.modo === "nuvem"
+      ? "As mudanças aparecem na hora para todo mundo que abre este link."
+      : "Este arquivo guarda os dados no próprio navegador. Ninguém mais vê.";
   }
 
   function desenharBarra(){
@@ -2509,6 +2591,14 @@ button,input,textarea,select{font:inherit;color:inherit}
     Array.prototype.forEach.call(document.querySelectorAll("#vistas button"), function(b){
       b.setAttribute("aria-selected", String(b.getAttribute("data-vista") === estado.vista));
     });
+  }
+
+  // Uma mudança vinda de outra pessoa não pode remontar a tela com um cartão
+  // no meio do caminho entre duas listas: espera a mão soltar.
+  var desenhoPendente = false;
+  function desenharQuandoPuder(){
+    if (arrasto) { desenhoPendente = true; return; }
+    desenhar();
   }
 
   function desenhar(){
@@ -2553,6 +2643,11 @@ button,input,textarea,select{font:inherit;color:inherit}
 
     var veu = document.getElementById("veu");
     if (estado.cartaoAberto && estado.cartoes.has(estado.cartaoAberto)) {
+      var aberto = estado.cartoes.get(estado.cartaoAberto);
+      var quemNaTela = [];
+      aberto.comentarios.forEach(function(k){ if (k.autor) quemNaTela.push(k.autor); });
+      aberto.atividade.forEach(function(a){ if (a.autor) quemNaTela.push(a.autor); });
+      resolverPerfis(quemNaTela);
       document.getElementById("janela").innerHTML = janelaHtml(estado.cartoes.get(estado.cartaoAberto));
       veu.hidden = false;
       Array.prototype.forEach.call(document.querySelectorAll(".janela textarea"), crescer);
@@ -2845,6 +2940,25 @@ button,input,textarea,select{font:inherit;color:inherit}
       }).join("") + "</div>";
 
     var guardados = lerLocal(CHAVE_CARTOES);
+    html += "<h3>Trabalhar em equipe</h3>";
+    if (estado.modo === "nuvem") {
+      html += '<p style="font-size:12.5px;color:var(--tinta-suave);margin:0 0 10px;line-height:1.5">' +
+        "Este quadro está <b>na sua conta</b> e atualiza ao vivo: o que você muda aparece na hora " +
+        "para quem estiver com ele aberto.<br><br>" +
+        "Para o time entrar, use o botão <b>Compartilhar</b> da própria página do Work (fica no alto " +
+        "da janela do Claude, fora do quadro) e dê acesso de <b>edição</b> a cada pessoa. " +
+        "Quem receber só leitura vê tudo, mas não consegue mexer." +
+        "</p>";
+    } else {
+      html += '<p style="font-size:12.5px;color:var(--tinta-suave);margin:0 0 10px;line-height:1.5">' +
+        "<b>Este arquivo é só seu.</b> Aberto do disco, ele guarda tudo no próprio navegador — " +
+        "outra pessoa, outro computador ou outro navegador não enxergam nada daqui, e não há " +
+        "tempo real possível.<br><br>" +
+        "Para trabalhar em equipe, abra o <b>Work pelo link do Claude</b> em vez deste arquivo: " +
+        "lá o quadro fica na sua conta, atualiza ao vivo e pode ser compartilhado. " +
+        "Leve o que já existe aqui com <b>Exportar tudo</b> e, do outro lado, <b>Importar arquivo</b>." +
+        "</p>";
+    }
     html += "<h3>Dados e backup</h3><dl class='dl-dados'>" +
       "<dt>Salvando em</dt><dd>" + (estado.modo === "nuvem" ? "sua conta" : "só neste navegador") + "</dd>" +
       "<dt>No quadro</dt><dd>" + estado.cartoes.size + " cartões</dd>" +
@@ -3129,7 +3243,13 @@ button,input,textarea,select{font:inherit;color:inherit}
     arrasto = null;
     if (!a) return;
     document.body.style.userSelect = "";
-    if (!a.ativo) return;
+    if (!a.ativo) {
+      // Não houve arraste: foi um clique. Se chegou mudança de outra pessoa
+      // enquanto o botão estava apertado, refazer a tela agora arrancaria o
+      // elemento antes do evento de clique chegar nele — e o clique sumiria.
+      if (desenhoPendente) { desenhoPendente = false; window.setTimeout(desenhar, 0); }
+      return;
+    }
     suprimirClique = true;
     window.setTimeout(function(){ suprimirClique = false; }, 0);
 
@@ -3165,6 +3285,7 @@ button,input,textarea,select{font:inherit;color:inherit}
       if (l) { l.ordem = ordemEntre(la ? la.ordem : null, lb ? lb.ordem : null); gravarQuadro(); }
       else desenhar();
     }
+    desenhoPendente = false;
   }
 
   document.addEventListener("pointerdown", function(ev){
@@ -3561,7 +3682,8 @@ button,input,textarea,select{font:inherit;color:inherit}
         var campoC = document.querySelector('[data-campo="comentario"]');
         var txtC = campoC ? campoC.value.trim() : "";
         if (!txtC && !estado.anexosDoComentario.length) break;
-        c.comentarios.push({ id: novoId(), texto: txtC, anexos: estado.anexosDoComentario.slice(), em: agora() });
+        c.comentarios.push({ id: novoId(), texto: txtC, autor: meuId(),
+                            anexos: estado.anexosDoComentario.slice(), em: agora() });
         estado.anexosDoComentario = [];
         esquecerTexto("comentario", c.id, "");
         gravarCartao(c);
