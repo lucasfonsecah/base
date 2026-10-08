@@ -1,0 +1,4124 @@
+<title>Work</title>
+
+<style>
+/* ===========================================================================
+   Work — um quadro no feitio do Trello.
+   Listas que a pessoa cria, cartões que se arrastam entre elas, e tudo o que
+   um cartão do Trello carrega: etiquetas, membros, datas, checklists,
+   comentários, atividade e arquivo.
+   =========================================================================== */
+
+:root{
+  color-scheme:light;
+  /* O quadro é a cor de fundo; o resto é a interface por cima dela. */
+  --fundo:#0C66E4;
+  --topo:#1D2125;
+  --topo-tinta:#DEE4EA;
+  --lista:#F1F2F4;
+  --cartao:#FFFFFF;
+  --tinta:#172B4D;
+  --tinta-suave:#44546F;
+  --tinta-fraca:#626F86;
+  --linha:#DCDFE4;
+  --azul:#0C66E4;
+  --azul-forte:#0055CC;
+  --azul-fraco:#E9F2FF;
+  --neutro:rgba(9,30,66,.08);
+  --neutro-forte:rgba(9,30,66,.14);
+  --sobre-fundo:rgba(255,255,255,.24);
+  --sobre-fundo-forte:rgba(255,255,255,.36);
+  --sombra-cartao:0 1px 1px rgba(9,30,66,.25), 0 0 1px rgba(9,30,66,.31);
+  --sombra-pop:0 8px 12px rgba(9,30,66,.15), 0 0 1px rgba(9,30,66,.31);
+  --verde:#216E4E;
+  --verde-fundo:#DCFFF1;
+  --vermelho:#AE2E24;
+  --vermelho-fundo:#FFECEB;
+  --sobre-vermelho:#FFFFFF;
+  --amarelo:#7F5F01;
+  --amarelo-fundo:#FFF7D6;
+  /* o selo de prazo não muda com o tema: é um sinal, e sinal se mantém */
+  --prazo-vencido:#C9372C;
+  --prazo-vencido-tinta:#FFFFFF;
+  --prazo-logo:#F5CD47;
+  --prazo-logo-tinta:#172B4D;
+  --prazo-feito:#4BCE97;
+  --prazo-feito-tinta:#172B4D;
+
+  /* As dez cores de etiqueta. São decorativas: o nome vai escrito do lado
+     delas no cartão e no seletor, então nenhuma informação mora só na cor. */
+  --e-verde:#4BCE97;
+  --e-amarelo:#F5CD47;
+  --e-laranja:#FEA362;
+  --e-vermelho:#F87168;
+  --e-roxo:#9F8FEF;
+  --e-azul:#579DFF;
+  --e-ceu:#6CC3E0;
+  --e-lima:#94C748;
+  --e-rosa:#E774BB;
+  --e-cinza:#8590A2;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-tema="claro"]){
+    color-scheme:dark;
+    --topo:#1D2125;
+    --topo-tinta:#B6C2CF;
+    --lista:#161A1D;
+    --cartao:#22272B;
+    --tinta:#B6C2CF;
+    --tinta-suave:#9FADBC;
+    --tinta-fraca:#8C9BAB;
+    --linha:#2C333A;
+    --azul:#579DFF;
+    --azul-forte:#85B8FF;
+    --azul-fraco:#1C2B41;
+    --neutro:rgba(166,197,226,.12);
+    --neutro-forte:rgba(166,197,226,.2);
+    --sobre-fundo:rgba(0,0,0,.28);
+    --sobre-fundo-forte:rgba(0,0,0,.42);
+    --sombra-cartao:0 1px 1px rgba(0,0,0,.5);
+    --sombra-pop:0 8px 12px rgba(0,0,0,.45);
+    --verde:#7EE2B8;
+    --verde-fundo:#164B35;
+    --vermelho:#FD9891;
+    --vermelho-fundo:#5D1F1A;
+    --sobre-vermelho:#1D2125;
+    --amarelo:#F5CD47;
+    --amarelo-fundo:#533F04;
+  }
+}
+:root[data-tema="escuro"]{
+  color-scheme:dark;
+  --topo:#1D2125;
+  --topo-tinta:#B6C2CF;
+  --lista:#161A1D;
+  --cartao:#22272B;
+  --tinta:#B6C2CF;
+  --tinta-suave:#9FADBC;
+  --tinta-fraca:#8C9BAB;
+  --linha:#2C333A;
+  --azul:#579DFF;
+  --azul-forte:#85B8FF;
+  --azul-fraco:#1C2B41;
+  --neutro:rgba(166,197,226,.12);
+  --neutro-forte:rgba(166,197,226,.2);
+  --sobre-fundo:rgba(0,0,0,.28);
+  --sobre-fundo-forte:rgba(0,0,0,.42);
+  --sombra-cartao:0 1px 1px rgba(0,0,0,.5);
+  --sombra-pop:0 8px 12px rgba(0,0,0,.45);
+  --verde:#7EE2B8;
+  --verde-fundo:#164B35;
+  --vermelho:#FD9891;
+  --vermelho-fundo:#5D1F1A;
+  --sobre-vermelho:#1D2125;
+  --amarelo:#F5CD47;
+  --amarelo-fundo:#533F04;
+}
+
+*{box-sizing:border-box}
+/* O [hidden] do navegador é regra de folha de agente: qualquer `display` numa
+   classe nossa ganha dele. Sem esta linha, modais e popovers nascem abertos
+   no arquivo HTML baixado, que não vem com o embrulho da página publicada. */
+[hidden]{display:none !important}
+
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:14px;
+  line-height:1.4;
+  color:var(--tinta);
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+}
+button,input,textarea,select{font:inherit;color:inherit}
+:is(button,input,textarea,select,[tabindex]):focus-visible{
+  outline:2px solid var(--azul);
+  outline-offset:1px;
+}
+
+.app{
+  display:flex;
+  flex-direction:column;
+  height:100vh;
+  height:100dvh;
+  background:var(--fundo);
+}
+/* no tema escuro o fundo do quadro perde o brilho: a cor continua a mesma,
+   só com um véu por cima, que é o que o Trello faz */
+@media (prefers-color-scheme: dark){
+  :root:not([data-tema="claro"]) .app{background-image:linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45))}
+}
+:root[data-tema="escuro"] .app{background-image:linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45))}
+:root[data-tema="claro"] .app{background-image:none}
+
+/* ---------- barra de cima ---------- */
+.topo{
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  height:48px;
+  padding:0 10px;
+  background:var(--topo);
+  color:var(--topo-tinta);
+  border-bottom:1px solid rgba(255,255,255,.12);
+}
+.topo-marca{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  font-weight:700;
+  font-size:17px;
+  letter-spacing:-.02em;
+  color:#fff;
+  padding-right:6px;
+}
+.topo-marca .sinal{
+  display:grid;
+  place-items:center;
+  width:24px;height:24px;
+  border-radius:5px;
+  background:linear-gradient(145deg,#579DFF,#0C66E4);
+  color:#fff;font-size:13px;font-weight:700;
+}
+.topo-btn{
+  border:0;
+  border-radius:4px;
+  background:transparent;
+  color:var(--topo-tinta);
+  padding:6px 10px;
+  cursor:pointer;
+  font-size:14px;
+}
+.topo-btn:hover{background:rgba(255,255,255,.12)}
+.busca{
+  position:relative;
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+}
+.busca input{
+  width:200px;
+  border:1px solid rgba(255,255,255,.3);
+  border-radius:4px;
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  padding:5px 10px 5px 28px;
+}
+.busca input::placeholder{color:rgba(255,255,255,.65)}
+.busca input:focus{background:#fff;color:var(--tinta);width:260px}
+.busca input:focus::placeholder{color:var(--tinta-fraca)}
+.busca .lupa{
+  position:absolute;left:8px;top:50%;transform:translateY(-50%);
+  width:14px;height:14px;opacity:.7;pointer-events:none;
+}
+.busca input:focus ~ .lupa{opacity:.55}
+
+/* ---------- barra do quadro ---------- */
+.barra{
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 12px;
+  background:var(--sobre-fundo);
+  backdrop-filter:blur(6px);
+  overflow-x:auto;
+  scrollbar-width:thin;
+}
+.barra h1{
+  margin:0;
+  font-size:18px;
+  font-weight:700;
+  color:#fff;
+  padding:4px 8px;
+  white-space:nowrap;
+}
+.vistas{display:flex;gap:2px;background:rgba(255,255,255,.16);border-radius:4px;padding:2px}
+.vistas button{
+  border:0;background:transparent;color:#fff;
+  padding:4px 10px;border-radius:3px;cursor:pointer;white-space:nowrap;
+}
+.vistas button:hover{background:rgba(255,255,255,.18)}
+.vistas button[aria-selected="true"]{background:#fff;color:var(--tinta);font-weight:600}
+.barra .separa{width:1px;height:22px;background:rgba(255,255,255,.35);flex:0 0 auto}
+.btn-barra{
+  display:inline-flex;align-items:center;gap:6px;
+  border:0;border-radius:4px;
+  background:rgba(255,255,255,.2);
+  color:#fff;
+  padding:6px 10px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.btn-barra:hover{background:rgba(255,255,255,.3)}
+.btn-barra.ativo{background:#fff;color:var(--tinta);font-weight:600}
+.barra .fim{margin-left:auto;display:flex;align-items:center;gap:8px}
+.membros-barra{display:flex;align-items:center;gap:-4px}
+.membros-barra .av{margin-right:-6px;border:2px solid var(--sobre-fundo)}
+.pilula-estado{
+  font-size:11.5px;
+  color:#fff;
+  background:rgba(0,0,0,.22);
+  border-radius:999px;
+  padding:3px 10px;
+  white-space:nowrap;
+}
+
+/* ---------- palco ---------- */
+.palco{flex:1 1 auto;min-height:0;position:relative}
+
+/* ---------- quadro ---------- */
+.quadro{
+  display:flex;
+  align-items:flex-start;
+  gap:8px;
+  height:100%;
+  padding:8px;
+  overflow-x:auto;
+  overflow-y:hidden;
+}
+.lista{
+  flex:0 0 272px;
+  max-height:100%;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  background:var(--lista);
+  border-radius:12px;
+  padding:8px;
+  box-shadow:0 1px 1px rgba(9,30,66,.2);
+}
+.lista.arrastando-lista{opacity:.4}
+.cabeca-lista{
+  display:flex;
+  align-items:flex-start;
+  gap:4px;
+  padding:4px 4px 8px 8px;
+  cursor:grab;
+}
+.cabeca-lista h2{
+  flex:1 1 auto;
+  margin:0;
+  font-size:14px;
+  font-weight:600;
+  color:var(--tinta);
+  min-width:0;
+  word-break:break-word;
+  padding:2px 0;
+  cursor:pointer;
+}
+.cabeca-lista .n{
+  font-size:12px;
+  color:var(--tinta-fraca);
+  padding:3px 4px;
+  flex:0 0 auto;
+}
+.edita-nome{
+  flex:1 1 auto;
+  width:100%;
+  border:2px solid var(--azul);
+  border-radius:4px;
+  background:var(--cartao);
+  padding:2px 6px;
+  font-size:14px;
+  font-weight:600;
+  resize:none;
+  overflow:hidden;
+}
+.icone-botao{
+  flex:0 0 auto;
+  display:grid;place-items:center;
+  width:28px;height:28px;
+  border:0;border-radius:6px;
+  background:transparent;
+  color:var(--tinta-suave);
+  cursor:pointer;
+}
+.icone-botao:hover{background:var(--neutro)}
+.icone-botao svg{width:16px;height:16px}
+
+.corpo-lista{
+  flex:1 1 auto;
+  min-height:8px;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:0 4px;
+  margin:0 -4px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  scrollbar-width:thin;
+}
+.corpo-lista:empty{min-height:4px}
+.lista-vazia{
+  padding:10px 6px;
+  font-size:13px;
+  color:var(--tinta-fraca);
+  text-align:center;
+}
+
+/* ---------- cartão ---------- */
+.cartao{
+  position:relative;
+  display:block;
+  width:100%;
+  text-align:left;
+  background:var(--cartao);
+  border:0;
+  border-radius:8px;
+  box-shadow:var(--sombra-cartao);
+  padding:8px 12px 4px;
+  cursor:pointer;
+  touch-action:none;
+}
+.cartao:hover{background:color-mix(in srgb,var(--cartao) 92%,var(--tinta))}
+.cartao.escondido{display:none}
+.cartao.fantasma{opacity:.35}
+.cartao .lapis{
+  position:absolute;top:4px;right:4px;
+  width:26px;height:26px;
+  display:none;place-items:center;
+  border:0;border-radius:6px;
+  background:var(--cartao);
+  color:var(--tinta-suave);
+  cursor:pointer;
+}
+.cartao:hover .lapis{display:grid}
+.cartao .lapis:hover{background:var(--neutro-forte)}
+.etiquetas-cartao{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
+.et{
+  height:8px;
+  min-width:40px;
+  border:0;
+  border-radius:4px;
+  background:var(--cor);
+  cursor:pointer;
+}
+.et.com-texto{
+  height:auto;
+  min-width:0;
+  padding:1px 8px;
+  font-size:12px;
+  font-weight:600;
+  color:#1F1F21;
+  line-height:1.35;
+  max-width:100%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.titulo-cartao{
+  display:block;
+  font-size:14px;
+  line-height:1.35;
+  color:var(--tinta);
+  word-break:break-word;
+  margin-bottom:4px;
+}
+.selos{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin-bottom:4px;min-height:4px}
+/* Alguns selos são <button> (o do prazo, que marca como concluído) e outros são
+   <span>. Sem zerar borda e fundo, o navegador desenha o botão com a moldura
+   cinza dele em volta — era o contorno escuro em volta da data. */
+.selo{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  font-size:12px;
+  color:var(--tinta-fraca);
+  border:0;
+  background:transparent;
+  border-radius:4px;
+  padding:2px 4px;
+  max-width:100%;
+  text-align:left;
+}
+.selo svg{width:14px;height:14px;flex:0 0 auto}
+.selo.data{cursor:pointer}
+.selo.data:not(.vencido):not(.logo):not(.feito):hover{background:var(--neutro)}
+.selo.data.vencido:hover,.selo.data.logo:hover,.selo.data.feito:hover{filter:brightness(.94)}
+.selo.data.vencido,.selo.data.logo,.selo.data.feito{
+  padding:2px 7px;
+  border-radius:3px;
+  font-weight:500;
+}
+.selo.vencido{background:var(--prazo-vencido);color:var(--prazo-vencido-tinta)}
+.selo.logo{background:var(--prazo-logo);color:var(--prazo-logo-tinta)}
+.selo.feito{background:var(--prazo-feito);color:var(--prazo-feito-tinta)}
+.selo.completa{background:var(--verde-fundo);color:var(--verde)}
+.membros-cartao{display:flex;gap:4px;margin-left:auto;flex:0 0 auto}
+.av{
+  display:grid;place-items:center;
+  width:24px;height:24px;
+  border:0;
+  border-radius:50%;
+  background:var(--cor,#8590A2);
+  color:#fff;
+  font-size:11px;
+  font-weight:600;
+  flex:0 0 auto;
+  letter-spacing:.02em;
+}
+.av.g{width:32px;height:32px;font-size:13px}
+.vaga{
+  border-radius:8px;
+  background:var(--neutro-forte);
+  flex:0 0 auto;
+}
+
+/* ---------- compositor ---------- */
+.compor{
+  background:var(--cartao);
+  border-radius:8px;
+  box-shadow:var(--sombra-cartao);
+  padding:8px 12px;
+}
+.compor textarea{
+  width:100%;
+  border:0;
+  background:transparent;
+  resize:none;
+  overflow:hidden;
+  min-height:54px;
+  padding:0;
+}
+.compor textarea::placeholder{color:var(--tinta-fraca)}
+.acoes-compor{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding-top:8px}
+.acoes-compor .btn{white-space:nowrap}
+/* o compositor com detalhes: o cartão já nasce com prazo, descrição e checklist */
+.detalhes-compor{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:8px;
+  padding-top:10px;
+  border-top:1px solid var(--linha);
+}
+.detalhes-compor .mini-titulo{margin:0 0 5px}
+.compor textarea.extra{
+  min-height:0;
+  border:1px solid var(--linha);
+  border-radius:4px;
+  background:var(--lista);
+  padding:6px 8px;
+  font-size:13px;
+}
+.campo-linha{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.par-data{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  border:1px solid var(--linha);
+  border-radius:4px;
+  background:var(--lista);
+  padding:3px 7px;
+  font-size:12px;
+}
+.par-data > span{color:var(--tinta-fraca);font-size:11px}
+.par-data input,.par-data select{
+  border:0;background:transparent;color:var(--tinta);
+  font-size:12px;padding:2px 0;width:auto;min-width:0;
+}
+.et.alvo{cursor:pointer;border:0;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;color:#1F1F21;font-weight:600;font-size:12px}
+.et.alvo[aria-pressed="false"]{opacity:.55}
+.av.alvo{cursor:pointer;border:0}
+.av.alvo[aria-pressed="false"]{opacity:.4}
+.av.alvo[aria-pressed="true"]{box-shadow:0 0 0 2px var(--cartao),0 0 0 4px var(--azul)}
+.btn{
+  border:0;
+  border-radius:4px;
+  background:var(--azul);
+  color:#fff;
+  font-weight:500;
+  padding:6px 12px;
+  cursor:pointer;
+}
+.btn:hover{background:var(--azul-forte)}
+.btn.neutro{background:var(--neutro);color:var(--tinta)}
+.btn.neutro:hover{background:var(--neutro-forte)}
+.btn.perigo{background:var(--vermelho);color:#fff}
+.btn.perigo:hover{filter:brightness(1.1)}
+.btn.fantasma{background:transparent;color:var(--tinta-suave)}
+.btn.fantasma:hover{background:var(--neutro)}
+.btn[disabled]{opacity:.5;cursor:default}
+
+.add-cartao{
+  display:flex;align-items:center;gap:8px;
+  width:100%;
+  border:0;border-radius:8px;
+  background:transparent;
+  color:var(--tinta-suave);
+  padding:8px 8px;
+  margin-top:8px;
+  cursor:pointer;
+  text-align:left;
+}
+.add-cartao:hover{background:var(--neutro);color:var(--tinta)}
+
+.add-lista{
+  flex:0 0 272px;
+  border-radius:12px;
+  background:var(--sobre-fundo-forte);
+  color:#fff;
+  padding:10px 12px;
+  border:0;
+  cursor:pointer;
+  text-align:left;
+  display:flex;align-items:center;gap:8px;
+  font-weight:500;
+}
+.add-lista:hover{background:rgba(255,255,255,.44)}
+:root[data-tema="escuro"] .add-lista:hover,
+:root:not([data-tema="claro"]) .add-lista:hover{background:rgba(0,0,0,.52)}
+.caixa-lista{
+  flex:0 0 272px;
+  border-radius:12px;
+  background:var(--lista);
+  padding:8px;
+}
+.caixa-lista input{
+  width:100%;
+  border:2px solid var(--azul);
+  border-radius:4px;
+  background:var(--cartao);
+  padding:6px 10px;
+  margin-bottom:8px;
+}
+
+/* ---------- popover ---------- */
+.pop{
+  position:fixed;
+  z-index:60;
+  width:304px;
+  max-width:calc(100vw - 16px);
+  background:var(--cartao);
+  border-radius:8px;
+  box-shadow:var(--sombra-pop);
+  padding:12px;
+  max-height:min(560px,80vh);
+  overflow-y:auto;
+}
+.pop-cabeca{
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+  padding-bottom:10px;
+  font-size:14px;font-weight:600;color:var(--tinta-suave);
+}
+.pop-x{
+  position:absolute;right:-4px;top:-4px;
+  width:28px;height:28px;
+  display:grid;place-items:center;
+  border:0;border-radius:6px;background:transparent;
+  color:var(--tinta-suave);cursor:pointer;font-size:16px;
+}
+.pop-x:hover{background:var(--neutro)}
+.pop label.campo{display:block;font-size:12px;font-weight:600;color:var(--tinta-suave);margin:8px 0 4px}
+.pop input[type="text"],.pop input[type="date"],.pop input[type="time"],.pop textarea,.pop select{
+  width:100%;
+  border:1px solid var(--linha);
+  border-radius:4px;
+  background:var(--cartao);
+  padding:7px 10px;
+}
+.pop input:focus,.pop textarea:focus,.pop select:focus{border-color:var(--azul);outline:none;box-shadow:0 0 0 1px var(--azul)}
+.lista-pop{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}
+.item-pop{
+  display:flex;align-items:center;gap:8px;
+  width:100%;
+  border:0;border-radius:4px;
+  background:transparent;
+  padding:7px 8px;
+  cursor:pointer;
+  text-align:left;
+  color:var(--tinta);
+}
+.item-pop:hover{background:var(--neutro)}
+.item-pop .marca{margin-left:auto;color:var(--tinta-suave)}
+.linha-etiqueta{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.btn-etiqueta{
+  flex:1 1 auto;
+  min-height:32px;
+  border:0;border-radius:4px;
+  background:var(--cor);
+  color:#1F1F21;
+  font-weight:600;
+  font-size:13px;
+  text-align:left;
+  padding:6px 10px;
+  cursor:pointer;
+  display:flex;align-items:center;gap:6px;
+}
+.btn-etiqueta:hover{filter:brightness(.94)}
+.btn-etiqueta .ok{margin-left:auto}
+.grade-cores{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px}
+.grade-cores button{
+  height:32px;border:0;border-radius:4px;background:var(--cor);cursor:pointer;
+  display:grid;place-items:center;color:#1F1F21;
+}
+.grade-cores button[aria-pressed="true"]{box-shadow:0 0 0 2px var(--cartao),0 0 0 4px var(--azul)}
+.aviso-pop{font-size:12px;color:var(--tinta-fraca);margin:8px 0 0}
+
+/* ---------- janela do cartão ---------- */
+.veu{
+  position:fixed;inset:0;z-index:50;
+  background:rgba(0,0,0,.64);
+  overflow-y:auto;
+  padding:48px 8px 60px;
+}
+.janela{
+  width:100%;
+  max-width:768px;
+  margin:0 auto;
+  background:var(--lista);
+  border-radius:12px;
+  box-shadow:0 8px 16px rgba(0,0,0,.35);
+  padding:12px 16px 24px;
+  position:relative;
+}
+.fechar-janela{
+  position:absolute;top:10px;right:10px;
+  width:32px;height:32px;
+  display:grid;place-items:center;
+  border:0;border-radius:50%;
+  background:transparent;color:var(--tinta-suave);
+  cursor:pointer;font-size:18px;
+}
+.fechar-janela:hover{background:var(--neutro)}
+.cabeca-janela{display:flex;gap:12px;padding:8px 40px 4px 0}
+.cabeca-janela .ic{color:var(--tinta-suave);padding-top:6px}
+.cabeca-janela .ic svg{width:20px;height:20px}
+.titulo-janela{
+  width:100%;
+  border:0;background:transparent;
+  font-size:20px;font-weight:600;line-height:1.3;
+  resize:none;overflow:hidden;
+  padding:4px 6px;margin-left:-6px;
+  border-radius:4px;
+}
+.titulo-janela:focus{background:var(--cartao);outline:2px solid var(--azul)}
+.sub-janela{font-size:13px;color:var(--tinta-suave);margin:0 0 14px 32px}
+.sub-janela b{font-weight:600}
+.colunas-janela{display:grid;grid-template-columns:minmax(0,1fr) 168px;gap:16px}
+.bloco{margin-bottom:20px}
+.bloco-cabeca{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.bloco-cabeca .ic{color:var(--tinta-suave);display:grid;place-items:center}
+.bloco-cabeca .ic svg{width:18px;height:18px}
+.bloco-cabeca h3{margin:0;font-size:14px;font-weight:600;flex:1 1 auto}
+.mini-titulo{
+  font-size:12px;font-weight:600;color:var(--tinta-suave);
+  text-transform:none;margin:0 0 6px;
+}
+.fileira{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.add-quadrado{
+  width:32px;height:32px;
+  display:grid;place-items:center;
+  border:0;border-radius:50%;
+  background:var(--neutro);color:var(--tinta-suave);
+  cursor:pointer;
+}
+.add-quadrado:hover{background:var(--neutro-forte)}
+.chip-data{
+  display:inline-flex;align-items:center;gap:6px;
+  border:0;border-radius:4px;
+  background:var(--neutro);
+  color:var(--tinta);
+  padding:7px 10px;
+  cursor:pointer;
+}
+.chip-data:hover{background:var(--neutro-forte)}
+.chip-data.vencido{background:var(--prazo-vencido);color:var(--prazo-vencido-tinta)}
+.chip-data.logo{background:var(--prazo-logo);color:var(--prazo-logo-tinta)}
+.chip-data.feito{background:var(--prazo-feito);color:var(--prazo-feito-tinta)}
+.chip-data input[type="checkbox"]{margin:0;accent-color:var(--verde)}
+.desc-vazia,.desc-texto{
+  width:100%;
+  border:0;border-radius:4px;
+  background:var(--neutro);
+  color:var(--tinta-suave);
+  padding:10px 12px;
+  text-align:left;
+  cursor:pointer;
+  min-height:56px;
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+.desc-texto{background:transparent;color:var(--tinta);padding:0 12px 8px}
+.desc-texto:hover,.desc-vazia:hover{background:var(--neutro-forte)}
+.editor{
+  width:100%;
+  border:0;border-radius:4px;
+  background:var(--cartao);
+  box-shadow:inset 0 0 0 2px var(--azul);
+  padding:10px 12px;
+  resize:vertical;
+  min-height:110px;
+}
+.editor.uma-linha{min-height:0;height:40px;resize:none}
+.acoes-editor{display:flex;gap:8px;margin-top:8px;align-items:center}
+
+.checklist{margin-bottom:18px}
+.barra-check{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.barra-check .pct{font-size:11px;color:var(--tinta-suave);width:30px;text-align:right;flex:0 0 auto}
+.trilho-check{flex:1 1 auto;height:8px;border-radius:4px;background:var(--neutro-forte);overflow:hidden}
+.trilho-check i{display:block;height:100%;background:var(--azul);border-radius:4px;transition:width .2s ease}
+.trilho-check i.cheio{background:var(--verde)}
+.item-check{
+  display:flex;align-items:flex-start;gap:8px;
+  padding:6px 8px;border-radius:6px;
+}
+.item-check:hover{background:var(--neutro)}
+.item-check input{margin:3px 0 0;width:16px;height:16px;accent-color:var(--azul);flex:0 0 auto;cursor:pointer}
+.item-check span{flex:1 1 auto;word-break:break-word;cursor:pointer}
+.item-check.feito span{text-decoration:line-through;color:var(--tinta-fraca)}
+.item-check .x{
+  opacity:0;border:0;background:transparent;color:var(--tinta-fraca);
+  cursor:pointer;padding:0 4px;flex:0 0 auto;
+}
+.item-check:hover .x{opacity:1}
+
+/* ---------- anexos ---------- */
+.anexos{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px}
+.anexo{
+  margin:0;
+  background:var(--cartao);
+  border-radius:8px;
+  overflow:hidden;
+  box-shadow:var(--sombra-cartao);
+}
+.anexo img{display:block;width:100%;height:96px;object-fit:cover;background:var(--recuo)}
+.anexo .arquivo{
+  display:grid;place-items:center;
+  height:96px;
+  background:var(--lista);
+  color:var(--tinta-suave);
+}
+.anexo .arquivo svg{width:28px;height:28px}
+.anexo figcaption{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;padding:6px 8px;font-size:12px}
+.anexo .nome{flex:1 1 100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--tinta)}
+.anexo .peso{color:var(--tinta-fraca)}
+.anexo figcaption button{
+  margin-left:auto;border:0;background:transparent;color:var(--tinta-fraca);
+  cursor:pointer;text-decoration:underline;padding:0;font-size:12px;
+}
+.anexo figcaption button:hover{color:var(--vermelho)}
+.imagens-comentario{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.img-com{position:relative;display:inline-block}
+.img-com img{
+  display:block;max-width:220px;max-height:150px;
+  border-radius:8px;box-shadow:var(--sombra-cartao);background:var(--recuo);
+}
+.img-com .arquivo{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--cartao);border-radius:8px;padding:6px 10px;
+  font-size:12px;color:var(--tinta);box-shadow:var(--sombra-cartao);
+}
+.img-com .tira{
+  position:absolute;top:-6px;right:-6px;
+  width:22px;height:22px;border:0;border-radius:50%;
+  background:var(--tinta);color:var(--cartao);
+  cursor:pointer;font-size:12px;line-height:1;
+}
+.veu.recebendo .janela{box-shadow:0 0 0 3px var(--azul),0 8px 16px rgba(0,0,0,.35)}
+/* a capa: o primeiro print do cartão aparece no quadro */
+.cartao .capa{display:block;margin:-8px -12px 8px}
+.cartao .capa img{display:block;width:100%;max-height:160px;object-fit:cover;border-radius:8px 8px 0 0}
+.chip-data.alerta{background:var(--prazo-logo);color:var(--prazo-logo-tinta);font-weight:500}
+
+.comentario{display:flex;gap:8px;margin-bottom:12px}
+.comentario .texto{
+  flex:1 1 auto;
+  background:var(--cartao);
+  border-radius:0 8px 8px 8px;
+  box-shadow:var(--sombra-cartao);
+  padding:8px 12px;
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+.comentario .quem{font-size:13px;font-weight:600;margin-bottom:2px}
+.comentario .quando{font-size:11px;color:var(--tinta-fraca);margin-top:4px;display:flex;gap:10px}
+.comentario .quando button{border:0;background:transparent;color:var(--tinta-fraca);text-decoration:underline;cursor:pointer;padding:0}
+.atividade-linha{display:flex;gap:8px;margin-bottom:10px;font-size:13px;color:var(--tinta-suave)}
+.atividade-linha .quando{font-size:11px;color:var(--tinta-fraca)}
+
+.lado h4{
+  margin:0 0 6px;
+  font-size:12px;font-weight:600;color:var(--tinta-suave);
+}
+.lado .btn-lado{
+  display:flex;align-items:center;gap:8px;
+  width:100%;
+  border:0;border-radius:4px;
+  background:var(--neutro);
+  color:var(--tinta);
+  padding:7px 10px;
+  margin-bottom:6px;
+  cursor:pointer;
+  text-align:left;
+}
+.lado .btn-lado:hover{background:var(--neutro-forte)}
+.lado .btn-lado svg{width:15px;height:15px;flex:0 0 auto}
+.lado .grupo{margin-bottom:16px}
+
+/* ---------- calendário ---------- */
+.calendario{height:100%;overflow-y:auto;padding:12px}
+.cal-topo{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:10px;color:#fff;
+}
+.cal-topo h2{margin:0;font-size:17px;font-weight:600}
+.cal-grade{
+  display:grid;
+  grid-template-columns:repeat(7,minmax(0,1fr));
+  gap:4px;
+  background:var(--sobre-fundo);
+  border-radius:10px;
+  padding:6px;
+}
+.cal-dia-nome{
+  text-align:center;font-size:11px;font-weight:600;color:#fff;
+  text-transform:uppercase;letter-spacing:.04em;padding:4px 0;
+}
+.cal-cel{
+  background:var(--lista);
+  border-radius:8px;
+  min-height:104px;
+  padding:6px;
+  display:flex;flex-direction:column;gap:4px;
+}
+/* dias de outro mês: a célula continua legível, só o número recua */
+.cal-cel.fora{background:color-mix(in srgb,var(--lista) 55%,transparent)}
+.cal-cel.fora .cal-num{opacity:.5}
+.cal-cel.hoje{box-shadow:inset 0 0 0 2px var(--azul)}
+.cal-num{font-size:12px;font-weight:600;color:var(--tinta-suave)}
+.cal-cartao{
+  display:flex;align-items:center;gap:5px;
+  width:100%;text-align:left;
+  border:0;border-radius:5px;
+  background:var(--cartao);
+  box-shadow:var(--sombra-cartao);
+  padding:4px 6px;
+  font-size:12px;
+  cursor:pointer;
+  overflow:hidden;
+}
+.cal-cartao:hover{filter:brightness(.96)}
+.cal-cartao .pin{width:6px;height:6px;border-radius:50%;background:var(--cor,var(--tinta-fraca));flex:0 0 auto}
+.cal-cartao span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cal-cartao.vencido .pin{background:var(--vermelho)}
+
+/* ---------- painel ---------- */
+.painel{height:100%;overflow-y:auto;padding:14px}
+.cartoes-painel{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.caixa-painel{
+  background:var(--lista);
+  border-radius:10px;
+  padding:14px 16px;
+}
+.caixa-painel h3{margin:0 0 12px;font-size:14px;font-weight:600}
+.numeros{display:flex;flex-wrap:wrap;gap:16px}
+.numero{display:flex;flex-direction:column}
+.numero b{font-size:26px;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
+.numero span{font-size:12px;color:var(--tinta-fraca)}
+.numero.ruim b{color:var(--vermelho)}
+.numero.bom b{color:var(--verde)}
+.numero.atencao b{color:var(--amarelo)}
+.barras{display:flex;flex-direction:column;gap:9px}
+.barra-linha{display:grid;grid-template-columns:minmax(0,96px) 1fr auto;gap:8px;align-items:center;font-size:13px}
+.barra-linha .rot{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--tinta-suave)}
+.barra-linha .trilho{height:14px;border-radius:4px;background:var(--neutro);overflow:hidden}
+.barra-linha .trilho i{display:block;height:100%;background:var(--cor,var(--azul));border-radius:4px}
+.barra-linha .val{font-size:12px;color:var(--tinta-suave);font-variant-numeric:tabular-nums;min-width:18px;text-align:right}
+.vazio-painel{color:var(--tinta-fraca);font-size:13px}
+
+/* ---------- gaveta ---------- */
+/* a barra de desfazer, no pé da tela */
+.torrada{
+  position:fixed;
+  left:50%;
+  bottom:18px;
+  transform:translateX(-50%);
+  z-index:70;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  max-width:calc(100vw - 24px);
+  background:var(--topo);
+  color:#fff;
+  border-radius:8px;
+  box-shadow:0 8px 20px rgba(0,0,0,.35);
+  padding:10px 14px;
+  font-size:13.5px;
+}
+.torrada span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.torrada button{
+  flex:0 0 auto;
+  border:0;background:transparent;
+  color:#8FA2FF;
+  font-weight:600;
+  cursor:pointer;padding:0;
+  text-decoration:underline;
+}
+.torrada button:hover{color:#B6C6FF}
+.btn-lado.perigo{color:var(--vermelho)}
+.btn-lado.perigo:hover{background:var(--vermelho-fundo)}
+
+.gaveta{
+  position:fixed;top:0;right:0;bottom:0;z-index:55;
+  width:340px;max-width:100vw;
+  background:var(--cartao);
+  box-shadow:-6px 0 18px rgba(0,0,0,.25);
+  padding:14px 16px;
+  overflow-y:auto;
+}
+.gaveta h2{margin:0 0 14px;font-size:15px;font-weight:600;text-align:center;position:relative}
+.gaveta h2 button{
+  position:absolute;right:-6px;top:-6px;width:30px;height:30px;
+  border:0;border-radius:6px;background:transparent;color:var(--tinta-suave);cursor:pointer;font-size:16px;
+}
+.gaveta h3{margin:16px 0 8px;font-size:12px;font-weight:600;color:var(--tinta-suave)}
+.cores-fundo{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.cores-fundo button{height:46px;border:0;border-radius:6px;background:var(--cor);cursor:pointer;display:grid;place-items:center;color:#fff}
+.dl-dados{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:13px;margin:0 0 10px}
+.dl-dados dt{color:var(--tinta-fraca)}
+.dl-dados dd{margin:0}
+.item-arquivo{
+  display:flex;align-items:center;gap:8px;
+  background:var(--lista);border-radius:6px;padding:8px 10px;margin-bottom:8px;
+}
+.item-arquivo .nome{flex:1 1 auto;font-size:13px;word-break:break-word}
+.item-arquivo button{border:0;background:transparent;color:var(--azul);cursor:pointer;font-size:12px;text-decoration:underline;padding:0}
+.item-arquivo button.del{color:var(--vermelho)}
+
+/* ---------- arraste ---------- */
+.voando{
+  position:fixed;
+  z-index:80;
+  pointer-events:none;
+  transform:rotate(4deg);
+  box-shadow:0 12px 24px rgba(0,0,0,.35);
+  opacity:.95;
+}
+
+@media (max-width:760px){
+  .barra{flex-wrap:nowrap}
+  .busca input{width:130px}
+  .busca input:focus{width:170px}
+  .colunas-janela{grid-template-columns:minmax(0,1fr)}
+  .veu{padding:12px 6px 40px}
+  .janela{padding:12px 12px 20px}
+  .cal-cel{min-height:72px}
+  .topo-marca span.nome{display:none}
+}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+</style>
+
+<div class="app" id="app">
+  <header class="topo">
+    <div class="topo-marca"><span class="sinal">W</span><span class="nome">Work</span></div>
+    <button type="button" class="topo-btn" data-acao="ir-quadro">Quadro</button>
+    <button type="button" class="topo-btn" data-acao="abrir-gaveta">Menu</button>
+    <div class="busca">
+      <input type="search" id="campoBusca" placeholder="Pesquisar cartões" aria-label="Pesquisar cartões">
+      <svg class="lupa" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </div>
+  </header>
+
+  <div class="barra">
+    <h1 id="nomeQuadro">Work</h1>
+    <div class="vistas" id="vistas" role="tablist">
+      <button type="button" role="tab" data-vista="quadro" aria-selected="true">Quadro</button>
+      <button type="button" role="tab" data-vista="calendario" aria-selected="false">Calendário</button>
+      <button type="button" role="tab" data-vista="painel" aria-selected="false">Painel</button>
+    </div>
+    <span class="separa"></span>
+    <button type="button" class="btn-barra" id="btFiltro" data-acao="abrir-filtro">
+      <svg viewBox="0 0 16 16" aria-hidden="true" width="14" height="14"><path d="M2 4h12M4 8h8M6.5 12h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span id="rotuloFiltro">Filtro</span>
+    </button>
+    <div class="fim">
+      <div class="membros-barra" id="membrosBarra"></div>
+      <button type="button" class="btn-barra" data-acao="abrir-membros-quadro" title="Membros do quadro">+</button>
+      <button type="button" class="btn-barra" id="btArquivados" data-acao="abrir-arquivados">
+        <svg viewBox="0 0 16 16" aria-hidden="true" width="14" height="14"><rect x="2" y="3" width="12" height="3" rx="1" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M3.2 6.5V12a1 1 0 001 1h7.6a1 1 0 001-1V6.5M6.5 9h3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <span id="rotuloArquivados">Arquivados</span>
+      </button>
+      <span class="pilula-estado" id="pilulaEstado">Carregando…</span>
+    </div>
+  </div>
+
+  <main class="palco" id="palco"></main>
+</div>
+
+<div class="pop" id="pop" hidden></div>
+<div class="veu" id="veu" hidden><div class="janela" id="janela" role="dialog" aria-modal="true" aria-label="Cartão"></div></div>
+<aside class="gaveta" id="gaveta" hidden></aside>
+<div class="torrada" id="torrada" hidden></div>
+<input type="file" id="arquivoImport" accept=".json,application/json" hidden>
+<input type="file" id="arquivoAnexo" multiple hidden>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ======================= constantes ======================= */
+
+  var COL_CARTOES = "atividades";   // o mesmo nome de antes: o que já existe continua lá
+  var COL_QUADRO  = "quadro";
+  var CHAVE_CARTOES = "minha-pauta:atividades:v1";
+  var CHAVE_QUADRO  = "minha-pauta:quadro:v1";
+  var CHAVE_ANTERIOR = "minha-pauta:anterior:v1";
+  var CHAVE_PREF    = "minha-pauta:preferencias:v1";
+
+  var CORES_ETIQUETA = [
+    { chave:"verde",    hex:"#4BCE97" },
+    { chave:"amarelo",  hex:"#F5CD47" },
+    { chave:"laranja",  hex:"#FEA362" },
+    { chave:"vermelho", hex:"#F87168" },
+    { chave:"roxo",     hex:"#9F8FEF" },
+    { chave:"azul",     hex:"#579DFF" },
+    { chave:"ceu",      hex:"#6CC3E0" },
+    { chave:"lima",     hex:"#94C748" },
+    { chave:"rosa",     hex:"#E774BB" },
+    { chave:"cinza",    hex:"#8590A2" }
+  ];
+  var CORES_MEMBRO = ["#0C66E4","#216E4E","#A54800","#AE2E24","#5E4DB2","#206A83","#4C6B1F","#943D73"];
+  var FUNDOS = [
+    { nome:"Azul",    hex:"#0C66E4" },
+    { nome:"Verde",   hex:"#1F845A" },
+    { nome:"Laranja", hex:"#B65C02" },
+    { nome:"Vermelho",hex:"#AE2E24" },
+    { nome:"Roxo",    hex:"#5E4DB2" },
+    { nome:"Rosa",    hex:"#943D73" },
+    { nome:"Céu",     hex:"#206A83" },
+    { nome:"Cinza",   hex:"#44546F" }
+  ];
+  var REPETICOES = {
+    diario:    { rotulo:"Todo dia",              passo:function(d){ return somarDias(d,1); } },
+    uteis:     { rotulo:"Todo dia útil",         passo:function(d){ var x=somarDias(d,1); while([0,6].indexOf(diaSemana(x))>=0) x=somarDias(x,1); return x; } },
+    semanal:   { rotulo:"Toda semana",           passo:function(d){ return somarDias(d,7); } },
+    quinzenal: { rotulo:"A cada 15 dias",        passo:function(d){ return somarDias(d,14); } },
+    mensal:    { rotulo:"Todo mês",              passo:function(d){ return somarMeses(d,1); } }
+  };
+  var JANELA_LOGO = 24 * 60;   // minutos: a partir daqui o prazo é "vence logo"
+
+  var DIAS_SEMANA = ["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"];
+
+  // Limites do anexo quando não há onde guardar arquivo de verdade (o HTML
+  // baixado): aí ele vira um endereço de dados dentro do próprio registro.
+  var LADO_MAX = 1600;                      // a maior dimensão de uma imagem guardada
+  var MAX_LOCAL = 1.4 * 1024 * 1024;        // por anexo, no modo sem nuvem
+
+  /* ======================= estado ======================= */
+
+  // O que está sendo escrito no compositor. Mora no estado, e não só no campo,
+  // para sobreviver aos redesenhos (o relógio redesenha o quadro de minuto em
+  // minuto, e perder o que a pessoa digitou no meio seria imperdoável).
+  function rascunhoVazio(){
+    return { titulo:"", descricao:"", dia:"", hora:"", inicioDia:"", inicioHora:"",
+             repete:"", etiquetas:[], membros:[], itens:"" };
+  }
+
+  var estado = {
+    listas: new Map(),      // id -> { id, nome, ordem, arquivada }
+    cartoes: new Map(),     // id -> cartão
+    etiquetas: [],          // [{ id, cor, nome }]
+    membros: [],            // [{ id, nome, cor }]
+    prefs: { fundo:"#0C66E4", textoEtiqueta:false, tema:"", vocab2:false },
+    vista: "quadro",
+    mesCal: "",             // YYYY-MM da vista de calendário
+    cartaoAberto: null,
+    compondoEm: null,       // id da lista com o compositor aberto
+    comporDetalhes: false,  // o compositor está mostrando descrição, datas, etc.
+    rascunho: rascunhoVazio(),
+    anexosDoComentario: [],   // o que foi colado na caixa de comentário e ainda não foi salvo
+    alvoAnexo: null,          // para onde vai o que o seletor de arquivo devolver
+    desfazer: null,           // o caminho de volta do último arquivamento
+    // Texto em digitação que ainda não foi salvo. Sem guardar aqui, qualquer
+    // redesenho — o relógio de minuto em minuto, um salvamento vindo de outra
+    // aba — remonta o campo a partir do que está gravado e come a frase pela
+    // metade.
+    textos: {},
+    // Com o quadro compartilhado, "Eu" deixa de bastar: cada comentário e cada
+    // linha de atividade guarda o id de quem fez, e o nome é resolvido na hora
+    // de desenhar (nome é dado de outra pessoa, e muda — nunca se grava).
+    eu: null,        // { id, nome, cor, podeEscrever }
+    perfis: {},      // id -> { nome, cor }
+    editandoLista: null,
+    novaLista: false,
+    editor: null,           // { tipo, id } do campo em edição dentro da janela
+    filtro: { texto:"", membros:[], etiquetas:[], prazo:"", semMembro:false, semEtiqueta:false },
+    arrasto: null,
+    pendentes: new Set(),
+    modo: "carregando",
+    pronto: false,
+    espelhoLiberado: true,
+    gravandoQuadro: false,
+    aviso: ""
+  };
+
+  var db = null;
+  var temporizadores = new Map();
+
+  /* ======================= utilidades ======================= */
+
+  function esc(v){
+    return String(v == null ? "" : v).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function novoId(){
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  }
+  function dd(n){ return (n < 10 ? "0" : "") + n; }
+  function isoDia(d){ return d.getFullYear() + "-" + dd(d.getMonth()+1) + "-" + dd(d.getDate()); }
+  function hoje(){ return isoDia(new Date()); }
+  function agora(){ return new Date().toISOString(); }
+  function somarDias(iso, n){
+    var p = iso.split("-");
+    var d = new Date(+p[0], +p[1]-1, +p[2]);
+    d.setDate(d.getDate() + n);
+    return isoDia(d);
+  }
+  function somarMeses(iso, n){
+    var p = iso.split("-");
+    var d = new Date(+p[0], +p[1]-1, +p[2]);
+    var dia = d.getDate();
+    d.setDate(1);
+    d.setMonth(d.getMonth() + n);
+    var ultimo = new Date(d.getFullYear(), d.getMonth()+1, 0).getDate();
+    d.setDate(Math.min(dia, ultimo));
+    return isoDia(d);
+  }
+  function diaSemana(iso){
+    var p = iso.split("-");
+    return new Date(+p[0], +p[1]-1, +p[2]).getDay();
+  }
+  // Uma data-e-hora local, "YYYY-MM-DDTHH:MM", vira Date.
+  function paraData(v){
+    if (!v) return null;
+    var m = /^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?$/.exec(v);
+    if (!m) return null;
+    return new Date(+m[1], +m[2]-1, +m[3], m[4] ? +m[4] : 23, m[5] ? +m[5] : 59);
+  }
+  function parteDia(v){ return v ? v.slice(0, 10) : ""; }
+  function parteHora(v){ return v && v.length > 10 ? v.slice(11, 16) : ""; }
+  function juntar(dia, hora){ return dia ? (hora ? dia + "T" + hora : dia) : ""; }
+
+  var MESES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+  var DIAS = ["dom","seg","ter","qua","qui","sex","sáb"];
+
+  function diaTexto(dia){
+    var d = paraData(dia);
+    if (!d) return "";
+    var texto = d.getDate() + " de " + MESES[d.getMonth()].slice(0, 3);
+    if (d.getFullYear() !== new Date().getFullYear()) texto += " de " + d.getFullYear();
+    return texto;
+  }
+  function dataCurta(v){
+    var dia = diaTexto(parteDia(v));
+    if (!dia) return "";
+    return dia + (parteHora(v) ? ", " + parteHora(v) : "");
+  }
+  // "Toda semana" não diz em que dia. Ancorada no prazo, diz: "toda terça-feira".
+  // É o que responde "como faço uma reunião toda terça?" sem campo nenhum novo.
+  function rotuloRepeticao(repete, quando){
+    var regra = REPETICOES[repete];
+    if (!regra) return "";
+    var dia = parteDia(quando);
+    if (!dia) return regra.rotulo;
+    if (repete === "semanal") return "Toda " + DIAS_SEMANA[diaSemana(dia)];
+    if (repete === "quinzenal") return "A cada 15 dias, " + (diaSemana(dia) === 0 || diaSemana(dia) === 6 ? "no " : "na ") + DIAS_SEMANA[diaSemana(dia)].replace("-feira", "");
+    if (repete === "mensal") return "Todo dia " + parseInt(dia.slice(8), 10);
+    return regra.rotulo;
+  }
+
+  // "vence logo" não diz nada: logo quando? Melhor o tempo que falta de fato.
+  function faltaTexto(c){
+    var d = paraData(c.prazo);
+    if (!d) return "";
+    var min = Math.round((d.getTime() - Date.now()) / 60000);
+    var atrasado = min < 0;
+    var m = Math.abs(min);
+    var n, unidade;
+    if (m < 60) { n = m || 1; unidade = "min"; }
+    else if (m < 1440) { n = Math.round(m / 60); unidade = n === 1 ? "hora" : "horas"; }
+    else { n = Math.round(m / 1440); unidade = n === 1 ? "dia" : "dias"; }
+    if (atrasado) return "venceu há " + n + " " + unidade;
+    return (n === 1 ? "falta " : "faltam ") + n + " " + unidade;
+  }
+
+  function formatarTamanho(n){
+    if (!n) return "";
+    if (n < 1024) return n + " B";
+    if (n < 1024 * 1024) return Math.round(n / 1024) + " KB";
+    return (n / 1048576).toFixed(1).replace(".", ",") + " MB";
+  }
+  function ehImagem(tipo){ return /^image\//.test(tipo || ""); }
+
+  // Um período no jeito que se lê: no mesmo dia a data não se repete.
+  function rotuloPeriodo(c){
+    var di = parteDia(c.inicio), df = parteDia(c.prazo);
+    var hi = parteHora(c.inicio), hf = parteHora(c.prazo);
+    if (di && df) {
+      if (di === df) return diaTexto(di) + (hi || hf ? ", " + (hi || "") + (hi && hf ? " – " : "") + (hf || "") : "");
+      return diaTexto(di) + (hi ? ", " + hi : "") + " – " + diaTexto(df) + (hf ? ", " + hf : "");
+    }
+    if (df) return dataCurta(c.prazo);
+    return "Início: " + dataCurta(c.inicio);
+  }
+  function quandoRelativo(carimbo){
+    var d = new Date(carimbo);
+    if (isNaN(d.getTime())) return "";
+    var min = Math.round((Date.now() - d.getTime()) / 60000);
+    if (min < 1) return "agora";
+    if (min < 60) return "há " + min + " min";
+    if (min < 1440) return "há " + Math.floor(min/60) + " h";
+    var dias = Math.floor(min/1440);
+    if (dias < 30) return "há " + dias + (dias === 1 ? " dia" : " dias");
+    return d.getDate() + " de " + MESES[d.getMonth()].slice(0,3) + " às " + dd(d.getHours()) + ":" + dd(d.getMinutes());
+  }
+  function iniciais(nome){
+    var p = String(nome || "").trim().split(/\s+/);
+    if (!p[0]) return "?";
+    return (p[0].charAt(0) + (p.length > 1 ? p[p.length-1].charAt(0) : "")).toUpperCase();
+  }
+  function hexEtiqueta(cor){
+    for (var i = 0; i < CORES_ETIQUETA.length; i++) if (CORES_ETIQUETA[i].chave === cor) return CORES_ETIQUETA[i].hex;
+    return CORES_ETIQUETA[9].hex;
+  }
+  function acharEtiqueta(id){
+    for (var i = 0; i < estado.etiquetas.length; i++) if (estado.etiquetas[i].id === id) return estado.etiquetas[i];
+    return null;
+  }
+  function acharMembro(id){
+    for (var i = 0; i < estado.membros.length; i++) if (estado.membros[i].id === id) return estado.membros[i];
+    return null;
+  }
+  function ordemEntre(a, b){
+    if (a == null && b == null) return 65536;
+    if (a == null) return b - 1024;
+    if (b == null) return a + 1024;
+    return (a + b) / 2;
+  }
+  function listasVisiveis(){
+    var r = [];
+    estado.listas.forEach(function(l){ if (!l.arquivada) r.push(l); });
+    r.sort(function(a, b){ return a.ordem - b.ordem; });
+    return r;
+  }
+  function cartoesDa(lista){
+    var r = [];
+    estado.cartoes.forEach(function(c){ if (!c.arquivado && c.lista === lista) r.push(c); });
+    r.sort(function(a, b){ return a.ordem - b.ordem; });
+    return r;
+  }
+
+  /* ======================= forma dos dados ======================= */
+
+  function normalizarCartao(id, bruto){
+    var d = bruto || {};
+    // Registro das versões antigas (atividade com status e prazo em dia solto):
+    // vira cartão sem perder nada do que foi escrito.
+    if (d.lista === undefined && (d.status !== undefined || d.titulo !== undefined) && d.ordem === undefined) {
+      d = converterAntigo(d);
+    }
+    var c = {
+      id: id,
+      lista: typeof d.lista === "string" ? d.lista : "",
+      ordem: typeof d.ordem === "number" ? d.ordem : 65536,
+      titulo: typeof d.titulo === "string" ? d.titulo : "",
+      descricao: typeof d.descricao === "string" ? d.descricao : "",
+      etiquetas: Array.isArray(d.etiquetas) ? d.etiquetas.filter(function(x){ return typeof x === "string"; }) : [],
+      membros: Array.isArray(d.membros) ? d.membros.filter(function(x){ return typeof x === "string"; }) : [],
+      inicio: typeof d.inicio === "string" ? d.inicio : "",
+      prazo: typeof d.prazo === "string" ? d.prazo : "",
+      prazoFeito: d.prazoFeito === true,
+      feitoEm: typeof d.feitoEm === "string" ? d.feitoEm : "",
+      repete: REPETICOES[d.repete] ? d.repete : "",
+      checklists: Array.isArray(d.checklists) ? d.checklists.map(function(cl){
+        return {
+          id: cl && cl.id ? String(cl.id) : novoId(),
+          nome: cl && typeof cl.nome === "string" ? cl.nome : "Checklist",
+          itens: Array.isArray(cl && cl.itens) ? cl.itens.map(function(it){
+            return { id: it && it.id ? String(it.id) : novoId(),
+                     texto: it && typeof it.texto === "string" ? it.texto : "",
+                     feito: !!(it && it.feito) };
+          }) : []
+        };
+      }) : [],
+      anexos: Array.isArray(d.anexos) ? d.anexos.filter(function(x){ return x && x.src; }).map(function(x){
+        return { id: x.id ? String(x.id) : novoId(),
+                 nome: typeof x.nome === "string" ? x.nome : "arquivo",
+                 tipo: typeof x.tipo === "string" ? x.tipo : "",
+                 tamanho: Number(x.tamanho) || 0,
+                 src: String(x.src),
+                 em: typeof x.em === "string" ? x.em : "" };
+      }) : [],
+      comentarios: Array.isArray(d.comentarios) ? d.comentarios.slice(-60).map(function(k){
+        return { id: k && k.id ? String(k.id) : novoId(),
+                 texto: k && typeof k.texto === "string" ? k.texto : "",
+                 anexos: Array.isArray(k.anexos) ? k.anexos.filter(function(i){ return typeof i === "string"; }) : [],
+                 autor: k && typeof k.autor === "string" ? k.autor : "",
+                 em: k && typeof k.em === "string" ? k.em : "" };
+      }) : [],
+      atividade: Array.isArray(d.atividade) ? d.atividade.slice(-40).map(function(a){
+        return { texto: a && typeof a.texto === "string" ? a.texto : "",
+                 autor: a && typeof a.autor === "string" ? a.autor : "",
+                 em: a && typeof a.em === "string" ? a.em : "" };
+      }) : [],
+      arquivado: d.arquivado === true,
+      criadoEm: typeof d.criadoEm === "string" ? d.criadoEm : agora()
+    };
+    return c;
+  }
+
+  // O que a versão anterior guardava — atividade com status, categoria,
+  // responsável, prazo em dia e horas soltas — no vocabulário do quadro.
+  function converterAntigo(d){
+    var status = d.status === "concluida" || d.status === "andamento" ? d.status : "aberta";
+    var dia = typeof d.prazo === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d.prazo) ? d.prazo : "";
+    var hora = function(v){ return typeof v === "string" && /^\d{2}:\d{2}$/.test(v) ? v : ""; };
+    var limite = hora(d.limite);
+    var inicio = hora(d.inicio !== undefined ? d.inicio : d.hora);
+
+    var comentarios = [];
+    if (Array.isArray(d.atualizacoes)) {
+      d.atualizacoes.forEach(function(a){
+        if (!a || !a.texto) return;
+        comentarios.push({ id: novoId(), em: a.em || "",
+          texto: a.texto + (a.progresso ? "  (" + a.progresso + "%)" : "") });
+      });
+    }
+    return {
+      lista: "",                       // resolvido na migração, pelo status
+      _status: status,
+      ordem: undefined,
+      titulo: typeof d.titulo === "string" ? d.titulo : "",
+      descricao: typeof d.notas === "string" ? d.notas : "",
+      _categoria: typeof d.categoria === "string" ? d.categoria.trim() : "",
+      _responsavel: typeof d.responsavel === "string" ? d.responsavel.trim() : "",
+      _retorno: d.retorno === true,
+      etiquetas: [], membros: [],
+      inicio: juntar(dia, inicio),
+      prazo: juntar(dia, limite),
+      prazoFeito: status === "concluida",
+      feitoEm: typeof d.concluidaEm === "string" ? d.concluidaEm : "",
+      repete: d.repete || "",
+      checklists: [],
+      comentarios: comentarios,
+      atividade: [],
+      arquivado: false,
+      criadoEm: typeof d.criadaEm === "string" ? d.criadaEm : agora()
+    };
+  }
+
+  function corpoCartao(c){
+    return {
+      lista:c.lista, ordem:c.ordem, titulo:c.titulo, descricao:c.descricao,
+      etiquetas:c.etiquetas, membros:c.membros, inicio:c.inicio, prazo:c.prazo,
+      prazoFeito:c.prazoFeito, feitoEm:c.feitoEm, repete:c.repete,
+      checklists:c.checklists, comentarios:c.comentarios, atividade:c.atividade,
+      anexos:c.anexos, arquivado:c.arquivado, criadoEm:c.criadoEm
+    };
+  }
+
+  // Um documento da conta cabe 256 KiB. Um print guardado como endereço de
+  // dados não cabe — e nem deveria: ele só existe assim no arquivo solto, que
+  // não tem onde pôr arquivo. Para a conta, vai a ficha do anexo sem o conteúdo.
+  function corpoNuvem(c){
+    var corpo = corpoCartao(c);
+    corpo.anexos = c.anexos.map(function(a){
+      return a.src.slice(0, 5) === "data:"
+        ? { id:a.id, nome:a.nome, tipo:a.tipo, tamanho:a.tamanho, src:"", em:a.em, soLocal:true }
+        : a;
+    });
+    return corpo;
+  }
+  function corpoQuadro(){
+    var listas = [];
+    estado.listas.forEach(function(l){ listas.push({ id:l.id, nome:l.nome, ordem:l.ordem, arquivada:l.arquivada }); });
+    return { listas:listas, etiquetas:estado.etiquetas, membros:estado.membros, prefs:estado.prefs };
+  }
+  function aplicarQuadro(d){
+    if (!d) return;
+    if (Array.isArray(d.listas)) {
+      estado.listas = new Map();
+      d.listas.forEach(function(l){
+        if (!l || !l.id) return;
+        estado.listas.set(l.id, { id:l.id, nome: String(l.nome || "Lista"),
+          ordem: typeof l.ordem === "number" ? l.ordem : 65536, arquivada: l.arquivada === true });
+      });
+    }
+    if (Array.isArray(d.etiquetas)) estado.etiquetas = d.etiquetas.filter(function(e){ return e && e.id; })
+      .map(function(e){ return { id:String(e.id), cor:String(e.cor || "cinza"), nome:String(e.nome || "") }; });
+    if (Array.isArray(d.membros)) estado.membros = d.membros.filter(function(m){ return m && m.id; })
+      .map(function(m){ return { id:String(m.id), nome:String(m.nome || "?"), cor:String(m.cor || CORES_MEMBRO[0]) }; });
+    if (d.prefs) {
+      if (typeof d.prefs.fundo === "string") estado.prefs.fundo = d.prefs.fundo;
+      estado.prefs.textoEtiqueta = d.prefs.textoEtiqueta === true;
+      if (typeof d.prefs.tema === "string") estado.prefs.tema = d.prefs.tema;
+      if (d.prefs.vocab2 === true) estado.prefs.vocab2 = true;
+    }
+  }
+
+  /* ======================= migração e semente ======================= */
+
+  function etiquetaPorNome(nome){
+    var i;
+    for (i = 0; i < estado.etiquetas.length; i++) {
+      if (estado.etiquetas[i].nome.toLowerCase() === nome.toLowerCase()) return estado.etiquetas[i];
+    }
+    // O quadro já nasce com seis etiquetas sem nome, como no Trello. Batizar uma
+    // delas é melhor do que criar uma décima primeira e deixar as vazias sobrando.
+    for (i = 0; i < estado.etiquetas.length; i++) {
+      if (!estado.etiquetas[i].nome) { estado.etiquetas[i].nome = nome; return estado.etiquetas[i]; }
+    }
+    var usadas = {};
+    estado.etiquetas.forEach(function(e){ usadas[e.cor] = true; });
+    var cor = CORES_ETIQUETA[0].chave;
+    for (var j = 0; j < CORES_ETIQUETA.length; j++) {
+      if (!usadas[CORES_ETIQUETA[j].chave]) { cor = CORES_ETIQUETA[j].chave; break; }
+    }
+    var nova = { id: novoId(), cor: cor, nome: nome };
+    estado.etiquetas.push(nova);
+    return nova;
+  }
+  function membroPorNome(nome){
+    for (var i = 0; i < estado.membros.length; i++) {
+      if (estado.membros[i].nome.toLowerCase() === nome.toLowerCase()) return estado.membros[i];
+    }
+    var novo = { id: novoId(), nome: nome, cor: CORES_MEMBRO[estado.membros.length % CORES_MEMBRO.length] };
+    estado.membros.push(novo);
+    return novo;
+  }
+  function listaPorNome(nome, ordem){
+    var achada = null;
+    estado.listas.forEach(function(l){ if (!achada && l.nome === nome) achada = l; });
+    if (achada) return achada;
+    var nova = { id: novoId(), nome: nome, ordem: ordem, arquivada: false };
+    estado.listas.set(nova.id, nova);
+    return nova;
+  }
+
+  // "Fazendo" e "Concluído" não foram escolha de ninguém: a migração é que deu
+  // esses nomes. Então eles acompanham a mudança do vocabulário, uma vez só e
+  // só enquanto estiverem intocados — lista renomeada à mão fica como está.
+  function renomearPadroesAntigos(){
+    if (estado.prefs.vocab2) return false;
+    var mudou = false;
+    estado.listas.forEach(function(l){
+      if (l.nome === "Fazendo") { l.nome = "Em andamento"; mudou = true; }
+      else if (l.nome === "Concluído") { l.nome = "Entregue"; mudou = true; }
+    });
+    estado.prefs.vocab2 = true;
+    return mudou || true;
+  }
+
+  function quadroPadrao(){
+    estado.listas = new Map();
+    listaPorNome("A fazer", 1024);
+    listaPorNome("Em andamento", 2048);
+    listaPorNome("Entregue", 3072);
+    if (!estado.etiquetas.length) {
+      estado.etiquetas = CORES_ETIQUETA.slice(0, 6).map(function(c){
+        return { id: novoId(), cor: c.chave, nome: "" };
+      });
+    }
+    if (!estado.membros.length) estado.membros = [{ id: novoId(), nome: "Eu", cor: CORES_MEMBRO[0] }];
+  }
+
+  // Os cartões que vieram da versão antiga chegam sem lista: aqui eles ganham
+  // uma, pelo status que tinham, e a categoria/responsável viram etiqueta e
+  // membro. Roda uma vez só — depois disso todo cartão já tem lista.
+  function migrarSePreciso(){
+    var pendentes = [];
+    estado.cartoes.forEach(function(c){ if (!c.lista) pendentes.push(c); });
+    if (!pendentes.length) return false;
+
+    if (!estado.listas.size) quadroPadrao();
+    if (!estado.membros.length) estado.membros = [{ id: novoId(), nome: "Eu", cor: CORES_MEMBRO[0] }];
+
+    var porStatus = {
+      aberta:     listaPorNome("A fazer", 1024).id,
+      andamento:  listaPorNome("Em andamento", 2048).id,
+      concluida:  listaPorNome("Entregue", 3072).id
+    };
+    var contador = {};
+    pendentes.sort(function(a, b){ return (a.criadoEm || "") < (b.criadoEm || "") ? -1 : 1; });
+    pendentes.forEach(function(c){
+      var cru = c._cru || {};
+      var status = cru._status || "aberta";
+      c.lista = porStatus[status] || porStatus.aberta;
+      contador[c.lista] = (contador[c.lista] || 0) + 1;
+      c.ordem = contador[c.lista] * 1024;
+      if (cru._categoria) c.etiquetas = [etiquetaPorNome(cru._categoria).id];
+      var m = [];
+      if (cru._responsavel) m.push(membroPorNome(cru._responsavel).id);
+      if (cru._retorno || !cru._responsavel) m.push(membroPorNome("Eu").id);
+      c.membros = m.filter(function(x, i, a){ return a.indexOf(x) === i; });
+      c.atividade = c.atividade.concat([{ texto: "veio da versão anterior", em: agora() }]);
+      delete c._cru;
+      gravarCartao(c, true);
+    });
+    gravarQuadro();
+    return true;
+  }
+
+  /* ======================= armazenamento ======================= */
+
+  function lerLocal(chave){
+    try {
+      var cru = window.localStorage.getItem(chave);
+      return cru ? JSON.parse(cru) : null;
+    } catch (e) { return null; }
+  }
+  // Uma cópia de segurança que acompanha o ponto mais alto do quadro: quando
+  // ele chega a um tamanho maior que o da cópia, a cópia é refeita. Se depois
+  // encolher — de uma vez por um erro meu, ou aos poucos sem ninguém notar — o
+  // maior estado continua recuperável. A cada 6 horas ela se atualiza para a
+  // realidade de agora, para não guardar um passado eterno.
+  //
+  // Vai enxuta: sem o histórico de atividade e sem o conteúdo dos anexos. O que
+  // importa recuperar é o trabalho escrito, e o armazenamento do navegador é
+  // pequeno demais para guardar tudo duas vezes.
+  function enxugar(c){
+    var x = Object.assign({}, c);
+    x.atividade = [];
+    if (Array.isArray(x.anexos)) {
+      x.anexos = x.anexos.map(function(a){
+        return a && a.src && a.src.slice(0, 5) === "data:" ? Object.assign({}, a, { src: "" }) : a;
+      });
+    }
+    return x;
+  }
+
+  function guardarAnterior(){
+    try {
+      var cru = window.localStorage.getItem(CHAVE_CARTOES);
+      if (!cru) return;
+      var antes = JSON.parse(cru);
+      if (!Array.isArray(antes) || !antes.length) return;
+      var copia = lerLocal(CHAVE_ANTERIOR);
+      var temCopia = copia && typeof copia.quantos === "number";
+      var velha = temCopia && copia.em &&
+        (Date.now() - new Date(copia.em).getTime() > 6 * 3600 * 1000);
+      if (temCopia && !velha && antes.length <= copia.quantos) return;
+      window.localStorage.setItem(CHAVE_ANTERIOR, JSON.stringify({
+        em: agora(), quantos: antes.length,
+        atividades: antes.map(enxugar), quadro: lerLocal(CHAVE_QUADRO)
+      }));
+    } catch (e) { /* sem espaço para a cópia: a gravação principal é a que importa */ }
+  }
+
+  function gravarLocalCartoes(){
+    if (!estado.espelhoLiberado) return;
+    guardarAnterior();
+    try {
+      var lista = [];
+      estado.cartoes.forEach(function(c){ lista.push(Object.assign({ id:c.id }, corpoCartao(c))); });
+      window.localStorage.setItem(CHAVE_CARTOES, JSON.stringify(lista));
+    } catch (e) {
+      // Falhar calado aqui já custou dados uma vez. Agora fala.
+      avisar("Não coube no armazenamento deste navegador. Exporte o quadro e apague anexos grandes.");
+    }
+  }
+  function gravarLocalQuadro(){
+    try { window.localStorage.setItem(CHAVE_QUADRO, JSON.stringify(corpoQuadro())); } catch (e) {}
+  }
+  function gravarPrefs(){
+    try {
+      window.localStorage.setItem(CHAVE_PREF, JSON.stringify({
+        vista: estado.vista, tema: estado.prefs.tema, comporDetalhes: estado.comporDetalhes }));
+    } catch (e) {}
+  }
+  function lerPrefs(){
+    var p = lerLocal(CHAVE_PREF);
+    if (!p) return;
+    if (p.vista === "quadro" || p.vista === "calendario" || p.vista === "painel") estado.vista = p.vista;
+    if (typeof p.tema === "string") estado.prefs.tema = p.tema;
+    estado.comporDetalhes = p.comporDetalhes === true;
+  }
+
+  function carregarDoLocal(){
+    var q = lerLocal(CHAVE_QUADRO);
+    if (q) aplicarQuadro(q);
+    var cs = lerLocal(CHAVE_CARTOES);
+    if (Array.isArray(cs)) {
+      cs.forEach(function(item){
+        if (!item || !item.id) return;
+        var bruto = item;
+        var convertido = null;
+        if (item.lista === undefined && item.ordem === undefined) convertido = converterAntigo(item);
+        var c = normalizarCartao(item.id, convertido || bruto);
+        if (convertido) c._cru = convertido;
+        estado.cartoes.set(c.id, c);
+      });
+    }
+  }
+
+  function assinar(){
+    var temQuadroNaConta = false;
+    var primeira = true;
+    db.collection(COL_QUADRO).doc("quadro").get().then(function(doc){
+      if (doc && doc.exists && doc.data()) { temQuadroNaConta = true; aplicarQuadro(doc.data()); }
+    }).catch(function(){}).then(function(){
+      // Listas, etiquetas e membros também chegam ao vivo: sem isto, a lista
+      // que um colega criasse só apareceria no próximo carregamento.
+      try {
+        db.collection(COL_QUADRO).doc("quadro").onSnapshot(function(doc){
+          if (!doc || !doc.exists || !doc.data()) return;
+          if (estado.gravandoQuadro) return;       // o eco da nossa própria escrita
+          aplicarQuadro(doc.data());
+          gravarLocalQuadro();
+          desenharQuandoPuder();
+        }, function(){});
+      } catch (e) { /* sem tempo real no quadro, só nos cartões */ }
+
+      db.collection(COL_CARTOES).onSnapshot(function(snap){
+        var mapa = new Map();
+        snap.docs.forEach(function(doc){
+          var d = doc.data();
+          if (!d) return;
+          var convertido = (d.lista === undefined && d.ordem === undefined) ? converterAntigo(d) : null;
+          var c = normalizarCartao(doc.id, convertido || d);
+          if (convertido) c._cru = convertido;
+          mapa.set(doc.id, c);
+        });
+        estado.pendentes.forEach(function(id){
+          var local = estado.cartoes.get(id);
+          if (local) mapa.set(id, local); else mapa.delete(id);
+        });
+
+        // Na primeira resposta da conta, o que só existe neste navegador sobe
+        // em vez de sumir da tela. Trocar o mapa local pelo da conta sem isto
+        // apagaria tudo de quem vinha usando a página sem nuvem — foi assim
+        // que um lote de atividades se perdeu uma vez.
+        var presos = [];
+        if (primeira) estado.cartoes.forEach(function(c){ if (!mapa.has(c.id)) presos.push(c); });
+
+        estado.cartoes = mapa;
+        estado.pronto = true;
+        if (!estado.listas.size) quadroPadrao();
+        presos.forEach(function(c){ estado.cartoes.set(c.id, c); });
+        migrarSePreciso();
+        if (primeira && renomearPadroesAntigos()) gravarQuadro(true);
+        if (primeira) recolherOrfaos();
+        presos.forEach(function(c){ gravarCartao(c, true); });
+        if (primeira && (!temQuadroNaConta || presos.length)) gravarQuadro(true);
+
+        primeira = false;
+        estado.espelhoLiberado = true;
+        gravarLocalCartoes();
+        gravarLocalQuadro();
+        desenharQuandoPuder();
+      }, function(){ modoLocal(); });
+    });
+  }
+
+  // Um cartão cuja lista não existe mais fica invisível: some do quadro e
+  // continua ocupando lugar. Acontece ao importar um arquivo cujo quadro tem
+  // outras listas. Em vez de sumir, ele vai para a primeira lista.
+  function recolherOrfaos(){
+    if (!estado.listas.size) return 0;
+    var visiveis = listasVisiveis();
+    if (!visiveis.length) return 0;
+    var destino = visiveis[0];
+    var n = 0;
+    estado.cartoes.forEach(function(c){
+      if (c.lista && estado.listas.has(c.lista)) return;
+      c.lista = destino.id;
+      c.ordem = (++n) * 1024 + 1e6;
+      anotar(c, "recolhido para \u201c" + destino.nome + "\u201d: a lista dele não veio junto");
+      gravarCartao(c, true);
+    });
+    return n;
+  }
+
+  function modoLocal(){
+    db = null;
+    if (!estado.cartoes.size) carregarDoLocal();
+    if (!estado.listas.size) quadroPadrao();
+    estado.modo = "local";
+    estado.espelhoLiberado = true;
+    estado.pronto = true;
+    migrarSePreciso();
+    renomearPadroesAntigos();
+    recolherOrfaos();
+    gravarLocalQuadro();
+    desenhar();
+  }
+
+  function conectar(){
+    carregarDoLocal();           // a tela abre com o que já está aqui
+    pedirAssets();
+    pedirUsuario();
+    var pedido = null;
+    try { pedido = window.claude && window.claude.use ? window.claude.use("db") : null; }
+    catch (e) { pedido = null; }
+    if (!pedido || typeof pedido.then !== "function") { modoLocal(); return; }
+    pedido.then(function(ns){
+      if (!ns) { modoLocal(); return; }
+      db = ns;
+      estado.modo = "nuvem";
+      assinar();
+    }, function(){ modoLocal(); });
+  }
+
+  function gravarCartao(c, silencioso){
+    estado.cartoes.set(c.id, c);
+    gravarLocalCartoes();
+    if (!silencioso) desenhar();
+    if (!db) return;
+    estado.pendentes.add(c.id);
+    db.collection(COL_CARTOES).doc(c.id).set(corpoNuvem(c)).then(function(){
+      estado.pendentes.delete(c.id);
+    }, function(erro){ estado.pendentes.delete(c.id); relatar(erro); });
+  }
+  function apagarCartao(id){
+    estado.cartoes.delete(id);
+    if (estado.cartaoAberto === id) estado.cartaoAberto = null;
+    gravarLocalCartoes();
+    if (!db) { desenhar(); return; }
+    estado.pendentes.add(id);
+    db.collection(COL_CARTOES).doc(id).delete().then(function(){
+      estado.pendentes.delete(id);
+    }, function(erro){ estado.pendentes.delete(id); relatar(erro); });
+    desenhar();
+  }
+  function gravarQuadro(silencioso){
+    gravarLocalQuadro();
+    if (!silencioso) desenhar();
+    if (!db) return;
+    estado.gravandoQuadro = true;
+    db.collection(COL_QUADRO).doc("quadro").set(corpoQuadro()).then(function(){
+      estado.gravandoQuadro = false;
+    }, function(erro){ estado.gravandoQuadro = false; relatar(erro); });
+  }
+  function relatar(erro){
+    var codigo = erro && erro.code;
+    var texto = "Não consegui salvar. Tente de novo.";
+    if (codigo === "quota_exceeded") texto = "O quadro atingiu o limite guardado. Arquive ou exclua cartões.";
+    else if (codigo === "resource_exhausted") texto = "Muitas mudanças de uma vez. Espere um instante.";
+    else if (codigo === "revoked" || codigo === "not_granted") texto = "Perdi o acesso ao armazenamento. Recarregue a página.";
+    estado.aviso = texto;
+    var p = document.getElementById("pilulaEstado");
+    if (p) p.textContent = texto;
+  }
+  function adiar(id, fn){
+    if (temporizadores.has(id)) window.clearTimeout(temporizadores.get(id));
+    temporizadores.set(id, window.setTimeout(function(){ temporizadores.delete(id); fn(); }, 600));
+  }
+  function anotar(c, texto){
+    c.atividade.push({ texto: texto, autor: meuId(), em: agora() });
+    if (c.atividade.length > 40) c.atividade = c.atividade.slice(-40);
+  }
+
+  /* ======================= anexos ======================= */
+
+  var assets = null;   // o armazenamento de arquivos do artefato, quando existe
+  var usuario = null;  // quem está vendo a página, quando a conta sabe dizer
+
+  function pedirUsuario(){
+    try {
+      var p = window.claude && window.claude.use ? window.claude.use("user") : null;
+      if (!p || typeof p.then !== "function") return;
+      p.then(function(ns){
+        if (!ns) return;
+        usuario = ns;
+        ns.me().then(function(m){
+          estado.eu = { id: m.id || "", nome: m.name || "", cor: m.color || CORES_MEMBRO[0], podeEscrever: true };
+          return ns.can("data.write");
+        }).then(function(pode){
+          if (estado.eu && pode === false) estado.eu.podeEscrever = false;
+          desenhar();
+        });
+      }, function(){});
+    } catch (e) { /* segue anônimo */ }
+  }
+
+  // Resolve os nomes de quem aparece na tela. Repetir a chamada é barato por
+  // contrato, e só redesenha quando algum nome novo chegou.
+  function resolverPerfis(ids){
+    if (!usuario) return;
+    var faltam = [];
+    ids.forEach(function(i){ if (i && !estado.perfis[i] && faltam.indexOf(i) < 0) faltam.push(i); });
+    if (!faltam.length) return;
+    usuario.profiles(faltam).then(function(mapa){
+      Object.keys(mapa).forEach(function(k){
+        estado.perfis[k] = { nome: mapa[k].name || "", cor: mapa[k].color || CORES_MEMBRO[0] };
+      });
+      desenhar();
+    });
+  }
+
+  function pessoaDe(id){
+    var padrao = (estado.eu && estado.eu.cor) || CORES_MEMBRO[0];
+    if (!id) return { nome: (estado.eu && estado.eu.nome) || "Eu", cor: padrao };
+    if (estado.eu && estado.eu.id === id) return { nome: estado.eu.nome || "Eu", cor: estado.eu.cor };
+    var p = estado.perfis[id];
+    if (p) return { nome: p.nome || "Alguém", cor: p.cor };
+    return { nome: "…", cor: padrao };
+  }
+  function meuId(){ return (estado.eu && estado.eu.id) || ""; }
+
+  function pedirAssets(){
+    try {
+      var p = window.claude && window.claude.use ? window.claude.use("assets") : null;
+      if (p && typeof p.then === "function") p.then(function(ns){ assets = ns || null; desenhar(); }, function(){});
+    } catch (e) { /* segue sem */ }
+  }
+
+  // Um print de tela chega com 2 ou 3 mil pixels de largura e alguns megabytes.
+  // Reduzir antes de guardar é o que faz a diferença entre caber e não caber.
+  function prepararArquivo(arquivo){
+    if (!ehImagem(arquivo.type) || arquivo.type === "image/svg+xml") return Promise.resolve(arquivo);
+    return new Promise(function(resolver){
+      var img = new Image(), url = URL.createObjectURL(arquivo);
+      img.onload = function(){
+        var escala = Math.min(1, LADO_MAX / Math.max(img.width, img.height));
+        if (escala >= 1 && arquivo.size < 400 * 1024) { URL.revokeObjectURL(url); resolver(arquivo); return; }
+        var tela = document.createElement("canvas");
+        tela.width = Math.max(1, Math.round(img.width * escala));
+        tela.height = Math.max(1, Math.round(img.height * escala));
+        tela.getContext("2d").drawImage(img, 0, 0, tela.width, tela.height);
+        var pronto = function(blob){
+          URL.revokeObjectURL(url);
+          resolver(blob && blob.size < arquivo.size ? blob : arquivo);
+        };
+        // webp guarda transparência; se o navegador não fizer, cai para jpeg
+        try { tela.toBlob(function(b){ b ? pronto(b) : tela.toBlob(pronto, "image/jpeg", 0.82); }, "image/webp", 0.82); }
+        catch (e) { tela.toBlob(pronto, "image/jpeg", 0.82); }
+      };
+      img.onerror = function(){ URL.revokeObjectURL(url); resolver(arquivo); };
+      img.src = url;
+    });
+  }
+
+  function lerDataUrl(blob){
+    return new Promise(function(resolver, falhar){
+      var leitor = new FileReader();
+      leitor.onload = function(){ resolver(String(leitor.result)); };
+      leitor.onerror = function(){ falhar(new Error("leitura")); };
+      leitor.readAsDataURL(blob);
+    });
+  }
+
+  function guardarAnexo(arquivo){
+    var nome = arquivo.name || (ehImagem(arquivo.type) ? "imagem.png" : "arquivo");
+    return prepararArquivo(arquivo).then(function(blob){
+      if (assets) {
+        return assets.upload(blob, { contentType: blob.type || arquivo.type || "application/octet-stream" })
+          .then(function(r){
+            return { id: r.id, nome: nome, tipo: r.contentType || blob.type,
+                     tamanho: r.sizeBytes || blob.size, src: r.url || ("/_blob/" + r.id), em: agora() };
+          });
+      }
+      if (blob.size > MAX_LOCAL) {
+        return Promise.reject({ aviso: "\u201c" + nome + "\u201d tem " + formatarTamanho(blob.size) +
+          ". Sem a conta, o anexo fica guardado no navegador e o limite por arquivo é " + formatarTamanho(MAX_LOCAL) + "." });
+      }
+      return lerDataUrl(blob).then(function(url){
+        return { id: novoId(), nome: nome, tipo: blob.type || arquivo.type, tamanho: blob.size, src: url, em: agora() };
+      });
+    });
+  }
+
+  // Anexa à vista: o cartão aberto recebe, e o comentário em digitação fica
+  // com a referência para sair junto quando for salvo.
+  function anexarAo(c, arquivos, paraComentario){
+    var lista = Array.prototype.slice.call(arquivos || []).filter(function(a){ return a && a.size; });
+    if (!lista.length || !c) return;
+    avisar(lista.length === 1 ? "Anexando…" : "Anexando " + lista.length + " arquivos…");
+    var feitos = 0;
+    lista.reduce(function(fila, arquivo){
+      return fila.then(function(){
+        return guardarAnexo(arquivo).then(function(anexo){
+          c.anexos.push(anexo);
+          if (paraComentario) estado.anexosDoComentario.push(anexo.id);
+          feitos++;
+        }, function(erro){
+          avisar(erro && erro.aviso ? erro.aviso : "Não consegui anexar \u201c" + (arquivo.name || "o arquivo") + "\u201d.");
+        });
+      });
+    }, Promise.resolve()).then(function(){
+      if (!feitos) { desenhar(); return; }
+      anotar(c, feitos === 1 ? "anexou um arquivo" : "anexou " + feitos + " arquivos");
+      if (estado.aviso.indexOf("Anexando") === 0) estado.aviso = "";
+      gravarCartao(c);
+    });
+  }
+
+  function acharAnexo(c, id){
+    for (var i = 0; i < c.anexos.length; i++) if (c.anexos[i].id === id) return c.anexos[i];
+    return null;
+  }
+
+  /* ======================= exportar / importar ======================= */
+
+  function exportar(){
+    var cartoes = [];
+    estado.cartoes.forEach(function(c){ cartoes.push(Object.assign({ id:c.id }, corpoCartao(c))); });
+    var texto = JSON.stringify({ app:"work", versao:2, exportadoEm:agora(),
+      quadro: corpoQuadro(), cartoes: cartoes, atividades: cartoes }, null, 2);
+    var nome = "work-" + hoje() + ".json";
+    var pedido = null;
+    try { pedido = window.claude && window.claude.use ? window.claude.use("downloads") : null; }
+    catch (e) { pedido = null; }
+    if (pedido && typeof pedido.then === "function") {
+      pedido.then(function(ns){
+        if (!ns) { baixarDireto(nome, texto); return; }
+        return ns.save({ filename:nome, data:texto }).then(function(){
+          avisar(cartoes.length + " cartões exportados.");
+        }, function(erro){
+          if (erro && erro.code === "declined") return;
+          baixarDireto(nome, texto);
+        });
+      }, function(){ baixarDireto(nome, texto); });
+    } else { baixarDireto(nome, texto); }
+  }
+  function baixarDireto(nome, texto){
+    try {
+      var url = URL.createObjectURL(new Blob([texto], { type:"application/json" }));
+      var a = document.createElement("a");
+      a.href = url; a.download = nome;
+      document.body.appendChild(a); a.click(); a.remove();
+      window.setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+      avisar("Arquivo gerado.");
+    } catch (e) { avisar("Não consegui gerar o arquivo."); }
+  }
+  function importarArquivo(arquivo){
+    var leitor = new FileReader();
+    leitor.onload = function(){
+      var dados = null;
+      try { dados = JSON.parse(String(leitor.result)); } catch (e) { dados = null; }
+      if (!dados) { avisar("Esse arquivo não parece um export do Work."); return; }
+      if (dados.quadro) aplicarQuadro(dados.quadro);
+      var lista = Array.isArray(dados.cartoes) ? dados.cartoes
+                : (Array.isArray(dados.atividades) ? dados.atividades
+                : (Array.isArray(dados) ? dados : null));
+      if (!lista) { avisar("Esse arquivo não parece um export do Work."); return; }
+      if (!estado.listas.size) quadroPadrao();
+      var novos = 0, atualizados = 0, jaEstavam = estado.cartoes.size;
+      lista.forEach(function(item){
+        if (!item || !item.id) return;
+        var convertido = (item.lista === undefined && item.ordem === undefined) ? converterAntigo(item) : null;
+        var c = normalizarCartao(item.id, convertido || item);
+        if (convertido) c._cru = convertido;
+        if (estado.cartoes.has(c.id)) atualizados++; else novos++;
+        estado.cartoes.set(c.id, c);
+      });
+      migrarSePreciso();
+      var recolhidos = recolherOrfaos();
+      estado.cartoes.forEach(function(c){ gravarCartao(c, true); });
+      gravarQuadro(true);
+      avisar(novos + " cartões novos" +
+        (atualizados ? " · " + atualizados + " atualizados" : "") +
+        (jaEstavam - atualizados ? " · " + (jaEstavam - atualizados) + " que já estavam aqui continuam" : "") +
+        (recolhidos ? " · " + recolhidos + " sem lista foram para a primeira" : "") + ".");
+      desenhar();
+    };
+    leitor.onerror = function(){ avisar("Não consegui ler o arquivo."); };
+    leitor.readAsText(arquivo);
+  }
+  var relogioAviso = null;
+  function avisar(texto){
+    estado.aviso = texto;
+    if (relogioAviso) window.clearTimeout(relogioAviso);
+    relogioAviso = window.setTimeout(function(){ estado.aviso = ""; desenharPilula(); }, 6000);
+    desenharPilula();
+  }
+
+  /* ======================= filtro ======================= */
+
+  function filtroAtivo(){
+    var f = estado.filtro;
+    return !!(f.texto || f.membros.length || f.etiquetas.length || f.prazo || f.semMembro || f.semEtiqueta);
+  }
+  function contarFiltros(){
+    var f = estado.filtro, n = 0;
+    if (f.texto) n++;
+    n += f.membros.length + f.etiquetas.length;
+    if (f.prazo) n++;
+    if (f.semMembro) n++;
+    if (f.semEtiqueta) n++;
+    return n;
+  }
+  function passaNoFiltro(c){
+    var f = estado.filtro;
+    if (f.texto) {
+      var alvo = (c.titulo + " " + c.descricao).toLowerCase();
+      if (alvo.indexOf(f.texto.toLowerCase()) === -1) return false;
+    }
+    if (f.semMembro && c.membros.length) return false;
+    if (f.semEtiqueta && c.etiquetas.length) return false;
+    if (f.membros.length) {
+      var temM = f.membros.some(function(id){ return c.membros.indexOf(id) >= 0; });
+      if (!temM) return false;
+    }
+    if (f.etiquetas.length) {
+      var temE = f.etiquetas.some(function(id){ return c.etiquetas.indexOf(id) >= 0; });
+      if (!temE) return false;
+    }
+    if (f.prazo) {
+      var e = estadoPrazo(c);
+      if (f.prazo === "sem" && c.prazo) return false;
+      if (f.prazo === "vencido" && e !== "vencido") return false;
+      if (f.prazo === "semana") {
+        if (!c.prazo || c.prazoFeito) return false;
+        var d = paraData(c.prazo);
+        if (!d || d.getTime() > Date.now() + 7*86400000) return false;
+      }
+      if (f.prazo === "feito" && !c.prazoFeito) return false;
+    }
+    return true;
+  }
+  function estadoPrazo(c){
+    if (!c.prazo) return "";
+    if (c.prazoFeito) return "feito";
+    var d = paraData(c.prazo);
+    if (!d) return "";
+    var min = (d.getTime() - Date.now()) / 60000;
+    if (min < 0) return "vencido";
+    if (min <= JANELA_LOGO) return "logo";
+    return "futuro";
+  }
+
+  /* ======================= ícones ======================= */
+
+  var IC = {
+    descricao: '<path d="M3 4h10M3 8h10M3 12h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
+    relogio: '<circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.5V8l2.5 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>',
+    check: '<path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+    caixa: '<rect x="2.5" y="2.5" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 8l1.8 1.8L10.8 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>',
+    comentario: '<path d="M14 9.5a2 2 0 01-2 2H6l-3 2.5v-2.5H4a2 2 0 01-2-2v-5a2 2 0 012-2h8a2 2 0 012 2z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>',
+    repete: '<path d="M3 8a5 5 0 018.6-3.5M13 8a5 5 0 01-8.6 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M11.5 2.2v2.6H8.9M4.5 13.8v-2.6h2.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>',
+    etiqueta: '<path d="M8.6 2H13a1 1 0 011 1v4.4a1 1 0 01-.3.7l-6 6a1 1 0 01-1.4 0L2.2 9.7a1 1 0 010-1.4l6-6a1 1 0 01.4-.3z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><circle cx="10.8" cy="5.2" r="1" fill="currentColor"/>',
+    pessoa: '<circle cx="8" cy="5.5" r="2.6" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M3 13.5c.6-2.6 2.6-4 5-4s4.4 1.4 5 4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>',
+    lapis: '<path d="M11.2 2.8l2 2L6 12H4v-2z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>',
+    arquivo: '<rect x="2" y="3" width="12" height="3" rx="1" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M3.2 6.5V12a1 1 0 001 1h7.6a1 1 0 001-1V6.5M6.5 9h3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>',
+    mover: '<path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
+    pontos: '<circle cx="4" cy="8" r="1.3" fill="currentColor"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="12" cy="8" r="1.3" fill="currentColor"/>',
+    mais: '<path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>',
+    x: '<path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>',
+    lixeira: '<path d="M3.5 4.5h9M6.5 4.5V3h3v1.5M5 4.5l.6 8.5h4.8l.6-8.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>',
+    clipe: '<path d="M10.5 6.2L6.1 10.6a1.6 1.6 0 002.3 2.3l4.8-4.8a3 3 0 00-4.2-4.2L3.9 8.9a4.4 4.4 0 006.2 6.2l4.2-4.2" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>',
+    seta: '<path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>'
+  };
+  function svg(nome, tam){
+    return '<svg viewBox="0 0 16 16" aria-hidden="true"' + (tam ? ' width="'+tam+'" height="'+tam+'"' : '') + '>' + IC[nome] + '</svg>';
+  }
+
+  /* ======================= desenho: quadro ======================= */
+
+  function etiquetasHtml(c){
+    if (!c.etiquetas.length) return "";
+    var html = '<div class="etiquetas-cartao">';
+    c.etiquetas.forEach(function(id){
+      var e = acharEtiqueta(id);
+      if (!e) return;
+      var titulo = e.nome || "etiqueta";
+      html += '<span class="et' + (estado.prefs.textoEtiqueta ? " com-texto" : "") + '" ' +
+        'style="--cor:' + hexEtiqueta(e.cor) + '" data-acao="alternar-texto-etiqueta" ' +
+        'title="' + esc(titulo) + '">' + (estado.prefs.textoEtiqueta ? esc(e.nome || "") : "") + "</span>";
+    });
+    return html + "</div>";
+  }
+
+  function selosHtml(c){
+    var partes = [];
+    if (c.repete) partes.push('<span class="selo" title="' + esc(REPETICOES[c.repete].rotulo) + '">' + svg("repete") + "</span>");
+    if (c.descricao) partes.push('<span class="selo" title="Este cartão tem uma descrição">' + svg("descricao") + "</span>");
+
+    if (c.prazo || c.inicio) {
+      var e = estadoPrazo(c);
+      var classe = e === "vencido" ? " vencido" : (e === "logo" ? " logo" : (e === "feito" ? " feito" : ""));
+      var texto = rotuloPeriodo(c);
+      var dica = c.prazoFeito ? "Concluído"
+               : ((e === "vencido" || e === "logo" ? faltaTexto(c) + " · " : "") + "clique para marcar como concluído");
+      partes.push('<button type="button" class="selo data' + classe + '" data-acao="alternar-prazo" data-id="' + esc(c.id) + '" ' +
+        'title="' + esc(dica) + '">' +
+        svg(c.prazoFeito ? "check" : "relogio") + "<span>" + esc(texto) + "</span></button>");
+    }
+
+    var totais = contarChecklist(c);
+    if (totais.total) {
+      partes.push('<span class="selo' + (totais.feitos === totais.total ? " completa" : "") + '" title="Itens de checklist">' +
+        svg("caixa") + "<span>" + totais.feitos + "/" + totais.total + "</span></span>");
+    }
+    if (c.anexos.length) {
+      partes.push('<span class="selo" title="Anexos">' + svg("clipe") + "<span>" + c.anexos.length + "</span></span>");
+    }
+    if (c.comentarios.length) {
+      partes.push('<span class="selo" title="Comentários">' + svg("comentario") + "<span>" + c.comentarios.length + "</span></span>");
+    }
+    if (c.membros.length) {
+      var av = '<span class="membros-cartao">';
+      c.membros.forEach(function(id){
+        var m = acharMembro(id);
+        if (!m) return;
+        av += '<span class="av" style="--cor:' + esc(m.cor) + '" title="' + esc(m.nome) + '">' + esc(iniciais(m.nome)) + "</span>";
+      });
+      partes.push(av + "</span>");
+    }
+    if (!partes.length) return "";
+    return '<div class="selos">' + partes.join("") + "</div>";
+  }
+
+  function contarChecklist(c){
+    var total = 0, feitos = 0;
+    c.checklists.forEach(function(cl){
+      cl.itens.forEach(function(it){ total++; if (it.feito) feitos++; });
+    });
+    return { total:total, feitos:feitos };
+  }
+
+  function cartaoHtml(c){
+    var capa = null;
+    for (var i = 0; i < c.anexos.length; i++) {
+      if (ehImagem(c.anexos[i].tipo)) { capa = c.anexos[i]; break; }
+    }
+    return '<article class="cartao' + (capa ? " com-capa" : "") + '" data-cartao="' + esc(c.id) + '" tabindex="0" role="button" ' +
+      'aria-label="' + esc(c.titulo || "cartão sem título") + '">' +
+      (capa ? '<span class="capa"><img src="' + esc(capa.src) + '" alt="" loading="lazy"></span>' : "") +
+      etiquetasHtml(c) +
+      '<span class="titulo-cartao">' + (c.titulo ? esc(c.titulo) : "<em>sem título</em>") + "</span>" +
+      selosHtml(c) +
+      '<button type="button" class="lapis" data-acao="abrir-cartao" data-id="' + esc(c.id) + '" ' +
+      'aria-label="Abrir cartão">' + svg("lapis") + "</button>" +
+      "</article>";
+  }
+
+  function listaHtml(l){
+    var cartoes = cartoesDa(l.id);
+    var visiveis = cartoes.filter(passaNoFiltro);
+    var html = '<section class="lista" data-lista="' + esc(l.id) + '">';
+
+    if (estado.editandoLista === l.id) {
+      html += '<div class="cabeca-lista"><textarea class="edita-nome" data-campo="nome-lista" data-id="' + esc(l.id) + '" ' +
+        'rows="1" aria-label="Nome da lista">' + esc(textoDe("nome-lista", l.id, "", l.nome)) + "</textarea></div>";
+    } else {
+      html += '<div class="cabeca-lista" data-pegar-lista="' + esc(l.id) + '">' +
+        '<h2 data-acao="editar-lista" data-id="' + esc(l.id) + '">' + esc(l.nome) + "</h2>" +
+        '<span class="n">' + visiveis.length + "</span>" +
+        '<button type="button" class="icone-botao" data-acao="menu-lista" data-id="' + esc(l.id) + '" ' +
+        'aria-label="Ações da lista">' + svg("pontos") + "</button></div>";
+    }
+
+    var compondo = estado.compondoEm === l.id;
+    html += '<div class="corpo-lista" data-corpo="' + esc(l.id) + '">';
+    if (!visiveis.length && !compondo) {
+      html += '<p class="lista-vazia">' + (cartoes.length ? "nenhum cartão passa no filtro" : "sem cartões") + "</p>";
+    } else {
+      visiveis.forEach(function(c){ html += cartaoHtml(c); });
+    }
+    // O compositor mora dentro da área que rola: aberto com todos os campos ele
+    // é mais alto do que a lista, e por fora transbordava por cima dos cartões.
+    if (compondo) html += comporHtml(l);
+    html += "</div>";
+
+    if (!compondo) {
+      html += '<button type="button" class="add-cartao" data-acao="compor" data-id="' + esc(l.id) + '">' +
+        svg("mais", 14) + "Adicionar um cartão</button>";
+    }
+    return html + "</section>";
+  }
+
+  // O compositor é o cartão antes de existir: o título resolve o caso rápido, e
+  // "mais detalhes" abre descrição, datas, etiquetas, membros e checklist ali
+  // mesmo — assim o cartão já nasce com o que ele diz, em vez de nascer vazio e
+  // obrigar a abri-lo em seguida para preencher tudo.
+  function comporHtml(l){
+    var r = estado.rascunho;
+    var html = '<div class="compor">' +
+      '<textarea data-campo="novo-cartao" data-id="' + esc(l.id) + '" rows="2" ' +
+      'placeholder="Insira um título para este cartão…" aria-label="Título do novo cartão">' + esc(r.titulo) + "</textarea>";
+
+    if (estado.comporDetalhes) {
+      html += '<div class="detalhes-compor">';
+
+      html += '<div><p class="mini-titulo">Descrição</p>' +
+        '<textarea class="extra" data-campo="r-descricao" rows="2" ' +
+        'placeholder="O que precisa ser feito…" aria-label="Descrição">' + esc(r.descricao) + "</textarea></div>";
+
+      html += '<div><p class="mini-titulo">Datas</p><div class="campo-linha">' +
+        '<label class="par-data"><span>início</span>' +
+        '<input type="date" data-campo="r-inicioDia" value="' + esc(r.inicioDia) + '" aria-label="Dia de início">' +
+        '<input type="time" data-campo="r-inicioHora" value="' + esc(r.inicioHora) + '" aria-label="Hora de início"></label>' +
+        '<label class="par-data"><span>prazo</span>' +
+        '<input type="date" data-campo="r-dia" value="' + esc(r.dia) + '" aria-label="Dia do prazo">' +
+        '<input type="time" data-campo="r-hora" value="' + esc(r.hora) + '" aria-label="Hora do prazo"></label>' +
+        '<label class="par-data"><span>repete</span><select data-campo="r-repete" aria-label="Repetição">' +
+        '<option value="">não</option>';
+      Object.keys(REPETICOES).forEach(function(k){
+        html += '<option value="' + k + '"' + (r.repete === k ? " selected" : "") + ">" +
+          esc(rotuloRepeticao(k, juntar(r.dia || r.inicioDia, ""))) + "</option>";
+      });
+      html += "</select></label></div></div>";
+
+      if (estado.etiquetas.length) {
+        html += '<div><p class="mini-titulo">Etiquetas</p><div class="campo-linha">';
+        estado.etiquetas.forEach(function(e){
+          var on = r.etiquetas.indexOf(e.id) >= 0;
+          html += '<button type="button" class="et alvo' + (e.nome ? " com-texto" : "") + '" ' +
+            'style="--cor:' + hexEtiqueta(e.cor) + (e.nome ? "" : ";height:22px;min-width:34px") + '" ' +
+            'data-acao="r-etiqueta" data-et="' + esc(e.id) + '" aria-pressed="' + on + '" ' +
+            'title="' + esc(e.nome || "etiqueta sem nome") + '">' +
+            (on ? "✓" : "") + (e.nome ? (on ? " " : "") + esc(e.nome) : "") + "</button>";
+        });
+        html += "</div></div>";
+      }
+
+      if (estado.membros.length) {
+        html += '<div><p class="mini-titulo">Membros</p><div class="campo-linha">';
+        estado.membros.forEach(function(m){
+          var on = r.membros.indexOf(m.id) >= 0;
+          html += '<button type="button" class="av alvo" style="--cor:' + esc(m.cor) + '" ' +
+            'data-acao="r-membro" data-m="' + esc(m.id) + '" aria-pressed="' + on + '" ' +
+            'title="' + esc(m.nome) + '">' + esc(iniciais(m.nome)) + "</button>";
+        });
+        html += "</div></div>";
+      }
+
+      html += '<div><p class="mini-titulo">Checklist <span style="font-weight:400;opacity:.7">— um item por linha</span></p>' +
+        '<textarea class="extra" data-campo="r-itens" rows="2" ' +
+        'placeholder="Puxar relatório&#10;Conferir divergências" aria-label="Itens do checklist">' + esc(r.itens) + "</textarea></div>";
+
+      html += "</div>";
+    }
+
+    html += '<div class="acoes-compor">' +
+      '<button type="button" class="btn" data-acao="salvar-cartao" data-id="' + esc(l.id) + '">Adicionar cartão</button>' +
+      '<button type="button" class="icone-botao" data-acao="cancelar-compor" aria-label="Cancelar">' + svg("x") + "</button>" +
+      '<button type="button" class="btn fantasma" style="margin-left:auto" data-acao="detalhes-compor">' +
+      (estado.comporDetalhes ? "menos detalhes" : "+ detalhes") + "</button>" +
+      "</div></div>";
+    return html;
+  }
+
+  function desenharQuadro(){
+    var html = '<div class="quadro" id="quadro">';
+    listasVisiveis().forEach(function(l){ html += listaHtml(l); });
+    if (estado.novaLista) {
+      html += '<div class="caixa-lista">' +
+        '<input type="text" data-campo="nova-lista" placeholder="Insira o título da lista" aria-label="Título da lista">' +
+        '<div class="acoes-compor">' +
+          '<button type="button" class="btn" data-acao="salvar-lista">Adicionar lista</button>' +
+          '<button type="button" class="icone-botao" data-acao="cancelar-lista" aria-label="Cancelar">' + svg("x") + "</button>" +
+        "</div></div>";
+    } else {
+      html += '<button type="button" class="add-lista" data-acao="nova-lista">' + svg("mais", 14) +
+        (estado.listas.size ? "Adicionar outra lista" : "Adicionar uma lista") + "</button>";
+    }
+    return html + "</div>";
+  }
+
+  /* ======================= desenho: calendário ======================= */
+
+  function desenharCalendario(){
+    var mes = estado.mesCal || hoje().slice(0, 7);
+    var ano = +mes.slice(0, 4), m = +mes.slice(5, 7) - 1;
+    var primeiro = new Date(ano, m, 1);
+    var inicio = new Date(ano, m, 1 - primeiro.getDay());
+
+    var porDia = {};
+    estado.cartoes.forEach(function(c){
+      if (c.arquivado || !passaNoFiltro(c)) return;
+      var dia = parteDia(c.prazo || c.inicio);
+      if (!dia) return;
+      (porDia[dia] = porDia[dia] || []).push(c);
+    });
+
+    var html = '<div class="calendario"><div class="cal-topo">' +
+      '<button type="button" class="btn-barra" data-acao="mes" data-passo="-1" aria-label="Mês anterior">‹</button>' +
+      '<button type="button" class="btn-barra" data-acao="mes" data-passo="0">Hoje</button>' +
+      '<button type="button" class="btn-barra" data-acao="mes" data-passo="1" aria-label="Próximo mês">›</button>' +
+      "<h2>" + MESES[m].charAt(0).toUpperCase() + MESES[m].slice(1) + " de " + ano + "</h2></div>";
+
+    html += '<div class="cal-grade">';
+    DIAS.forEach(function(d){ html += '<div class="cal-dia-nome">' + d + "</div>"; });
+
+    for (var i = 0; i < 42; i++) {
+      var d = new Date(inicio.getFullYear(), inicio.getMonth(), inicio.getDate() + i);
+      var iso = isoDia(d);
+      var fora = d.getMonth() !== m;
+      if (fora && i >= 35) continue;
+      var lista = (porDia[iso] || []).sort(function(a, b){
+        return (a.prazo || a.inicio) < (b.prazo || b.inicio) ? -1 : 1;
+      });
+      html += '<div class="cal-cel' + (fora ? " fora" : "") + (iso === hoje() ? " hoje" : "") + '">' +
+        '<span class="cal-num">' + d.getDate() + "</span>";
+      lista.slice(0, 6).forEach(function(c){
+        var cor = c.etiquetas.length ? hexEtiqueta((acharEtiqueta(c.etiquetas[0]) || {}).cor) : "";
+        var venc = estadoPrazo(c) === "vencido";
+        html += '<button type="button" class="cal-cartao' + (venc ? " vencido" : "") + '" ' +
+          'data-acao="abrir-cartao" data-id="' + esc(c.id) + '" ' + (cor ? 'style="--cor:' + cor + '"' : "") + '>' +
+          '<span class="pin"></span><span>' + esc(c.titulo || "sem título") + "</span></button>";
+      });
+      if (lista.length > 6) html += '<span class="cal-num">+' + (lista.length - 6) + " mais</span>";
+      html += "</div>";
+    }
+    return html + "</div></div>";
+  }
+
+  /* ======================= desenho: painel ======================= */
+
+  function barrasHtml(linhas){
+    if (!linhas.length) return '<p class="vazio-painel">Nada para mostrar ainda.</p>';
+    var teto = 1;
+    linhas.forEach(function(l){ if (l.valor > teto) teto = l.valor; });
+    var html = '<div class="barras">';
+    linhas.forEach(function(l){
+      var larg = l.valor ? Math.max(4, Math.round(l.valor / teto * 100)) : 0;
+      html += '<div class="barra-linha"><span class="rot" title="' + esc(l.rotulo) + '">' + esc(l.rotulo) + "</span>" +
+        '<span class="trilho"' + (l.cor ? ' style="--cor:' + l.cor + '"' : "") + '><i style="width:' + larg + '%"></i></span>' +
+        '<span class="val">' + l.valor + "</span></div>";
+    });
+    return html + "</div>";
+  }
+
+  function desenharPainel(){
+    var ativos = [];
+    estado.cartoes.forEach(function(c){ if (!c.arquivado && passaNoFiltro(c)) ativos.push(c); });
+
+    var vencidos = 0, logo = 0, feitos = 0, semPrazo = 0;
+    var noPrazo = 0, foraDoPrazo = 0;
+    ativos.forEach(function(c){
+      var e = estadoPrazo(c);
+      if (e === "vencido") vencidos++;
+      else if (e === "logo") logo++;
+      else if (e === "feito") feitos++;
+      if (!c.prazo) semPrazo++;
+      if (c.prazoFeito && c.prazo && c.feitoEm) {
+        var lim = paraData(c.prazo);
+        if (lim) { if (new Date(c.feitoEm).getTime() <= lim.getTime()) noPrazo++; else foraDoPrazo++; }
+      }
+    });
+
+    var porLista = listasVisiveis().map(function(l){
+      return { rotulo: l.nome, valor: ativos.filter(function(c){ return c.lista === l.id; }).length };
+    });
+    var porMembro = estado.membros.map(function(m){
+      return { rotulo: m.nome, cor: m.cor,
+               valor: ativos.filter(function(c){ return c.membros.indexOf(m.id) >= 0; }).length };
+    }).filter(function(l){ return l.valor; });
+    var porEtiqueta = estado.etiquetas.map(function(e){
+      return { rotulo: e.nome || "(sem nome)", cor: hexEtiqueta(e.cor),
+               valor: ativos.filter(function(c){ return c.etiquetas.indexOf(e.id) >= 0; }).length };
+    }).filter(function(l){ return l.valor; });
+
+    var entregas = [];
+    if (noPrazo || foraDoPrazo) {
+      entregas = [{ rotulo:"No prazo", valor:noPrazo, cor:"#4BCE97" },
+                  { rotulo:"Fora do prazo", valor:foraDoPrazo, cor:"#F87168" }];
+    }
+
+    var html = '<div class="painel"><div class="cartoes-painel">';
+    html += '<div class="caixa-painel"><h3>Como está o quadro</h3><div class="numeros">' +
+      numeroHtml(ativos.length, "cartões", "") +
+      numeroHtml(vencidos, "vencidos", vencidos ? "ruim" : "") +
+      numeroHtml(logo, "vencem em 24h", logo ? "atencao" : "") +
+      numeroHtml(feitos, "concluídos", feitos ? "bom" : "") +
+      numeroHtml(semPrazo, "sem data", "") +
+      "</div></div>";
+    html += '<div class="caixa-painel"><h3>Cartões por lista</h3>' + barrasHtml(porLista) + "</div>";
+    html += '<div class="caixa-painel"><h3>Cartões por membro</h3>' + barrasHtml(porMembro) + "</div>";
+    html += '<div class="caixa-painel"><h3>Cartões por etiqueta</h3>' + barrasHtml(porEtiqueta) + "</div>";
+    html += '<div class="caixa-painel"><h3>Entregas com data</h3>' +
+      (entregas.length ? barrasHtml(entregas)
+        : '<p class="vazio-painel">Marque o prazo de um cartão como concluído para aparecer aqui.</p>') + "</div>";
+    return html + "</div></div>";
+  }
+  function numeroHtml(v, rot, tom){
+    return '<div class="numero' + (tom ? " " + tom : "") + '"><b>' + v + "</b><span>" + esc(rot) + "</span></div>";
+  }
+
+  /* ======================= desenho: janela do cartão ======================= */
+
+  function janelaHtml(c){
+    var lista = estado.listas.get(c.lista);
+    var html = '<button type="button" class="fechar-janela" data-acao="fechar-janela" aria-label="Fechar">✕</button>';
+
+    html += '<div class="cabeca-janela"><span class="ic">' + svg("caixa") + "</span>" +
+      '<textarea class="titulo-janela" data-campo="titulo" data-id="' + esc(c.id) + '" rows="1" ' +
+      'aria-label="Título do cartão">' + esc(c.titulo) + "</textarea></div>";
+    html += '<p class="sub-janela">na lista <b>' + esc(lista ? lista.nome : "—") + "</b>" +
+      (c.arquivado ? " · <b>arquivado</b>" : "") + "</p>";
+
+    html += '<div class="colunas-janela"><div class="principal">';
+
+    // membros, etiquetas e datas em fileiras
+    var fileiras = "";
+    if (c.membros.length) {
+      var mh = '<div class="fileira">';
+      c.membros.forEach(function(id){
+        var m = acharMembro(id);
+        if (!m) return;
+        mh += '<button type="button" class="av g" style="--cor:' + esc(m.cor) + '" data-acao="pop-membros" ' +
+          'data-id="' + esc(c.id) + '" title="' + esc(m.nome) + '">' + esc(iniciais(m.nome)) + "</button>";
+      });
+      mh += '<button type="button" class="add-quadrado" data-acao="pop-membros" data-id="' + esc(c.id) + '" aria-label="Adicionar membro">' + svg("mais", 14) + "</button></div>";
+      fileiras += '<div style="margin-right:24px"><p class="mini-titulo">Membros</p>' + mh + "</div>";
+    }
+    if (c.etiquetas.length) {
+      var eh = '<div class="fileira">';
+      c.etiquetas.forEach(function(id){
+        var e = acharEtiqueta(id);
+        if (!e) return;
+        eh += '<button type="button" class="et com-texto" style="--cor:' + hexEtiqueta(e.cor) + ';height:32px;display:inline-flex;align-items:center" ' +
+          'data-acao="pop-etiquetas" data-id="' + esc(c.id) + '">' + esc(e.nome || " ") + "</button>";
+      });
+      eh += '<button type="button" class="add-quadrado" data-acao="pop-etiquetas" data-id="' + esc(c.id) + '" aria-label="Adicionar etiqueta">' + svg("mais", 14) + "</button></div>";
+      fileiras += '<div style="margin-right:24px"><p class="mini-titulo">Etiquetas</p>' + eh + "</div>";
+    }
+    if (c.inicio || c.prazo) {
+      var e2 = estadoPrazo(c);
+      var cls = e2 === "vencido" ? " vencido" : (e2 === "logo" ? " logo" : (e2 === "feito" ? " feito" : ""));
+      var rotulo = rotuloPeriodo(c);
+      var sufixo = e2 === "feito" ? " (concluído)"
+                 : (e2 === "vencido" || e2 === "logo" ? " · " + faltaTexto(c) : "");
+      fileiras += '<div><p class="mini-titulo">' + (c.prazo ? "Prazo" : "Início") + "</p>" +
+        '<span class="chip-data' + cls + '">' +
+        (c.prazo ? '<input type="checkbox" data-acao="alternar-prazo" data-id="' + esc(c.id) + '"' +
+          (c.prazoFeito ? " checked" : "") + ' aria-label="Marcar prazo como concluído">' : "") +
+        '<button type="button" style="border:0;background:transparent;color:inherit;cursor:pointer;padding:0" ' +
+        'data-acao="pop-datas" data-id="' + esc(c.id) + '">' + esc(rotulo + sufixo) + "</button></span></div>";
+    }
+    if (c.repete) {
+      var semAncora = !c.prazo && !c.inicio;
+      fileiras += '<div><p class="mini-titulo">Repetição</p>' +
+        '<button type="button" class="chip-data' + (semAncora ? " alerta" : "") + '" data-acao="pop-datas" data-id="' + esc(c.id) + '">' +
+        svg("repete", 14) + esc(semAncora ? "sem data para repetir" : rotuloRepeticao(c.repete, c.prazo || c.inicio)) +
+        "</button></div>";
+    }
+    if (fileiras) html += '<div class="bloco" style="display:flex;flex-wrap:wrap;gap:12px 0">' + fileiras + "</div>";
+
+    // descrição
+    html += '<div class="bloco"><div class="bloco-cabeca"><span class="ic">' + svg("descricao") + "</span>" +
+      "<h3>Descrição</h3>" +
+      (c.descricao && estado.editor !== "descricao"
+        ? '<button type="button" class="btn neutro" data-acao="editar-descricao">Editar</button>' : "") +
+      "</div>";
+    if (estado.editor === "descricao") {
+      html += '<textarea class="editor" data-campo="descricao" data-id="' + esc(c.id) + '" ' +
+        'placeholder="Adicione uma descrição mais detalhada…">' + esc(textoDe("descricao", c.id, "", c.descricao)) + "</textarea>" +
+        '<div class="acoes-editor"><button type="button" class="btn" data-acao="salvar-descricao" data-id="' + esc(c.id) + '">Salvar</button>' +
+        '<button type="button" class="icone-botao" data-acao="cancelar-editor" aria-label="Cancelar">' + svg("x") + "</button></div>";
+    } else if (c.descricao) {
+      html += '<div class="desc-texto" data-acao="editar-descricao">' + esc(c.descricao) + "</div>";
+    } else {
+      html += '<button type="button" class="desc-vazia" data-acao="editar-descricao">Adicione uma descrição mais detalhada…</button>';
+    }
+    html += "</div>";
+
+    // anexos
+    if (c.anexos.length || estado.editor === "anexo") {
+      html += '<div class="bloco"><div class="bloco-cabeca"><span class="ic">' + svg("clipe") + "</span>" +
+        "<h3>Anexos</h3>" +
+        '<button type="button" class="btn neutro" data-acao="anexar" data-id="' + esc(c.id) + '">Anexar</button></div>' +
+        '<div class="anexos">';
+      c.anexos.forEach(function(a){
+        html += '<figure class="anexo' + (ehImagem(a.tipo) ? " img" : "") + '">' +
+          (ehImagem(a.tipo)
+            ? '<a href="' + esc(a.src) + '" target="_blank" rel="noopener"><img src="' + esc(a.src) + '" alt="' + esc(a.nome) + '" loading="lazy"></a>'
+            : '<a class="arquivo" href="' + esc(a.src) + '" target="_blank" rel="noopener" download="' + esc(a.nome) + '">' + svg("clipe") + "</a>") +
+          '<figcaption><span class="nome" title="' + esc(a.nome) + '">' + esc(a.nome) + "</span>" +
+          '<span class="peso">' + esc(formatarTamanho(a.tamanho)) + "</span>" +
+          '<button type="button" data-acao="excluir-anexo" data-id="' + esc(c.id) + '" data-anexo="' + esc(a.id) + '">excluir</button>' +
+          "</figcaption></figure>";
+      });
+      html += "</div></div>";
+    }
+
+    // checklists
+    c.checklists.forEach(function(cl){
+      var total = cl.itens.length, feitos = cl.itens.filter(function(i){ return i.feito; }).length;
+      var pct = total ? Math.round(feitos / total * 100) : 0;
+      html += '<div class="bloco checklist"><div class="bloco-cabeca"><span class="ic">' + svg("caixa") + "</span>" +
+        (estado.editor === "nomecl:" + cl.id
+          ? '<textarea class="edita-nome" data-campo="nome-checklist" data-id="' + esc(c.id) + '" data-cl="' + esc(cl.id) + '" rows="1" aria-label="Nome do checklist">' + esc(textoDe("nome-checklist", c.id, cl.id, cl.nome)) + "</textarea>"
+          : '<h3 style="cursor:pointer" data-acao="renomear-checklist" data-cl="' + esc(cl.id) + '">' + esc(cl.nome) + "</h3>") +
+        '<button type="button" class="btn neutro" data-acao="excluir-checklist" data-id="' + esc(c.id) + '" data-cl="' + esc(cl.id) + '">Excluir</button></div>';
+      html += '<div class="barra-check"><span class="pct">' + pct + '%</span>' +
+        '<span class="trilho-check"><i class="' + (pct === 100 ? "cheio" : "") + '" style="width:' + pct + '%"></i></span></div>';
+      cl.itens.forEach(function(it){
+        html += '<div class="item-check' + (it.feito ? " feito" : "") + '">' +
+          '<input type="checkbox" data-acao="item-check" data-id="' + esc(c.id) + '" data-cl="' + esc(cl.id) + '" ' +
+          'data-item="' + esc(it.id) + '"' + (it.feito ? " checked" : "") + ' aria-label="' + esc(it.texto) + '">' +
+          "<span>" + esc(it.texto) + "</span>" +
+          '<button type="button" class="x" data-acao="excluir-item" data-id="' + esc(c.id) + '" data-cl="' + esc(cl.id) + '" ' +
+          'data-item="' + esc(it.id) + '" aria-label="Excluir item">✕</button></div>';
+      });
+      if (estado.editor === "item:" + cl.id) {
+        html += '<textarea class="editor uma-linha" data-campo="novo-item" data-id="' + esc(c.id) + '" data-cl="' + esc(cl.id) + '" ' +
+          'placeholder="Adicionar um item">' + esc(textoDe("novo-item", c.id, cl.id, "")) + "</textarea>" +
+          '<div class="acoes-editor"><button type="button" class="btn" data-acao="salvar-item" data-id="' + esc(c.id) + '" data-cl="' + esc(cl.id) + '">Adicionar</button>' +
+          '<button type="button" class="icone-botao" data-acao="cancelar-editor" aria-label="Cancelar">' + svg("x") + "</button></div>";
+      } else {
+        html += '<button type="button" class="btn neutro" style="margin:6px 0 0 30px" data-acao="novo-item" data-cl="' + esc(cl.id) + '">Adicionar um item</button>';
+      }
+      html += "</div>";
+    });
+
+    // comentários
+    html += '<div class="bloco"><div class="bloco-cabeca"><span class="ic">' + svg("comentario") + "</span><h3>Comentários e atividade</h3></div>";
+    var mim = pessoaDe(meuId());
+    html += '<div class="comentario"><span class="av g" style="--cor:' + esc(mim.cor) + '" title="' + esc(mim.nome) + '">' +
+      esc(iniciais(mim.nome)) + "</span>" +
+      '<div style="flex:1 1 auto"><textarea class="editor uma-linha" data-campo="comentario" data-id="' + esc(c.id) + '" ' +
+      'placeholder="Escrever um comentário… (pode colar um print aqui)">' + esc(textoDe("comentario", c.id, "", "")) + "</textarea>" +
+      imagensHtml(c, estado.anexosDoComentario, true) +
+      '<div class="acoes-editor"><button type="button" class="btn" data-acao="salvar-comentario" data-id="' + esc(c.id) + '">Salvar</button>' +
+      '<button type="button" class="btn fantasma" data-acao="anexar-comentario" data-id="' + esc(c.id) + '">' +
+      svg("clipe", 14) + " imagem</button></div></div></div>";
+
+    c.comentarios.slice().reverse().forEach(function(k){
+      var quem = pessoaDe(k.autor);
+      html += '<div class="comentario"><span class="av g" style="--cor:' + esc(quem.cor) + '">' +
+        esc(iniciais(quem.nome)) + "</span>" +
+        '<div style="flex:1 1 auto"><div class="quem">' + esc(quem.nome) + "</div>" +
+        (k.texto ? '<div class="texto">' + esc(k.texto) + "</div>" : "") +
+        imagensHtml(c, k.anexos, false) +
+        '<div class="quando"><span>' + esc(quandoRelativo(k.em)) + "</span>" +
+        '<button type="button" data-acao="excluir-comentario" data-id="' + esc(c.id) + '" data-com="' + esc(k.id) + '">excluir</button>' +
+        "</div></div></div>";
+    });
+    c.atividade.slice().reverse().slice(0, 12).forEach(function(a){
+      var autor = a.autor ? pessoaDe(a.autor).nome + " " : "";
+      html += '<div class="atividade-linha"><span class="ic">' + svg("seta", 14) + "</span>" +
+        "<span>" + (autor ? "<b>" + esc(autor) + "</b>" : "") + esc(a.texto) +
+        ' <span class="quando">' + esc(quandoRelativo(a.em)) + "</span></span></div>";
+    });
+    html += "</div></div>";
+
+    // coluna lateral
+    html += '<div class="lado"><div class="grupo"><h4>Adicionar ao cartão</h4>' +
+      botaoLado("pop-membros", "pessoa", "Membros", c.id) +
+      botaoLado("pop-etiquetas", "etiqueta", "Etiquetas", c.id) +
+      botaoLado("nova-checklist", "caixa", "Checklist", c.id) +
+      botaoLado("anexar", "clipe", "Anexo", c.id) +
+      botaoLado("pop-datas", "relogio", "Datas", c.id) +
+      "</div><div class='grupo'><h4>Ações</h4>" +
+      botaoLado("pop-mover", "mover", "Mover", c.id) +
+      botaoLado("copiar-cartao", "descricao", "Copiar", c.id) +
+      (c.arquivado
+        ? botaoLado("desarquivar", "arquivo", "Enviar para o quadro", c.id)
+        : botaoLado("arquivar", "arquivo", "Arquivar", c.id)) +
+      botaoLado("excluir-cartao", "lixeira", "Excluir", c.id, "perigo") +
+      "</div></div>";
+
+    return html + "</div>";
+  }
+  // As imagens que acompanham um comentário — as já salvas, ou as que estão
+  // esperando o Salvar.
+  function imagensHtml(c, ids, pendente){
+    if (!ids || !ids.length) return "";
+    var html = '<div class="imagens-comentario">';
+    ids.forEach(function(id){
+      var a = acharAnexo(c, id);
+      if (!a) return;
+      html += '<span class="img-com">' +
+        (ehImagem(a.tipo)
+          ? '<a href="' + esc(a.src) + '" target="_blank" rel="noopener"><img src="' + esc(a.src) + '" alt="' + esc(a.nome) + '" loading="lazy"></a>'
+          : '<a class="arquivo" href="' + esc(a.src) + '" target="_blank" rel="noopener" download="' + esc(a.nome) + '">' + svg("clipe", 14) + esc(a.nome) + "</a>") +
+        (pendente ? '<button type="button" class="tira" data-acao="tirar-do-comentario" data-anexo="' + esc(a.id) + '" aria-label="Tirar do comentário">✕</button>' : "") +
+        "</span>";
+    });
+    return html + "</div>";
+  }
+
+  function botaoLado(acao, icone, texto, id, tom){
+    return '<button type="button" class="btn-lado' + (tom ? " " + tom : "") + '" data-acao="' + acao + '" data-id="' + esc(id) + '">' +
+      svg(icone, 15) + esc(texto) + "</button>";
+  }
+
+  /* ======================= desenho geral ======================= */
+
+  function desenharPilula(){
+    var p = document.getElementById("pilulaEstado");
+    if (!p) return;
+    if (estado.aviso) { p.textContent = estado.aviso; return; }
+    if (!estado.pronto) { p.textContent = "Carregando…"; return; }
+    var n = 0;
+    estado.cartoes.forEach(function(c){ if (!c.arquivado) n++; });
+    if (estado.eu && estado.eu.podeEscrever === false) {
+      p.textContent = "Somente leitura · " + n + " cartões";
+      p.title = "Você está vendo o quadro de outra pessoa sem permissão para editar.";
+      return;
+    }
+    p.textContent = (estado.modo === "nuvem" ? "Na conta, ao vivo" : "Só neste navegador") + " · " + n + " cartões";
+    p.title = estado.modo === "nuvem"
+      ? "As mudanças aparecem na hora para todo mundo que abre este link."
+      : "Este arquivo guarda os dados no próprio navegador. Ninguém mais vê.";
+  }
+
+  function desenharBarra(){
+    var alvo = document.getElementById("membrosBarra");
+    alvo.innerHTML = estado.membros.map(function(m){
+      var ativo = estado.filtro.membros.indexOf(m.id) >= 0;
+      return '<button type="button" class="av" style="--cor:' + esc(m.cor) + (ativo ? ";box-shadow:0 0 0 2px #fff" : "") + '" ' +
+        'data-acao="filtrar-membro" data-id="' + esc(m.id) + '" title="' + esc(m.nome) + '">' + esc(iniciais(m.nome)) + "</button>";
+    }).join("");
+
+    var guardados = 0;
+    estado.cartoes.forEach(function(c){ if (c.arquivado) guardados++; });
+    estado.listas.forEach(function(l){ if (l.arquivada) guardados++; });
+    document.getElementById("rotuloArquivados").textContent =
+      guardados ? "Arquivados · " + guardados : "Arquivados";
+    document.getElementById("btArquivados").classList.toggle("ativo", guardados > 0);
+
+    var n = contarFiltros();
+    document.getElementById("rotuloFiltro").textContent = n ? "Filtro · " + n : "Filtro";
+    document.getElementById("btFiltro").classList.toggle("ativo", n > 0);
+
+    Array.prototype.forEach.call(document.querySelectorAll("#vistas button"), function(b){
+      b.setAttribute("aria-selected", String(b.getAttribute("data-vista") === estado.vista));
+    });
+  }
+
+  // Uma mudança vinda de outra pessoa não pode remontar a tela com um cartão
+  // no meio do caminho entre duas listas: espera a mão soltar.
+  var desenhoPendente = false;
+  function desenharQuandoPuder(){
+    if (arrasto) { desenhoPendente = true; return; }
+    desenhar();
+  }
+
+  function desenhar(){
+    var app = document.getElementById("app");
+    app.style.setProperty("--fundo", estado.prefs.fundo);
+    if (estado.prefs.tema) document.documentElement.setAttribute("data-tema", estado.prefs.tema);
+    else document.documentElement.removeAttribute("data-tema");
+
+    desenharBarra();
+    desenharPilula();
+
+    var foco = document.activeElement;
+    var chaveFoco = foco && foco.getAttribute ? (foco.getAttribute("data-campo") || "") : "";
+    var idFoco = foco && foco.getAttribute ? (foco.getAttribute("data-id") || "") : "";
+    var selIni = foco && foco.selectionStart;
+    var selFim = foco && foco.selectionEnd;
+    var rolagem = {};
+    Array.prototype.forEach.call(document.querySelectorAll("[data-corpo]"), function(el){
+      rolagem[el.getAttribute("data-corpo")] = el.scrollTop;
+    });
+    var rolagemH = 0;
+    var q = document.getElementById("quadro");
+    if (q) rolagemH = q.scrollLeft;
+
+    var palco = document.getElementById("palco");
+    if (!estado.pronto) {
+      palco.innerHTML = '<div class="painel"><p style="color:#fff">Abrindo o quadro…</p></div>';
+    } else if (estado.vista === "calendario") {
+      palco.innerHTML = desenharCalendario();
+    } else if (estado.vista === "painel") {
+      palco.innerHTML = desenharPainel();
+    } else {
+      palco.innerHTML = desenharQuadro();
+    }
+
+    Array.prototype.forEach.call(document.querySelectorAll("[data-corpo]"), function(el){
+      var v = rolagem[el.getAttribute("data-corpo")];
+      if (v) el.scrollTop = v;
+    });
+    q = document.getElementById("quadro");
+    if (q && rolagemH) q.scrollLeft = rolagemH;
+
+    var veu = document.getElementById("veu");
+    if (estado.cartaoAberto && estado.cartoes.has(estado.cartaoAberto)) {
+      var aberto = estado.cartoes.get(estado.cartaoAberto);
+      var quemNaTela = [];
+      aberto.comentarios.forEach(function(k){ if (k.autor) quemNaTela.push(k.autor); });
+      aberto.atividade.forEach(function(a){ if (a.autor) quemNaTela.push(a.autor); });
+      resolverPerfis(quemNaTela);
+      document.getElementById("janela").innerHTML = janelaHtml(estado.cartoes.get(estado.cartaoAberto));
+      veu.hidden = false;
+      Array.prototype.forEach.call(document.querySelectorAll(".janela textarea"), crescer);
+    } else {
+      veu.hidden = true;
+      estado.cartaoAberto = null;
+    }
+
+    if (chaveFoco) {
+      var sel = '[data-campo="' + chaveFoco + '"]' + (idFoco ? '[data-id="' + idFoco + '"]' : "");
+      var novo = document.querySelector(sel);
+      if (novo && novo !== document.activeElement) {
+        novo.focus();
+        try { if (selIni != null) novo.setSelectionRange(selIni, selFim); } catch (e) {}
+      }
+    }
+    Array.prototype.forEach.call(document.querySelectorAll(".edita-nome,.compor textarea"), crescer);
+  }
+
+  /* --------- texto em digitação --------- */
+
+  function chaveTexto(campo, id, cl){ return campo + ":" + (id || "") + ":" + (cl || ""); }
+  function textoDe(campo, id, cl, gravado){
+    var k = chaveTexto(campo, id, cl);
+    return estado.textos[k] !== undefined ? estado.textos[k] : gravado;
+  }
+  function esquecerTexto(campo, id, cl){ delete estado.textos[chaveTexto(campo, id, cl)]; }
+  function esquecerTextos(){ estado.textos = {}; }
+
+  function crescer(el){
+    if (!el || el.tagName !== "TEXTAREA") return;
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
+  }
+
+  /* ======================= popovers ======================= */
+
+  var popAlvo = null;
+  function abrirPop(ancora, titulo, html, depois){
+    var pop = document.getElementById("pop");
+    pop.innerHTML = '<div class="pop-cabeca"><span>' + esc(titulo) + "</span>" +
+      '<button type="button" class="pop-x" data-acao="fechar-pop" aria-label="Fechar">✕</button></div>' + html;
+    pop.hidden = false;
+    popAlvo = ancora;
+    posicionarPop(ancora);
+    if (depois) depois(pop);
+  }
+  function posicionarPop(ancora){
+    var pop = document.getElementById("pop");
+    var r = ancora && ancora.getBoundingClientRect ? ancora.getBoundingClientRect() : { left:20, bottom:60, top:60 };
+    var largura = pop.offsetWidth, altura = pop.offsetHeight;
+    var x = Math.min(Math.max(8, r.left), window.innerWidth - largura - 8);
+    var y = r.bottom + 6;
+    if (y + altura > window.innerHeight - 8) y = Math.max(8, r.top - altura - 6);
+    pop.style.left = x + "px";
+    pop.style.top = y + "px";
+  }
+  function fecharPop(){
+    var pop = document.getElementById("pop");
+    pop.hidden = true;
+    pop.innerHTML = "";
+    popAlvo = null;
+  }
+
+  function popEtiquetas(ancora, c){
+    var html = '<div class="lista-pop">';
+    estado.etiquetas.forEach(function(e){
+      var tem = c.etiquetas.indexOf(e.id) >= 0;
+      html += '<div class="linha-etiqueta">' +
+        '<button type="button" class="btn-etiqueta" style="--cor:' + hexEtiqueta(e.cor) + '" ' +
+        'data-acao="toggle-etiqueta" data-id="' + esc(c.id) + '" data-et="' + esc(e.id) + '">' +
+        esc(e.nome || "") + (tem ? '<span class="ok">✓</span>' : "") + "</button>" +
+        '<button type="button" class="icone-botao" data-acao="editar-etiqueta" data-et="' + esc(e.id) + '" ' +
+        'data-id="' + esc(c.id) + '" aria-label="Editar etiqueta">' + svg("lapis") + "</button></div>";
+    });
+    html += "</div>" +
+      '<button type="button" class="btn neutro" style="width:100%;margin-top:6px" data-acao="nova-etiqueta" data-id="' + esc(c.id) + '">Criar nova etiqueta</button>' +
+      '<button type="button" class="btn fantasma" style="width:100%;margin-top:6px" data-acao="alternar-texto-etiqueta">' +
+      (estado.prefs.textoEtiqueta ? "Ocultar nomes nos cartões" : "Mostrar nomes nos cartões") + "</button>";
+    abrirPop(ancora, "Etiquetas", html);
+  }
+
+  function popEditarEtiqueta(ancora, idEt, idCartao){
+    var e = acharEtiqueta(idEt);
+    var novo = !e;
+    if (novo) e = { id: novoId(), cor: CORES_ETIQUETA[0].chave, nome: "" };
+    var html = '<label class="campo" for="nomeEt">Nome</label>' +
+      '<input type="text" id="nomeEt" value="' + esc(e.nome) + '" maxlength="40">' +
+      '<label class="campo">Cor</label><div class="grade-cores">';
+    CORES_ETIQUETA.forEach(function(cor){
+      html += '<button type="button" style="--cor:' + cor.hex + '" data-acao="cor-etiqueta" data-cor="' + cor.chave + '" ' +
+        'aria-pressed="' + (cor.chave === e.cor) + '" aria-label="' + cor.chave + '">' +
+        (cor.chave === e.cor ? svg("check", 14) : "") + "</button>";
+    });
+    html += "</div>" +
+      '<div class="acoes-editor"><button type="button" class="btn" data-acao="salvar-etiqueta" data-et="' + esc(e.id) + '" ' +
+      'data-id="' + esc(idCartao || "") + '" data-novo="' + novo + '">' + (novo ? "Criar" : "Salvar") + "</button>" +
+      (novo ? "" : '<button type="button" class="btn perigo" data-acao="apagar-etiqueta" data-et="' + esc(e.id) + '">Excluir</button>') +
+      "</div>";
+    estado.etiquetaEditando = e;
+    abrirPop(ancora, novo ? "Criar etiqueta" : "Editar etiqueta", html, function(pop){
+      var i = pop.querySelector("#nomeEt");
+      if (i) i.focus();
+    });
+  }
+
+  function popMembros(ancora, c){
+    var html = '<ul class="lista-pop">';
+    estado.membros.forEach(function(m){
+      var tem = c.membros.indexOf(m.id) >= 0;
+      html += '<li><button type="button" class="item-pop" data-acao="toggle-membro" data-id="' + esc(c.id) + '" data-m="' + esc(m.id) + '">' +
+        '<span class="av" style="--cor:' + esc(m.cor) + '">' + esc(iniciais(m.nome)) + "</span>" +
+        "<span>" + esc(m.nome) + "</span>" + (tem ? '<span class="marca">✓</span>' : "") + "</button></li>";
+    });
+    html += "</ul>" +
+      '<label class="campo" for="novoMembro">Adicionar pessoa</label>' +
+      '<div style="display:flex;gap:6px"><input type="text" id="novoMembro" placeholder="Nome" maxlength="40">' +
+      '<button type="button" class="btn" data-acao="criar-membro" data-id="' + esc(c.id) + '">+</button></div>';
+    abrirPop(ancora, "Membros", html);
+  }
+
+  function popMembrosQuadro(ancora){
+    var html = '<ul class="lista-pop">';
+    estado.membros.forEach(function(m){
+      html += '<li><div class="item-pop"><span class="av" style="--cor:' + esc(m.cor) + '">' + esc(iniciais(m.nome)) + "</span>" +
+        "<span>" + esc(m.nome) + "</span>" +
+        '<button type="button" class="marca" data-acao="apagar-membro" data-m="' + esc(m.id) + '" aria-label="Remover">✕</button></div></li>';
+    });
+    html += "</ul>" +
+      '<label class="campo" for="novoMembro">Adicionar pessoa ao quadro</label>' +
+      '<div style="display:flex;gap:6px"><input type="text" id="novoMembro" placeholder="Nome" maxlength="40">' +
+      '<button type="button" class="btn" data-acao="criar-membro">+</button></div>';
+    abrirPop(ancora, "Membros do quadro", html);
+  }
+
+  function popDatas(ancora, c){
+    var html = '<label class="campo" for="dIni">Início</label>' +
+      '<div style="display:flex;gap:6px"><input type="date" id="dIni" value="' + esc(parteDia(c.inicio)) + '">' +
+      '<input type="time" id="hIni" value="' + esc(parteHora(c.inicio)) + '" style="width:110px"></div>' +
+      '<label class="campo" for="dFim">Prazo</label>' +
+      '<div style="display:flex;gap:6px"><input type="date" id="dFim" value="' + esc(parteDia(c.prazo)) + '">' +
+      '<input type="time" id="hFim" value="' + esc(parteHora(c.prazo)) + '" style="width:110px"></div>' +
+      '<label class="campo" for="rep">Repetir</label><select id="rep"><option value="">Não repete</option>';
+    // "ancora" aqui é o botão que abriu o popover — o dia que ancora a
+    // repetição é outra coisa, e tem nome próprio.
+    var baseRepete = c.prazo || c.inicio;
+    Object.keys(REPETICOES).forEach(function(k){
+      html += '<option value="' + k + '"' + (c.repete === k ? " selected" : "") + ">" +
+        esc(rotuloRepeticao(k, baseRepete)) + "</option>";
+    });
+    html += "</select>" +
+      '<p class="aviso-pop">' + (baseRepete
+        ? "A repetição segue o dia do prazo: com o prazo numa terça, repete toda terça. Para mudar o dia, mude a data."
+        : "<b>Preencha o prazo primeiro.</b> A repetição precisa de uma data para saber em que dia cair.") +
+      " Ao marcar o prazo como concluído, a próxima volta nasce na primeira lista.</p>" +
+      '<div class="acoes-editor"><button type="button" class="btn" data-acao="salvar-datas" data-id="' + esc(c.id) + '">Salvar</button>' +
+      '<button type="button" class="btn neutro" data-acao="limpar-datas" data-id="' + esc(c.id) + '">Remover</button></div>';
+    abrirPop(ancora, "Datas", html);
+  }
+
+  // Mudou a data no popover? Os rótulos da repetição têm de acompanhar na hora,
+  // senão o seletor fica dizendo o dia da semana que a data tinha antes.
+  function atualizarRepeticao(){
+    var sel = document.getElementById("rep");
+    if (!sel) return;
+    var di = document.getElementById("dIni"), df = document.getElementById("dFim");
+    var base = (df && df.value) || (di && di.value) || "";
+    var atual = sel.value;
+    var html = '<option value="">Não repete</option>';
+    Object.keys(REPETICOES).forEach(function(k){
+      html += '<option value="' + k + '">' + esc(rotuloRepeticao(k, base)) + "</option>";
+    });
+    sel.innerHTML = html;
+    sel.value = atual;
+    var aviso = document.querySelector("#pop .aviso-pop");
+    if (aviso) {
+      aviso.innerHTML = (base
+        ? "A repetição segue o dia do prazo: com o prazo numa terça, repete toda terça. Para mudar o dia, mude a data."
+        : "<b>Preencha o prazo primeiro.</b> A repetição precisa de uma data para saber em que dia cair.") +
+        " Ao marcar o prazo como concluído, a próxima volta nasce na primeira lista.";
+    }
+  }
+
+  // Confirmação da própria página. O confirm() do navegador não aparece dentro
+  // de um iframe sem permissão para modais, e o clique sumiria sem fazer nada.
+  function popConfirmar(ancora, c){
+    var html = '<p style="margin:0 0 12px;font-size:13.5px;color:var(--tinta-suave)">' +
+      "Excluir \u201c<b>" + esc(c.titulo || "sem título") + "</b>\u201d para sempre? " +
+      (c.anexos.length ? "Os " + c.anexos.length + " anexos vão junto. " : "") +
+      "Não há como desfazer." +
+      '</p><div class="acoes-editor">' +
+      '<button type="button" class="btn perigo" data-acao="excluir-mesmo" data-id="' + esc(c.id) + '">Excluir</button>' +
+      '<button type="button" class="btn neutro" data-acao="fechar-pop">Cancelar</button></div>';
+    abrirPop(ancora, "Excluir cartão", html);
+  }
+
+  function popMover(ancora, c){
+    var html = '<label class="campo" for="listaDestino">Lista</label><select id="listaDestino">';
+    listasVisiveis().forEach(function(l){
+      html += '<option value="' + esc(l.id) + '"' + (l.id === c.lista ? " selected" : "") + ">" + esc(l.nome) + "</option>";
+    });
+    html += "</select>" +
+      '<div class="acoes-editor"><button type="button" class="btn" data-acao="mover-cartao" data-id="' + esc(c.id) + '">Mover</button></div>';
+    abrirPop(ancora, "Mover cartão", html);
+  }
+
+  function popMenuLista(ancora, l){
+    var html = '<ul class="lista-pop">' +
+      itemPop("add-topo", "Adicionar cartão", l.id) +
+      itemPop("ordenar-data", "Ordenar por prazo", l.id) +
+      itemPop("ordenar-nome", "Ordenar por título", l.id) +
+      itemPop("arquivar-cartoes", "Arquivar todos os cartões", l.id) +
+      itemPop("arquivar-lista", "Arquivar esta lista", l.id) +
+      "</ul>";
+    abrirPop(ancora, "Ações da lista", html);
+  }
+  function itemPop(acao, texto, id){
+    return '<li><button type="button" class="item-pop" data-acao="' + acao + '" data-id="' + esc(id) + '">' + esc(texto) + "</button></li>";
+  }
+
+  function popFiltro(ancora){
+    var f = estado.filtro;
+    var html = '<label class="campo" for="fTexto">Palavra-chave</label>' +
+      '<input type="text" id="fTexto" value="' + esc(f.texto) + '" placeholder="Título ou descrição">' +
+      '<label class="campo">Membros</label><ul class="lista-pop">' +
+      '<li><button type="button" class="item-pop" data-acao="f-sem-membro">' +
+      '<span class="av" style="--cor:#8590A2">—</span><span>Sem membros</span>' + (f.semMembro ? '<span class="marca">✓</span>' : "") + "</button></li>";
+    estado.membros.forEach(function(m){
+      html += '<li><button type="button" class="item-pop" data-acao="filtrar-membro" data-id="' + esc(m.id) + '">' +
+        '<span class="av" style="--cor:' + esc(m.cor) + '">' + esc(iniciais(m.nome)) + "</span><span>" + esc(m.nome) + "</span>" +
+        (f.membros.indexOf(m.id) >= 0 ? '<span class="marca">✓</span>' : "") + "</button></li>";
+    });
+    html += "</ul><label class='campo'>Etiquetas</label><ul class='lista-pop'>" +
+      '<li><button type="button" class="item-pop" data-acao="f-sem-etiqueta"><span>Sem etiquetas</span>' +
+      (f.semEtiqueta ? '<span class="marca">✓</span>' : "") + "</button></li>";
+    estado.etiquetas.forEach(function(e){
+      html += '<li><button type="button" class="item-pop" data-acao="filtrar-etiqueta" data-et="' + esc(e.id) + '">' +
+        '<span class="et" style="--cor:' + hexEtiqueta(e.cor) + ';width:28px"></span><span>' + esc(e.nome || "(sem nome)") + "</span>" +
+        (f.etiquetas.indexOf(e.id) >= 0 ? '<span class="marca">✓</span>' : "") + "</button></li>";
+    });
+    html += "</ul><label class='campo'>Prazo</label><ul class='lista-pop'>";
+    [["", "Qualquer"], ["vencido", "Vencido"], ["semana", "Vence em 7 dias"], ["sem", "Sem data"], ["feito", "Prazo concluído"]]
+      .forEach(function(p){
+        html += '<li><button type="button" class="item-pop" data-acao="filtrar-prazo" data-p="' + p[0] + '"><span>' + p[1] + "</span>" +
+          (f.prazo === p[0] ? '<span class="marca">✓</span>' : "") + "</button></li>";
+      });
+    html += "</ul>" +
+      '<button type="button" class="btn neutro" style="width:100%;margin-top:8px" data-acao="limpar-filtro">Limpar filtro</button>';
+    abrirPop(ancora, "Filtrar", html);
+  }
+
+  /* ======================= gaveta ======================= */
+
+  function abrirGaveta(noArquivo){
+    var g = document.getElementById("gaveta");
+    var arquivados = [];
+    estado.cartoes.forEach(function(c){ if (c.arquivado) arquivados.push(c); });
+    var listasArq = [];
+    estado.listas.forEach(function(l){ if (l.arquivada) listasArq.push(l); });
+
+    var html = '<h2>Menu do quadro<button type="button" data-acao="fechar-gaveta" aria-label="Fechar">✕</button></h2>';
+
+    html += '<h3 id="tituloArquivo">Arquivo</h3>';
+    if (!arquivados.length && !listasArq.length) {
+      html += '<p style="font-size:13px;color:var(--tinta-fraca)">Nada arquivado.</p>';
+    } else {
+      listasArq.forEach(function(l){
+        html += '<div class="item-arquivo"><span class="nome"><b>Lista:</b> ' + esc(l.nome) + "</span>" +
+          '<button type="button" data-acao="desarquivar-lista" data-id="' + esc(l.id) + '">voltar</button></div>';
+      });
+      arquivados.forEach(function(c){
+        html += '<div class="item-arquivo"><span class="nome">' + esc(c.titulo || "sem título") + "</span>" +
+          '<button type="button" data-acao="desarquivar" data-id="' + esc(c.id) + '">voltar</button>' +
+          '<button type="button" class="del" data-acao="excluir-cartao" data-id="' + esc(c.id) + '">excluir</button></div>';
+      });
+    }
+
+    html += "<h3>Plano de fundo</h3><div class='cores-fundo'>";
+    FUNDOS.forEach(function(f){
+      html += '<button type="button" style="--cor:' + f.hex + '" data-acao="fundo" data-cor="' + f.hex + '" ' +
+        'title="' + esc(f.nome) + '" aria-label="' + esc(f.nome) + '">' +
+        (estado.prefs.fundo === f.hex ? svg("check", 16) : "") + "</button>";
+    });
+    html += "</div>";
+
+    html += "<h3>Tema</h3><div style='display:flex;gap:6px'>" +
+      ["", "claro", "escuro"].map(function(t){
+        var rot = t === "" ? "Automático" : (t === "claro" ? "Claro" : "Escuro");
+        return '<button type="button" class="btn ' + (estado.prefs.tema === t ? "" : "neutro") + '" data-acao="tema" data-t="' + t + '">' + rot + "</button>";
+      }).join("") + "</div>";
+
+    var guardados = lerLocal(CHAVE_CARTOES);
+    // ---- o que existe guardado neste navegador, e como trazer de volta ----
+    var achados = [];
+    try {
+      for (var i = 0; i < window.localStorage.length; i++) {
+        var chave = window.localStorage.key(i);
+        if (!chave || chave.indexOf("minha-pauta:") !== 0) continue;
+        var cru = window.localStorage.getItem(chave) || "";
+        var quantos = null, quando = "";
+        try {
+          var v = JSON.parse(cru);
+          if (Array.isArray(v)) quantos = v.length;
+          else if (v && Array.isArray(v.atividades)) { quantos = v.atividades.length; quando = v.em || ""; }
+        } catch (e) { quantos = -1; }
+        achados.push({ chave: chave, quantos: quantos, quando: quando, peso: cru.length });
+      }
+    } catch (e) { /* armazenamento bloqueado */ }
+
+    var recuperaveis = achados.filter(function(a){
+      return a.quantos > 0 && a.chave !== CHAVE_CARTOES;
+    });
+    if (recuperaveis.length) {
+      html += "<h3>Recuperar</h3>" +
+        '<p style="font-size:12.5px;color:var(--tinta-suave);margin:0 0 8px;line-height:1.5">' +
+        "Há outra cópia guardada neste navegador. Isto acontece quando o quadro encolhe de uma vez: " +
+        "antes de gravar a menor, o Work guarda a maior." +
+        "</p>";
+      recuperaveis.forEach(function(a){
+        html += '<div class="item-arquivo"><span class="nome"><b>' + a.quantos + " cartões</b>" +
+          (a.quando ? " · de " + esc(quandoRelativo(a.quando)) : "") +
+          " · " + esc(formatarTamanho(a.peso)) + "</span>" +
+          '<button type="button" data-acao="recuperar" data-chave="' + esc(a.chave) + '">trazer de volta</button></div>';
+      });
+    }
+
+    html += "<h3>Trabalhar em equipe</h3>";
+    if (estado.modo === "nuvem") {
+      html += '<p style="font-size:12.5px;color:var(--tinta-suave);margin:0 0 10px;line-height:1.5">' +
+        "Este quadro está <b>na sua conta</b> e atualiza ao vivo: o que você muda aparece na hora " +
+        "para quem estiver com ele aberto.<br><br>" +
+        "Para o time entrar, use o botão <b>Compartilhar</b> da própria página do Work (fica no alto " +
+        "da janela do Claude, fora do quadro) e dê acesso de <b>edição</b> a cada pessoa. " +
+        "Quem receber só leitura vê tudo, mas não consegue mexer." +
+        "</p>";
+    } else {
+      html += '<p style="font-size:12.5px;color:var(--tinta-suave);margin:0 0 10px;line-height:1.5">' +
+        "<b>Este arquivo é só seu.</b> Aberto do disco, ele guarda tudo no próprio navegador — " +
+        "outra pessoa, outro computador ou outro navegador não enxergam nada daqui, e não há " +
+        "tempo real possível.<br><br>" +
+        "Para trabalhar em equipe, abra o <b>Work pelo link do Claude</b> em vez deste arquivo: " +
+        "lá o quadro fica na sua conta, atualiza ao vivo e pode ser compartilhado. " +
+        "Leve o que já existe aqui com <b>Exportar tudo</b> e, do outro lado, <b>Importar arquivo</b>." +
+        "</p>";
+    }
+    html += "<h3>Dados e backup</h3><dl class='dl-dados'>" +
+      "<dt>Salvando em</dt><dd>" + (estado.modo === "nuvem" ? "sua conta" : "só neste navegador") + "</dd>" +
+      "<dt>No quadro</dt><dd>" + estado.cartoes.size + " cartões</dd>" +
+      "<dt>Neste navegador</dt><dd>" + (Array.isArray(guardados) ? guardados.length : 0) + " cartões</dd></dl>" +
+      '<p style="font-size:12px;color:var(--tinta-fraca);margin:0 0 10px">O arquivo HTML baixado guarda os dados por conta própria. Para levar de um lado ao outro, exporte aqui e importe lá.</p>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+      '<button type="button" class="btn neutro" data-acao="exportar">Exportar tudo</button>' +
+      '<button type="button" class="btn neutro" data-acao="importar">Importar arquivo</button></div>';
+
+    g.innerHTML = html;
+    g.hidden = false;
+    // Chegando pelo botão "Arquivados", a gaveta abre já mostrando o arquivo —
+    // ele ficava no fim dela, depois do fundo e do tema.
+    if (noArquivo) {
+      var t = document.getElementById("tituloArquivo");
+      if (t) t.scrollIntoView({ block: "start" });
+    } else {
+      g.scrollTop = 0;
+    }
+  }
+
+  /* ======================= ações ======================= */
+
+  function cartao(id){ return estado.cartoes.get(id); }
+
+  function criarCartao(idLista, titulo, noTopo){
+    var lista = cartoesDa(idLista);
+    var ordem = noTopo
+      ? ordemEntre(null, lista.length ? lista[0].ordem : null)
+      : ordemEntre(lista.length ? lista[lista.length-1].ordem : null, null);
+    var c = normalizarCartao(novoId(), { lista:idLista, ordem:ordem, titulo:titulo, criadoEm:agora() });
+    anotar(c, "cartão criado");
+    gravarCartao(c);
+    return c;
+  }
+
+  // O cartão nasce já com o que foi escrito no compositor.
+  function criarCartaoDoRascunho(idLista, titulo){
+    var r = estado.rascunho;
+    var lista = cartoesDa(idLista);
+    var itens = r.itens.split("\n").map(function(x){ return x.trim(); }).filter(Boolean);
+    var c = normalizarCartao(novoId(), {
+      lista: idLista,
+      ordem: ordemEntre(lista.length ? lista[lista.length-1].ordem : null, null),
+      titulo: titulo,
+      descricao: r.descricao.trim(),
+      inicio: juntar(r.inicioDia, r.inicioHora),
+      prazo: juntar(r.dia, r.hora),
+      repete: r.repete,
+      etiquetas: r.etiquetas.slice(),
+      membros: r.membros.slice(),
+      checklists: itens.length ? [{ id: novoId(), nome: "Checklist",
+        itens: itens.map(function(t){ return { id: novoId(), texto: t, feito: false }; }) }] : [],
+      criadoEm: agora()
+    });
+    anotar(c, "cartão criado");
+    gravarCartao(c);
+    return c;
+  }
+
+  function moverCartao(c, idLista, ordem){
+    var antes = c.lista;
+    c.lista = idLista;
+    c.ordem = ordem;
+    if (antes !== idLista) {
+      var la = estado.listas.get(antes), lb = estado.listas.get(idLista);
+      anotar(c, "moveu de " + (la ? la.nome : "?") + " para " + (lb ? lb.nome : "?"));
+    }
+    gravarCartao(c);
+  }
+
+  function alternarPrazo(c){
+    c.prazoFeito = !c.prazoFeito;
+    c.feitoEm = c.prazoFeito ? agora() : "";
+    anotar(c, c.prazoFeito ? "marcou o prazo como concluído" : "reabriu o prazo");
+    if (c.prazoFeito && c.repete) nascerDeNovo(c);
+    gravarCartao(c);
+  }
+
+  // Um cartão que se repete não some ao ser concluído: a próxima volta nasce
+  // na primeira lista, com as datas adiantadas e os checklists zerados.
+  function nascerDeNovo(c){
+    var regra = REPETICOES[c.repete];
+    var base = parteDia(c.prazo || c.inicio);
+    if (!regra || !base) return;
+    var proximo = regra.passo(base), guarda = 0;
+    while (proximo < hoje() && guarda++ < 60) proximo = regra.passo(proximo);
+    var delta = diffDias(base, proximo);
+
+    var primeira = listasVisiveis()[0];
+    var alvo = primeira ? primeira.id : c.lista;
+    var lista = cartoesDa(alvo);
+    var novo = normalizarCartao(novoId(), Object.assign({}, corpoCartao(c), {
+      lista: alvo,
+      ordem: ordemEntre(lista.length ? lista[lista.length-1].ordem : null, null),
+      prazo: c.prazo ? juntar(somarDias(parteDia(c.prazo), delta), parteHora(c.prazo)) : "",
+      inicio: c.inicio ? juntar(somarDias(parteDia(c.inicio), delta), parteHora(c.inicio)) : "",
+      prazoFeito: false,
+      feitoEm: "",
+      comentarios: [],
+      atividade: [],
+      criadoEm: agora(),
+      checklists: c.checklists.map(function(cl){
+        return { id: novoId(), nome: cl.nome,
+                 itens: cl.itens.map(function(i){ return { id: novoId(), texto: i.texto, feito: false }; }) };
+      })
+    }));
+    anotar(novo, "próxima volta de um cartão que se repete");
+    gravarCartao(novo, true);
+  }
+  function diffDias(a, b){
+    var pa = a.split("-"), pb = b.split("-");
+    var da = new Date(+pa[0], +pa[1]-1, +pa[2]), dbb = new Date(+pb[0], +pb[1]-1, +pb[2]);
+    return Math.round((dbb - da) / 86400000);
+  }
+
+  function arquivarCartao(c, valor){
+    c.arquivado = valor;
+    anotar(c, valor ? "arquivou o cartão" : "enviou de volta ao quadro");
+    if (valor && estado.cartaoAberto === c.id) estado.cartaoAberto = null;
+    gravarCartao(c);
+    if (valor) {
+      oferecerDesfazer("\u201c" + (c.titulo || "cartão sem título") + "\u201d foi para os arquivados.", function(){
+        arquivarCartao(c, false);
+      });
+    }
+  }
+
+  // Arquivar some com o cartão da tela. Sem um caminho de volta à mão, a pessoa
+  // fica procurando onde ele foi parar — foi exatamente o que aconteceu.
+  var relogioTorrada = null;
+  function oferecerDesfazer(texto, acao){
+    var t = document.getElementById("torrada");
+    t.innerHTML = '<span>' + esc(texto) + "</span>" +
+      '<button type="button" data-acao="desfazer-torrada">desfazer</button>' +
+      '<button type="button" data-acao="ver-arquivados">ver arquivados</button>';
+    t.hidden = false;
+    estado.desfazer = acao;
+    if (relogioTorrada) window.clearTimeout(relogioTorrada);
+    relogioTorrada = window.setTimeout(fecharTorrada, 9000);
+  }
+  function fecharTorrada(){
+    document.getElementById("torrada").hidden = true;
+    estado.desfazer = null;
+    if (relogioTorrada) { window.clearTimeout(relogioTorrada); relogioTorrada = null; }
+  }
+
+  function copiarCartao(c){
+    var lista = cartoesDa(c.lista);
+    var novo = normalizarCartao(novoId(), Object.assign({}, corpoCartao(c), {
+      titulo: c.titulo + " (cópia)",
+      ordem: ordemEntre(c.ordem, lista.length ? proximaOrdem(lista, c) : null),
+      comentarios: [], atividade: [], criadoEm: agora(),
+      checklists: c.checklists.map(function(cl){
+        return { id: novoId(), nome: cl.nome, itens: cl.itens.map(function(i){
+          return { id: novoId(), texto: i.texto, feito: i.feito }; }) };
+      })
+    }));
+    anotar(novo, "copiado de " + (c.titulo || "outro cartão"));
+    gravarCartao(novo);
+    estado.cartaoAberto = novo.id;
+    desenhar();
+  }
+  function proximaOrdem(lista, c){
+    for (var i = 0; i < lista.length; i++) if (lista[i].id === c.id) return lista[i+1] ? lista[i+1].ordem : null;
+    return null;
+  }
+
+  /* ======================= arrastar ======================= */
+
+  var arrasto = null;
+  var suprimirClique = false;   // o clique que encerra um arraste não abre o cartão
+
+  function iniciarArrasto(ev, el, tipo){
+    var r = el.getBoundingClientRect();
+    arrasto = {
+      tipo: tipo,
+      id: el.getAttribute(tipo === "cartao" ? "data-cartao" : "data-lista"),
+      el: el,
+      dx: ev.clientX - r.left,
+      dy: ev.clientY - r.top,
+      largura: r.width,
+      altura: r.height,
+      x0: ev.clientX,
+      y0: ev.clientY,
+      ativo: false,
+      clone: null,
+      vaga: null
+    };
+    document.addEventListener("pointermove", moverArrasto);
+    document.addEventListener("pointerup", soltarArrasto);
+    document.addEventListener("pointercancel", soltarArrasto);
+  }
+
+  function ativarArrasto(){
+    var a = arrasto;
+    a.ativo = true;
+    var clone = a.el.cloneNode(true);
+    clone.classList.add("voando");
+    clone.style.width = a.largura + "px";
+    clone.style.left = (a.x0 - a.dx) + "px";
+    clone.style.top = (a.y0 - a.dy) + "px";
+    document.body.appendChild(clone);
+    a.clone = clone;
+
+    var vaga = document.createElement("div");
+    vaga.className = "vaga";
+    vaga.style.height = a.altura + "px";
+    if (a.tipo === "lista") { vaga.style.width = a.largura + "px"; vaga.style.flex = "0 0 " + a.largura + "px"; }
+    a.vaga = vaga;
+    a.el.parentNode.insertBefore(vaga, a.el);
+    a.el.classList.add(a.tipo === "cartao" ? "fantasma" : "arrastando-lista");
+    a.el.style.display = "none";
+    document.body.style.userSelect = "none";
+  }
+
+  function moverArrasto(ev){
+    var a = arrasto;
+    if (!a) return;
+    if (!a.ativo) {
+      if (Math.abs(ev.clientX - a.x0) + Math.abs(ev.clientY - a.y0) < 6) return;
+      ativarArrasto();
+    }
+    ev.preventDefault();
+    a.clone.style.left = (ev.clientX - a.dx) + "px";
+    a.clone.style.top = (ev.clientY - a.dy) + "px";
+
+    // rolagem automática perto das bordas do quadro
+    var quadro = document.getElementById("quadro");
+    if (quadro) {
+      var r = quadro.getBoundingClientRect();
+      if (ev.clientX > r.right - 70) quadro.scrollLeft += 14;
+      else if (ev.clientX < r.left + 70) quadro.scrollLeft -= 14;
+    }
+
+    if (a.tipo === "cartao") posicionarVagaCartao(ev);
+    else posicionarVagaLista(ev);
+  }
+
+  function posicionarVagaCartao(ev){
+    var a = arrasto;
+    var el = document.elementFromPoint(ev.clientX, ev.clientY);
+    var corpo = el && el.closest ? el.closest(".corpo-lista") : null;
+    if (!corpo) {
+      var lista = el && el.closest ? el.closest(".lista") : null;
+      corpo = lista ? lista.querySelector(".corpo-lista") : null;
+    }
+    if (!corpo) return;
+    var cartoes = Array.prototype.filter.call(corpo.children, function(x){
+      return x.classList.contains("cartao") && x !== a.el;
+    });
+    var antes = null;
+    for (var i = 0; i < cartoes.length; i++) {
+      var r = cartoes[i].getBoundingClientRect();
+      if (ev.clientY < r.top + r.height / 2) { antes = cartoes[i]; break; }
+    }
+    var vazio = corpo.querySelector(".lista-vazia");
+    if (vazio) vazio.remove();
+    corpo.insertBefore(a.vaga, antes);
+  }
+
+  function posicionarVagaLista(ev){
+    var a = arrasto;
+    var quadro = document.getElementById("quadro");
+    if (!quadro) return;
+    var listas = Array.prototype.filter.call(quadro.children, function(x){
+      return x.classList.contains("lista") && x !== a.el;
+    });
+    var antes = null;
+    for (var i = 0; i < listas.length; i++) {
+      var r = listas[i].getBoundingClientRect();
+      if (ev.clientX < r.left + r.width / 2) { antes = listas[i]; break; }
+    }
+    quadro.insertBefore(a.vaga, antes);
+  }
+
+  function soltarArrasto(){
+    var a = arrasto;
+    document.removeEventListener("pointermove", moverArrasto);
+    document.removeEventListener("pointerup", soltarArrasto);
+    document.removeEventListener("pointercancel", soltarArrasto);
+    arrasto = null;
+    if (!a) return;
+    document.body.style.userSelect = "";
+    if (!a.ativo) {
+      // Não houve arraste: foi um clique. Se chegou mudança de outra pessoa
+      // enquanto o botão estava apertado, refazer a tela agora arrancaria o
+      // elemento antes do evento de clique chegar nele — e o clique sumiria.
+      if (desenhoPendente) { desenhoPendente = false; window.setTimeout(desenhar, 0); }
+      return;
+    }
+    suprimirClique = true;
+    window.setTimeout(function(){ suprimirClique = false; }, 0);
+
+    if (a.clone) a.clone.remove();
+    a.el.style.display = "";
+    a.el.classList.remove("fantasma", "arrastando-lista");
+
+    var vaga = a.vaga;
+    var pai = vaga.parentNode;
+    if (!pai) { desenhar(); return; }
+
+    if (a.tipo === "cartao") {
+      var idLista = pai.getAttribute("data-corpo");
+      var irmaos = Array.prototype.filter.call(pai.children, function(x){
+        return x.classList.contains("cartao") || x === vaga;
+      });
+      var pos = irmaos.indexOf(vaga);
+      var antes = pos > 0 ? estado.cartoes.get(irmaos[pos-1].getAttribute("data-cartao")) : null;
+      var depois = pos < irmaos.length - 1 ? estado.cartoes.get(irmaos[pos+1].getAttribute("data-cartao")) : null;
+      vaga.remove();
+      var c = estado.cartoes.get(a.id);
+      if (c && idLista) moverCartao(c, idLista, ordemEntre(antes ? antes.ordem : null, depois ? depois.ordem : null));
+      else desenhar();
+    } else {
+      var irmas = Array.prototype.filter.call(pai.children, function(x){
+        return x.classList.contains("lista") || x === vaga;
+      });
+      var p2 = irmas.indexOf(vaga);
+      var la = p2 > 0 ? estado.listas.get(irmas[p2-1].getAttribute("data-lista")) : null;
+      var lb = p2 < irmas.length - 1 ? estado.listas.get(irmas[p2+1].getAttribute("data-lista")) : null;
+      vaga.remove();
+      var l = estado.listas.get(a.id);
+      if (l) { l.ordem = ordemEntre(la ? la.ordem : null, lb ? lb.ordem : null); gravarQuadro(); }
+      else desenhar();
+    }
+    desenhoPendente = false;
+  }
+
+  document.addEventListener("pointerdown", function(ev){
+    if (ev.button !== 0) return;
+    if (estado.vista !== "quadro") return;
+    var alvo = ev.target;
+    if (alvo.closest("button") || alvo.closest("input") || alvo.closest("textarea")) return;
+
+    var cartaoEl = alvo.closest(".cartao");
+    if (cartaoEl) { iniciarArrasto(ev, cartaoEl, "cartao"); return; }
+
+    var cabeca = alvo.closest("[data-pegar-lista]");
+    if (cabeca && !alvo.closest("h2")) {
+      var listaEl = cabeca.closest(".lista");
+      if (listaEl) iniciarArrasto(ev, listaEl, "lista");
+    }
+  });
+
+  /* ======================= eventos ======================= */
+
+  function fecharTudo(){
+    fecharPop();
+    document.getElementById("gaveta").hidden = true;
+  }
+
+  document.addEventListener("click", function(ev){
+    var el = ev.target.closest("[data-acao]");
+
+    // clique fora fecha popover e gaveta
+    if (!el || ["fechar-pop"].indexOf(el.getAttribute("data-acao")) >= 0) {
+      var pop = document.getElementById("pop");
+      if (!pop.hidden && (!ev.target.closest("#pop") || (el && el.getAttribute("data-acao") === "fechar-pop"))) fecharPop();
+      var g = document.getElementById("gaveta");
+      if (!g.hidden && !ev.target.closest(".gaveta") && !(el && el.getAttribute("data-acao") === "abrir-gaveta")) g.hidden = true;
+    }
+    if (!el) {
+      // clicar no cartão (fora dos botões) abre a janela
+      var c0 = ev.target.closest(".cartao");
+      if (c0 && !arrasto && !suprimirClique) { estado.cartaoAberto = c0.getAttribute("data-cartao"); estado.editor = null; estado.anexosDoComentario = []; esquecerTextos(); desenhar(); return; }
+      if (ev.target.id === "veu") { estado.cartaoAberto = null; estado.editor = null; esquecerTextos(); desenhar(); }
+      return;
+    }
+
+    if (suprimirClique) return;
+    var acao = el.getAttribute("data-acao");
+    var id = el.getAttribute("data-id") || "";
+    var c = cartao(id);
+
+    switch (acao) {
+      case "ir-quadro": estado.vista = "quadro"; gravarPrefs(); desenhar(); break;
+      case "abrir-gaveta": abrirGaveta(); break;
+      case "abrir-arquivados": abrirGaveta(true); break;
+      case "ver-arquivados": fecharTorrada(); abrirGaveta(true); break;
+      case "desfazer-torrada": {
+        var acaoDesfazer = estado.desfazer;
+        fecharTorrada();
+        if (acaoDesfazer) acaoDesfazer();
+        break;
+      }
+      case "fechar-gaveta": document.getElementById("gaveta").hidden = true; break;
+      case "fechar-pop": fecharPop(); break;
+
+      case "compor":
+        estado.compondoEm = id; estado.rascunho = rascunhoVazio(); desenhar();
+        var t = document.querySelector('[data-campo="novo-cartao"]');
+        if (t) { t.focus(); var cx = t.closest(".compor"); if (cx) cx.scrollIntoView({ block:"nearest" }); }
+        break;
+      case "cancelar-compor": estado.compondoEm = null; estado.rascunho = rascunhoVazio(); desenhar(); break;
+      case "salvar-cartao": {
+        var campo = document.querySelector('[data-campo="novo-cartao"][data-id="' + id + '"]');
+        var txt = (campo ? campo.value : estado.rascunho.titulo).trim();
+        if (!txt) { estado.compondoEm = null; estado.rascunho = rascunhoVazio(); desenhar(); break; }
+        criarCartaoDoRascunho(id, txt);
+        estado.rascunho = rascunhoVazio();
+        estado.compondoEm = id;
+        desenhar();
+        var t2 = document.querySelector('[data-campo="novo-cartao"]');
+        if (t2) t2.focus();
+        break;
+      }
+      case "detalhes-compor":
+        estado.comporDetalhes = !estado.comporDetalhes;
+        gravarPrefs();
+        desenhar();
+        break;
+      case "r-etiqueta": {
+        var idEtR = el.getAttribute("data-et");
+        var pr = estado.rascunho.etiquetas.indexOf(idEtR);
+        if (pr >= 0) estado.rascunho.etiquetas.splice(pr, 1); else estado.rascunho.etiquetas.push(idEtR);
+        desenhar();
+        break;
+      }
+      case "r-membro": {
+        var idMR = el.getAttribute("data-m");
+        var pm2 = estado.rascunho.membros.indexOf(idMR);
+        if (pm2 >= 0) estado.rascunho.membros.splice(pm2, 1); else estado.rascunho.membros.push(idMR);
+        desenhar();
+        break;
+      }
+      case "nova-lista":
+        estado.novaLista = true; desenhar();
+        var i0 = document.querySelector('[data-campo="nova-lista"]');
+        if (i0) i0.focus();
+        break;
+      case "cancelar-lista": estado.novaLista = false; desenhar(); break;
+      case "salvar-lista": {
+        var ci = document.querySelector('[data-campo="nova-lista"]');
+        var nome = ci ? ci.value.trim() : "";
+        if (!nome) { estado.novaLista = false; desenhar(); break; }
+        var vis = listasVisiveis();
+        var nova = { id: novoId(), nome: nome, arquivada: false,
+                     ordem: ordemEntre(vis.length ? vis[vis.length-1].ordem : null, null) };
+        estado.listas.set(nova.id, nova);
+        gravarQuadro();
+        var i1 = document.querySelector('[data-campo="nova-lista"]');
+        if (i1) { i1.value = ""; i1.focus(); }
+        break;
+      }
+      case "editar-lista": estado.editandoLista = id; desenhar();
+        var e0 = document.querySelector('[data-campo="nome-lista"]');
+        if (e0) { e0.focus(); e0.select(); }
+        break;
+      case "menu-lista": popMenuLista(el, estado.listas.get(id)); break;
+      case "add-topo": {
+        fecharPop();
+        estado.compondoEm = id; desenhar();
+        var t3 = document.querySelector('[data-campo="novo-cartao"]');
+        if (t3) t3.focus();
+        break;
+      }
+      case "ordenar-data": case "ordenar-nome": {
+        var cs = cartoesDa(id);
+        cs.sort(acao === "ordenar-nome"
+          ? function(a, b){ return (a.titulo || "").localeCompare(b.titulo || "", "pt-BR"); }
+          : function(a, b){
+              var ka = a.prazo || "9999", kb = b.prazo || "9999";
+              return ka < kb ? -1 : (ka > kb ? 1 : 0);
+            });
+        cs.forEach(function(x, i){ x.ordem = (i + 1) * 1024; gravarCartao(x, true); });
+        fecharPop(); desenhar();
+        break;
+      }
+      case "arquivar-cartoes": {
+        var levados = cartoesDa(id);
+        levados.forEach(function(x){ x.arquivado = true; anotar(x, "arquivou o cartão"); gravarCartao(x, true); });
+        fecharPop(); desenhar();
+        if (levados.length) {
+          oferecerDesfazer(levados.length + " cartões foram para os arquivados.", function(){
+            levados.forEach(function(x){ x.arquivado = false; gravarCartao(x, true); });
+            desenhar();
+          });
+        }
+        break;
+      }
+      case "arquivar-lista": {
+        var l0 = estado.listas.get(id);
+        if (l0) {
+          l0.arquivada = true;
+          gravarQuadro();
+          oferecerDesfazer("A lista \u201c" + l0.nome + "\u201d foi para os arquivados.", function(){
+            l0.arquivada = false; gravarQuadro();
+          });
+        }
+        fecharPop();
+        break;
+      }
+      case "desarquivar-lista": {
+        var l1 = estado.listas.get(id);
+        if (l1) { l1.arquivada = false; gravarQuadro(); abrirGaveta(); }
+        break;
+      }
+
+      case "abrir-cartao": estado.cartaoAberto = id; estado.editor = null; estado.anexosDoComentario = []; esquecerTextos(); desenhar(); break;
+      case "fechar-janela": estado.cartaoAberto = null; estado.editor = null; estado.anexosDoComentario = []; esquecerTextos(); desenhar(); break;
+      case "alternar-prazo": if (c) alternarPrazo(c); break;
+      case "pop-etiquetas": if (c) popEtiquetas(el, c); break;
+      case "pop-membros": if (c) popMembros(el, c); break;
+      case "pop-datas": if (c) popDatas(el, c); break;
+      case "pop-mover": if (c) popMover(el, c); break;
+      case "abrir-membros-quadro": popMembrosQuadro(el); break;
+      case "abrir-filtro": popFiltro(el); break;
+
+      case "toggle-etiqueta": {
+        var idEt = el.getAttribute("data-et");
+        if (!c) break;
+        var k = c.etiquetas.indexOf(idEt);
+        if (k >= 0) c.etiquetas.splice(k, 1); else c.etiquetas.push(idEt);
+        gravarCartao(c);
+        popEtiquetas(popAlvo, c);
+        break;
+      }
+      case "editar-etiqueta": popEditarEtiqueta(el, el.getAttribute("data-et"), id); break;
+      case "nova-etiqueta": popEditarEtiqueta(el, "", id); break;
+      case "cor-etiqueta": {
+        if (estado.etiquetaEditando) estado.etiquetaEditando.cor = el.getAttribute("data-cor");
+        var nomeAtual = document.getElementById("nomeEt");
+        if (estado.etiquetaEditando && nomeAtual) estado.etiquetaEditando.nome = nomeAtual.value;
+        popEditarEtiqueta(popAlvo, estado.etiquetaEditando.id, id);
+        break;
+      }
+      case "salvar-etiqueta": {
+        var e1 = estado.etiquetaEditando;
+        if (!e1) break;
+        var campoNome = document.getElementById("nomeEt");
+        e1.nome = campoNome ? campoNome.value.trim() : e1.nome;
+        if (el.getAttribute("data-novo") === "true") {
+          estado.etiquetas.push(e1);
+          if (c) { c.etiquetas.push(e1.id); gravarCartao(c, true); }
+        } else {
+          var alvoEt = acharEtiqueta(e1.id);
+          if (alvoEt) { alvoEt.nome = e1.nome; alvoEt.cor = e1.cor; }
+        }
+        estado.etiquetaEditando = null;
+        gravarQuadro();
+        if (c) popEtiquetas(popAlvo, cartao(id)); else fecharPop();
+        break;
+      }
+      case "apagar-etiqueta": {
+        var idApaga = el.getAttribute("data-et");
+        estado.etiquetas = estado.etiquetas.filter(function(x){ return x.id !== idApaga; });
+        estado.cartoes.forEach(function(x){
+          var p = x.etiquetas.indexOf(idApaga);
+          if (p >= 0) { x.etiquetas.splice(p, 1); gravarCartao(x, true); }
+        });
+        estado.etiquetaEditando = null;
+        gravarQuadro();
+        fecharPop();
+        break;
+      }
+      case "alternar-texto-etiqueta":
+        estado.prefs.textoEtiqueta = !estado.prefs.textoEtiqueta;
+        gravarQuadro();
+        if (!document.getElementById("pop").hidden && c) popEtiquetas(popAlvo, c);
+        break;
+
+      case "toggle-membro": {
+        var idM = el.getAttribute("data-m");
+        if (!c) break;
+        var km = c.membros.indexOf(idM);
+        if (km >= 0) c.membros.splice(km, 1); else c.membros.push(idM);
+        gravarCartao(c);
+        popMembros(popAlvo, c);
+        break;
+      }
+      case "criar-membro": {
+        var campoM = document.getElementById("novoMembro");
+        var nomeM = campoM ? campoM.value.trim() : "";
+        if (!nomeM) break;
+        var m = membroPorNome(nomeM);
+        if (c) { if (c.membros.indexOf(m.id) < 0) c.membros.push(m.id); gravarCartao(c, true); }
+        gravarQuadro();
+        if (c) popMembros(popAlvo, cartao(id)); else popMembrosQuadro(popAlvo);
+        break;
+      }
+      case "apagar-membro": {
+        var idDel = el.getAttribute("data-m");
+        estado.membros = estado.membros.filter(function(x){ return x.id !== idDel; });
+        estado.cartoes.forEach(function(x){
+          var p = x.membros.indexOf(idDel);
+          if (p >= 0) { x.membros.splice(p, 1); gravarCartao(x, true); }
+        });
+        gravarQuadro();
+        popMembrosQuadro(popAlvo);
+        break;
+      }
+
+      case "salvar-datas": {
+        if (!c) break;
+        var di = document.getElementById("dIni"), hi = document.getElementById("hIni");
+        var df = document.getElementById("dFim"), hf = document.getElementById("hFim");
+        var rep = document.getElementById("rep");
+        c.inicio = juntar(di ? di.value : "", hi ? hi.value : "");
+        c.prazo = juntar(df ? df.value : "", hf ? hf.value : "");
+        c.repete = rep && REPETICOES[rep.value] ? rep.value : "";
+        anotar(c, "mudou as datas");
+        gravarCartao(c);
+        fecharPop();
+        break;
+      }
+      case "limpar-datas":
+        if (!c) break;
+        c.inicio = ""; c.prazo = ""; c.prazoFeito = false; c.feitoEm = ""; c.repete = "";
+        anotar(c, "removeu as datas");
+        gravarCartao(c);
+        fecharPop();
+        break;
+      case "mover-cartao": {
+        if (!c) break;
+        var sel = document.getElementById("listaDestino");
+        var destino = sel ? sel.value : c.lista;
+        var lst = cartoesDa(destino);
+        moverCartao(c, destino, ordemEntre(lst.length ? lst[lst.length-1].ordem : null, null));
+        fecharPop();
+        break;
+      }
+
+      case "editar-descricao": estado.editor = "descricao"; desenhar();
+        var td = document.querySelector('[data-campo="descricao"]');
+        if (td) { td.focus(); td.setSelectionRange(td.value.length, td.value.length); }
+        break;
+      case "salvar-descricao": {
+        var cd = document.querySelector('[data-campo="descricao"]');
+        if (c && cd) { c.descricao = cd.value; anotar(c, "mudou a descrição"); }
+        if (c) esquecerTexto("descricao", c.id, "");
+        estado.editor = null;
+        if (c) gravarCartao(c); else desenhar();
+        break;
+      }
+      case "cancelar-editor": estado.editor = null; esquecerTextos(); desenhar(); break;
+
+      case "anexar":
+      case "anexar-comentario": {
+        if (!c) break;
+        estado.alvoAnexo = { id: id, comentario: acao === "anexar-comentario" };
+        var campo = document.getElementById("arquivoAnexo");
+        campo.value = "";
+        campo.click();
+        break;
+      }
+      case "excluir-anexo": {
+        if (!c) break;
+        var idAn = el.getAttribute("data-anexo");
+        var alvo = acharAnexo(c, idAn);
+        c.anexos = c.anexos.filter(function(x){ return x.id !== idAn; });
+        c.comentarios.forEach(function(k){
+          k.anexos = (k.anexos || []).filter(function(x){ return x !== idAn; });
+        });
+        estado.anexosDoComentario = estado.anexosDoComentario.filter(function(x){ return x !== idAn; });
+        anotar(c, "removeu um anexo");
+        // o arquivo guardado no artefato sai junto; o endereço de dados vai com o registro
+        if (assets && alvo && alvo.src.slice(0, 5) !== "data:") {
+          try { assets.delete(alvo.id); } catch (e) {}
+        }
+        gravarCartao(c);
+        break;
+      }
+      case "tirar-do-comentario": {
+        var idTira = el.getAttribute("data-anexo");
+        estado.anexosDoComentario = estado.anexosDoComentario.filter(function(x){ return x !== idTira; });
+        desenhar();
+        break;
+      }
+      case "nova-checklist": {
+        if (!c) break;
+        c.checklists.push({ id: novoId(), nome: "Checklist", itens: [] });
+        anotar(c, "adicionou um checklist");
+        gravarCartao(c);
+        break;
+      }
+      case "excluir-checklist": {
+        if (!c) break;
+        var idCl = el.getAttribute("data-cl");
+        c.checklists = c.checklists.filter(function(x){ return x.id !== idCl; });
+        gravarCartao(c);
+        break;
+      }
+      case "renomear-checklist": estado.editor = "nomecl:" + el.getAttribute("data-cl"); desenhar();
+        var tn = document.querySelector('[data-campo="nome-checklist"]');
+        if (tn) { tn.focus(); tn.select(); }
+        break;
+      case "novo-item": estado.editor = "item:" + el.getAttribute("data-cl"); desenhar();
+        var ti = document.querySelector('[data-campo="novo-item"]');
+        if (ti) ti.focus();
+        break;
+      case "salvar-item": {
+        if (!c) break;
+        var campoI = document.querySelector('[data-campo="novo-item"]');
+        var txtI = campoI ? campoI.value.trim() : "";
+        var idCl2 = el.getAttribute("data-cl");
+        if (txtI) {
+          c.checklists.forEach(function(cl){
+            if (cl.id === idCl2) cl.itens.push({ id: novoId(), texto: txtI, feito: false });
+          });
+          gravarCartao(c, true);
+        }
+        esquecerTexto("novo-item", c.id, idCl2);
+        desenhar();
+        var ti2 = document.querySelector('[data-campo="novo-item"]');
+        if (ti2) { ti2.value = ""; ti2.focus(); }
+        break;
+      }
+      case "excluir-item": {
+        if (!c) break;
+        var idCl3 = el.getAttribute("data-cl"), idIt = el.getAttribute("data-item");
+        c.checklists.forEach(function(cl){
+          if (cl.id === idCl3) cl.itens = cl.itens.filter(function(x){ return x.id !== idIt; });
+        });
+        gravarCartao(c);
+        break;
+      }
+
+      case "salvar-comentario": {
+        if (!c) break;
+        var campoC = document.querySelector('[data-campo="comentario"]');
+        var txtC = campoC ? campoC.value.trim() : "";
+        if (!txtC && !estado.anexosDoComentario.length) break;
+        c.comentarios.push({ id: novoId(), texto: txtC, autor: meuId(),
+                            anexos: estado.anexosDoComentario.slice(), em: agora() });
+        estado.anexosDoComentario = [];
+        esquecerTexto("comentario", c.id, "");
+        gravarCartao(c);
+        break;
+      }
+      case "excluir-comentario": {
+        if (!c) break;
+        var idCom = el.getAttribute("data-com");
+        c.comentarios = c.comentarios.filter(function(x){ return x.id !== idCom; });
+        gravarCartao(c);
+        break;
+      }
+
+      case "arquivar": if (c) arquivarCartao(c, true); break;
+      case "desarquivar": if (c) { arquivarCartao(c, false); if (!document.getElementById("gaveta").hidden) abrirGaveta(); } break;
+      case "excluir-cartao":
+        if (c) popConfirmar(el, c);
+        break;
+      case "excluir-mesmo": {
+        fecharPop();
+        if (!c) break;
+        apagarCartao(id);
+        if (!document.getElementById("gaveta").hidden) abrirGaveta();
+        break;
+      }
+      case "copiar-cartao": if (c) copiarCartao(c); break;
+
+      case "filtrar-membro": {
+        var fm = estado.filtro.membros, pm = fm.indexOf(id);
+        if (pm >= 0) fm.splice(pm, 1); else fm.push(id);
+        desenhar();
+        if (!document.getElementById("pop").hidden) popFiltro(popAlvo);
+        break;
+      }
+      case "filtrar-etiqueta": {
+        var fe = estado.filtro.etiquetas, idE = el.getAttribute("data-et"), pe = fe.indexOf(idE);
+        if (pe >= 0) fe.splice(pe, 1); else fe.push(idE);
+        desenhar(); popFiltro(popAlvo);
+        break;
+      }
+      case "filtrar-prazo": estado.filtro.prazo = el.getAttribute("data-p"); desenhar(); popFiltro(popAlvo); break;
+      case "f-sem-membro": estado.filtro.semMembro = !estado.filtro.semMembro; desenhar(); popFiltro(popAlvo); break;
+      case "f-sem-etiqueta": estado.filtro.semEtiqueta = !estado.filtro.semEtiqueta; desenhar(); popFiltro(popAlvo); break;
+      case "limpar-filtro":
+        estado.filtro = { texto:"", membros:[], etiquetas:[], prazo:"", semMembro:false, semEtiqueta:false };
+        document.getElementById("campoBusca").value = "";
+        fecharPop(); desenhar();
+        break;
+
+      case "mes": {
+        var passo = +el.getAttribute("data-passo");
+        if (!passo) estado.mesCal = hoje().slice(0, 7);
+        else {
+          var base = (estado.mesCal || hoje().slice(0, 7)) + "-01";
+          estado.mesCal = somarMeses(base, passo).slice(0, 7);
+        }
+        desenhar();
+        break;
+      }
+      case "fundo": estado.prefs.fundo = el.getAttribute("data-cor"); gravarQuadro(); abrirGaveta(); break;
+      case "tema":
+        estado.prefs.tema = el.getAttribute("data-t");
+        gravarPrefs(); gravarQuadro(); abrirGaveta();
+        break;
+      case "recuperar": {
+        var chaveR = el.getAttribute("data-chave");
+        var guardado = lerLocal(chaveR);
+        var listaR = Array.isArray(guardado) ? guardado
+                   : (guardado && Array.isArray(guardado.atividades) ? guardado.atividades : null);
+        if (!listaR) { avisar("Não consegui ler essa cópia."); break; }
+        if (guardado && guardado.quadro) aplicarQuadro(guardado.quadro);
+        var voltaram = 0;
+        listaR.forEach(function(item){
+          if (!item || !item.id || estado.cartoes.has(item.id)) return;
+          estado.cartoes.set(item.id, normalizarCartao(item.id, item));
+          voltaram++;
+        });
+        // junta, nunca substitui: o que está na tela agora continua
+        recolherOrfaos();
+        estado.cartoes.forEach(function(c){ gravarCartao(c, true); });
+        gravarQuadro(true);
+        avisar(voltaram ? voltaram + " cartões voltaram." : "Essa cópia não tinha nada que já não esteja aqui.");
+        abrirGaveta();
+        desenhar();
+        break;
+      }
+      case "exportar": exportar(); break;
+      case "importar": document.getElementById("arquivoImport").click(); break;
+    }
+  });
+
+  document.getElementById("vistas").addEventListener("click", function(ev){
+    var b = ev.target.closest("button[data-vista]");
+    if (!b) return;
+    estado.vista = b.getAttribute("data-vista");
+    gravarPrefs();
+    desenhar();
+  });
+
+  document.getElementById("campoBusca").addEventListener("input", function(){
+    estado.filtro.texto = this.value.trim();
+    adiar("busca", desenhar);
+  });
+
+  document.getElementById("arquivoAnexo").addEventListener("change", function(ev){
+    var alvo = estado.alvoAnexo;
+    var c = alvo ? cartao(alvo.id) : null;
+    if (c && ev.target.files && ev.target.files.length) anexarAo(c, ev.target.files, alvo.comentario);
+    estado.alvoAnexo = null;
+    ev.target.value = "";
+  });
+
+  // Colar um print com a janela do cartão aberta anexa nele. Se o cursor estiver
+  // na caixa de comentário, a imagem sai junto com o comentário.
+  document.addEventListener("paste", function(ev){
+    if (!estado.cartaoAberto) return;
+    var dados = ev.clipboardData;
+    if (!dados || !dados.items) return;
+    var arquivos = [];
+    Array.prototype.forEach.call(dados.items, function(item){
+      if (item.kind !== "file") return;
+      var f = item.getAsFile();
+      if (f) arquivos.push(f);
+    });
+    if (!arquivos.length) return;
+    ev.preventDefault();
+    var noComentario = document.activeElement
+      && document.activeElement.getAttribute
+      && document.activeElement.getAttribute("data-campo") === "comentario";
+    anexarAo(cartao(estado.cartaoAberto), arquivos, noComentario);
+  });
+
+  // Arrastar um arquivo para dentro da janela do cartão também anexa.
+  (function(){
+    var veu = document.getElementById("veu");
+    ["dragenter", "dragover"].forEach(function(nome){
+      veu.addEventListener(nome, function(ev){
+        if (!estado.cartaoAberto || !ev.dataTransfer || ev.dataTransfer.types.indexOf("Files") < 0) return;
+        ev.preventDefault();
+        veu.classList.add("recebendo");
+      });
+    });
+    ["dragleave", "dragend"].forEach(function(nome){
+      veu.addEventListener(nome, function(ev){
+        if (ev.target === veu) veu.classList.remove("recebendo");
+      });
+    });
+    veu.addEventListener("drop", function(ev){
+      veu.classList.remove("recebendo");
+      if (!estado.cartaoAberto || !ev.dataTransfer || !ev.dataTransfer.files.length) return;
+      ev.preventDefault();
+      anexarAo(cartao(estado.cartaoAberto), ev.dataTransfer.files, false);
+    });
+  })();
+
+  document.getElementById("arquivoImport").addEventListener("change", function(ev){
+    var arq = ev.target.files && ev.target.files[0];
+    if (arq) importarArquivo(arq);
+    ev.target.value = "";
+  });
+
+  // digitação nos campos que vivem dentro do desenho
+  document.addEventListener("input", function(ev){
+    var campo = ev.target.getAttribute && ev.target.getAttribute("data-campo");
+    if (!campo) return;
+    crescer(ev.target);
+    var id = ev.target.getAttribute("data-id");
+    if (campo === "titulo") {
+      var c = cartao(id);
+      if (!c) return;
+      c.titulo = ev.target.value;
+      adiar("titulo" + id, function(){ gravarCartao(c, true); });
+    }
+    if (CAMPOS_GUARDADOS[campo]) {
+      estado.textos[chaveTexto(campo, ev.target.getAttribute("data-id"), ev.target.getAttribute("data-cl"))] = ev.target.value;
+    }
+    if (campo === "novo-cartao") estado.rascunho.titulo = ev.target.value;
+    if (campo === "r-dia" || campo === "r-inicioDia") adiar("repeticao", desenhar);
+    if (campo.slice(0, 2) === "r-") {
+      var chave = campo.slice(2);
+      if (estado.rascunho[chave] !== undefined) estado.rascunho[chave] = ev.target.value;
+    }
+    if (campo === "fTexto") {
+      estado.filtro.texto = ev.target.value.trim();
+      adiar("busca", desenhar);
+    }
+  });
+
+  // Os campos cujo texto precisa sobreviver a um redesenho.
+  var CAMPOS_GUARDADOS = {
+    "descricao": 1, "comentario": 1, "novo-item": 1, "nome-lista": 1, "nome-checklist": 1
+  };
+
+  document.addEventListener("input", function(ev){
+    if (ev.target.id === "dFim" || ev.target.id === "dIni") atualizarRepeticao();
+  });
+
+  document.addEventListener("change", function(ev){
+    if (ev.target.id === "dFim" || ev.target.id === "dIni") atualizarRepeticao();
+    var campoR = ev.target.getAttribute && ev.target.getAttribute("data-campo");
+    if (campoR && campoR.slice(0, 2) === "r-") {
+      var ch = campoR.slice(2);
+      if (estado.rascunho[ch] !== undefined) estado.rascunho[ch] = ev.target.value;
+    }
+    var acao = ev.target.getAttribute && ev.target.getAttribute("data-acao");
+    if (acao !== "item-check") return;
+    var c = cartao(ev.target.getAttribute("data-id"));
+    if (!c) return;
+    var idCl = ev.target.getAttribute("data-cl"), idIt = ev.target.getAttribute("data-item");
+    c.checklists.forEach(function(cl){
+      if (cl.id !== idCl) return;
+      cl.itens.forEach(function(it){ if (it.id === idIt) it.feito = ev.target.checked; });
+    });
+    gravarCartao(c);
+  });
+
+  // confirmar/cancelar nos campos de texto
+  document.addEventListener("keydown", function(ev){
+    var campo = ev.target.getAttribute && ev.target.getAttribute("data-campo");
+
+    if (ev.key === "Escape") {
+      if (!document.getElementById("pop").hidden) { fecharPop(); return; }
+      if (!document.getElementById("gaveta").hidden) { document.getElementById("gaveta").hidden = true; return; }
+      if (estado.editor) { estado.editor = null; esquecerTextos(); desenhar(); return; }
+      if (estado.compondoEm) { estado.compondoEm = null; estado.rascunho = rascunhoVazio(); desenhar(); return; }
+      if (estado.novaLista) { estado.novaLista = false; desenhar(); return; }
+      if (estado.editandoLista) { estado.editandoLista = null; desenhar(); return; }
+      if (estado.cartaoAberto) { estado.cartaoAberto = null; esquecerTextos(); desenhar(); return; }
+      return;
+    }
+
+    if (!campo) return;
+
+    if (campo === "novo-cartao" && ev.key === "Enter" && !ev.shiftKey) {
+      ev.preventDefault();
+      var b = document.querySelector('[data-acao="salvar-cartao"][data-id="' + ev.target.getAttribute("data-id") + '"]');
+      if (b) b.click();
+      return;
+    }
+    if (campo === "nova-lista" && ev.key === "Enter") {
+      ev.preventDefault();
+      var b2 = document.querySelector('[data-acao="salvar-lista"]');
+      if (b2) b2.click();
+      return;
+    }
+    if ((campo === "nome-lista" || campo === "nome-checklist") && ev.key === "Enter") { ev.preventDefault(); ev.target.blur(); return; }
+    if (campo === "titulo" && ev.key === "Enter") { ev.preventDefault(); ev.target.blur(); return; }
+    if (campo === "novo-item" && ev.key === "Enter" && !ev.shiftKey) {
+      ev.preventDefault();
+      var b3 = document.querySelector('[data-acao="salvar-item"][data-cl="' + ev.target.getAttribute("data-cl") + '"]');
+      if (b3) b3.click();
+      return;
+    }
+    if (campo === "comentario" && ev.key === "Enter" && !ev.shiftKey) {
+      ev.preventDefault();
+      var b4 = document.querySelector('[data-acao="salvar-comentario"]');
+      if (b4) b4.click();
+      return;
+    }
+    if (campo === "descricao" && ev.key === "Enter" && (ev.metaKey || ev.ctrlKey)) {
+      ev.preventDefault();
+      var b5 = document.querySelector('[data-acao="salvar-descricao"]');
+      if (b5) b5.click();
+    }
+  });
+
+  document.addEventListener("focusout", function(ev){
+    var campo = ev.target.getAttribute && ev.target.getAttribute("data-campo");
+    if (campo === "nome-checklist") {
+      var cc = cartao(ev.target.getAttribute("data-id"));
+      var idCl = ev.target.getAttribute("data-cl");
+      var nomeCl = ev.target.value.trim();
+      estado.editor = null;
+      esquecerTexto("nome-checklist", ev.target.getAttribute("data-id"), idCl);
+      if (cc && nomeCl) {
+        cc.checklists.forEach(function(cl){ if (cl.id === idCl) cl.nome = nomeCl; });
+        gravarCartao(cc);
+      } else desenhar();
+    }
+    if (campo === "nome-lista") {
+      var l = estado.listas.get(ev.target.getAttribute("data-id"));
+      var nome = ev.target.value.trim();
+      estado.editandoLista = null;
+      esquecerTexto("nome-lista", ev.target.getAttribute("data-id"), "");
+      if (l && nome && nome !== l.nome) { l.nome = nome; gravarQuadro(); }
+      else desenhar();
+    }
+    if (campo === "titulo") {
+      var c = cartao(ev.target.getAttribute("data-id"));
+      if (c) gravarCartao(c, true);
+    }
+  });
+
+  window.addEventListener("resize", function(){
+    if (!document.getElementById("pop").hidden && popAlvo) posicionarPop(popAlvo);
+  });
+
+  /* ======================= partida ======================= */
+
+  lerPrefs();
+  estado.mesCal = hoje().slice(0, 7);
+  desenhar();
+  conectar();
+
+  // o quadro envelhece sozinho: prazos viram "vence logo" e depois "vencido"
+  // O relógio existe só para envelhecer os prazos ("vence logo" vira "vencido").
+  // Ele nunca pode interromper quem está no meio de alguma coisa: com um cartão
+  // aberto, um campo em foco ou um popover na tela, ele espera a vez.
+  window.setInterval(function(){
+    if (estado.vista !== "quadro" && estado.vista !== "calendario") return;
+    if (estado.cartaoAberto || estado.compondoEm || estado.editor ||
+        estado.editandoLista || estado.novaLista) return;
+    if (!document.getElementById("pop").hidden) return;
+    if (!document.getElementById("gaveta").hidden) return;
+    var foco = document.activeElement;
+    if (foco && (foco.tagName === "TEXTAREA" || foco.tagName === "INPUT" ||
+                 foco.isContentEditable)) return;
+    desenhar();
+  }, 60000);
+})();
+</script>
